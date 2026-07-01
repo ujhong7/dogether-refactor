@@ -54,17 +54,16 @@ extension ModalityViewController: ExaminateDelegate {
     }
     
     func sendAction() {
-        Task {
+        Task { [weak self] in
+            guard let self else { return }
             try await viewModel.reviewTodo()
-            await MainActor.run {
-                if viewModel.examinateViewDatas.value.reviews.count == viewModel.examinateViewDatas.value.index + 1 {
-                    coordinator?.hideModal()
-                } else {
-                    viewModel.setIndex(direction: .next)
-                    viewModel.setResult()
-                    viewModel.setFeedback()
-                    viewModel.setButtonStatus(status: .disabled)
-                }
+            if viewModel.examinateViewDatas.value.reviews.count == viewModel.examinateViewDatas.value.index + 1 {
+                coordinator?.hideModal()
+            } else {
+                viewModel.setIndex(direction: .next)
+                viewModel.setResult()
+                viewModel.setFeedback()
+                viewModel.setButtonStatus(status: .disabled)
             }
         }
     }

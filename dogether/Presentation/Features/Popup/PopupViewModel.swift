@@ -9,6 +9,7 @@ import UIKit
 
 import RxRelay
 
+@MainActor
 final class PopupViewModel {
     private(set) var alertPopupViewDatas = BehaviorRelay<AlertPopupViewDatas?>(value: nil)
     private(set) var examinatePopupViewDatas = BehaviorRelay<ExaminatePopupViewDatas?>(value: nil)

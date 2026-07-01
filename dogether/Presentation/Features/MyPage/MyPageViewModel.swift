@@ -7,6 +7,7 @@
 
 import RxRelay
 
+@MainActor
 final class MyPageViewModel {
     private let userUseCase: UserUseCase
     

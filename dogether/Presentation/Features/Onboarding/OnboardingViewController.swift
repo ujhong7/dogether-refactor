@@ -35,10 +35,7 @@ extension OnboardingViewController: OnboardingDelegate {
                     return
                 }
                 
-                await MainActor.run { [weak self] in
-                    guard let self else { return }
-                    coordinator?.setNavigationController(MainViewController())
-                }
+                coordinator?.setNavigationController(MainViewController())
             } catch let error as NetworkError {
                 if case let .dogetherError(code, _) = error {
                     if code == .ATF0002 {

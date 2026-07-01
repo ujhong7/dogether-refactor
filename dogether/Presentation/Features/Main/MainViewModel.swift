@@ -9,6 +9,7 @@ import UIKit
 
 import RxRelay
 
+@MainActor
 final class MainViewModel {
     private let groupUseCase: GroupUseCase
     private let challengeGroupsUseCase: ChallengeGroupUseCase
@@ -79,10 +80,10 @@ extension MainViewModel {
 extension MainViewModel {
     func startTimer() {
         calculateRemainTime()
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            self.timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-                self.calculateRemainTime()
+        // MARK: ViewModel이 @MainActor라 startTimer는 메인에서 호출됨 → Timer도 메인 런루프에 등록됨
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.calculateRemainTime()
             }
         }
     }
@@ -108,7 +109,8 @@ extension MainViewModel {
 
 extension MainViewModel {
     func saveLastSelectedGroupIndex(index: Int) {
-        Task {
+        Task { [weak self] in
+            guard let self else { return }
             try await groupUseCase.saveLastSelectedGroup(groupId: groupViewDatas.value.groups[index].id)
         }
     }
