@@ -14,29 +14,32 @@ class NetworkManager {
     weak var coordinator: NavigationCoordinator?
     
     func request<T: Decodable>(_ endpoint: NetworkEndpoint) async throws -> T {
-        LoadingManager.shared.showLoading()
-        defer { LoadingManager.shared.hideLoading() }
-        
-        do {
-            let response: ServerResponse<T> = try await NetworkService.shared.request(endpoint)
-            
-            if T.self == EmptyData.self { return EmptyData() as! T }
-            
-            guard let data = response.data else {
-                if let dogetherCode = DogetherCodes(rawValue: response.code) {
-                    throw NetworkError.dogetherError(code: dogetherCode, message: response.message)
-                } else { throw NetworkError.unknown }
-            }
-            
-            return data
-        } catch {
-            if checkCommonError(error) {
+        // MARK: 공통 에러 발생 시 에러 뷰의 "재시도" 입력을 기다렸다가 같은 요청을 반복합니다
+        while true {
+            LoadingManager.shared.showLoading()
+
+            do {
+                let response: ServerResponse<T> = try await NetworkService.shared.request(endpoint)
                 LoadingManager.shared.hideLoading()
-                let data: T = try await handleCommonError(endpoint)
-                LoadingManager.shared.showLoading()
+
+                if T.self == EmptyData.self { return EmptyData() as! T }
+
+                guard let data = response.data else {
+                    if let dogetherCode = DogetherCodes(rawValue: response.code) {
+                        throw NetworkError.dogetherError(code: dogetherCode, message: response.message)
+                    } else { throw NetworkError.unknown }
+                }
+
                 return data
-            } else {
-                throw handleDetailError(error)
+            } catch {
+                LoadingManager.shared.hideLoading()
+
+                if checkCommonError(error) {
+                    await waitForRetry()
+                    continue
+                } else {
+                    throw handleDetailError(error)
+                }
             }
         }
     }
@@ -54,18 +57,16 @@ extension NetworkManager {
                  code == .CGF0002 || code == .CGF0003 || code == .CGF0004 || code == .CGF0005)
     }
     
-    private func handleCommonError<T: Decodable>(_ endpoint: NetworkEndpoint) async throws -> T {
-        try await withCheckedThrowingContinuation { continuation in
-            coordinator?.showErrorView { [weak self] in
-                guard let self else { return }
-                Task {
-                    do {
-                        let result: T = try await self.request(endpoint)
-                        continuation.resume(returning: result)
-                    } catch {
-                        continuation.resume(throwing: error)
-                    }
-                }
+    /// 에러 뷰의 "재시도" 입력이 들어올 때까지 대기합니다.
+    /// (coordinator가 없으면 즉시 반환하여 호출부의 재시도 루프가 진행되도록 합니다)
+    private func waitForRetry() async {
+        await withCheckedContinuation { continuation in
+            guard let coordinator else {
+                continuation.resume()
+                return
+            }
+            coordinator.showErrorView {
+                continuation.resume()
             }
         }
     }
