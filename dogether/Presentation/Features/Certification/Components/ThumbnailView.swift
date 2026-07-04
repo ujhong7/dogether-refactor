@@ -61,10 +61,10 @@ final class ThumbnailView: BaseView {
                     do {
                         let (data, _) = try await URLSession.shared.data(from: url)
                         let image = UIImage(data: data)
-                        
+
                         guard let image else { return }
                         imageView.image = image
-                        
+
                         imageView.snp.remakeConstraints {
                             $0.center.equalToSuperview()
                             $0.width.height.equalToSuperview()

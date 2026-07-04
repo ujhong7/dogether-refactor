@@ -50,7 +50,8 @@ extension MainViewController {
     }
     
     private func checkAuthorization() {
-        runTask(showLoading: false, retryOnCommonNetworkError: false) { [self] in
+        runTask(showLoading: false, retryOnCommonNetworkError: false) { [weak self] in
+            guard let self else { return }
             let userNoti = UNUserNotificationCenter.current()
             let settings = await userNoti.notificationSettings()
             
@@ -69,7 +70,8 @@ extension MainViewController {
     
     private func getReviews() {
         // ???: 화면 전환을 고려하면 일부러 강한 참조를 걸어야할까
-        runTask { [self] in
+        runTask { [weak self] in
+            guard let self else { return }
             let reviews = try await self.viewModel.getReviews()
             if reviews.isEmpty { return }
 
@@ -78,7 +80,8 @@ extension MainViewController {
     }
     
     private func loadMainView() {
-        runTask { [self] in
+        runTask { [weak self] in
+            guard let self else { return }
             let groupViewDatas = try await self.viewModel.getGroups()
             self.viewModel.groupViewDatas.accept(groupViewDatas)
             
@@ -145,7 +148,8 @@ extension MainViewController: MainDelegate {
         
         self.viewModel.sheetViewDatas.update { $0.dateOffset = 0 }
 
-        runTask { [self] in
+        runTask { [weak self] in
+            guard let self else { return }
             try await self.viewModel.saveLastSelectedGroupIndex(index: index)
             try await self.viewModel.setSheetViewDatasForCurrentGroup()
         }
@@ -180,7 +184,8 @@ extension MainViewController: MainDelegate {
             $0.filter = .all
         }
 
-        runTask { [self] in
+        runTask { [weak self] in
+            guard let self else { return }
             try await self.viewModel.setSheetViewDatasForCurrentGroup()
         }
     }
@@ -191,7 +196,8 @@ extension MainViewController: MainDelegate {
             $0.filter = .all
         }
 
-        runTask { [self] in
+        runTask { [weak self] in
+            guard let self else { return }
             try await self.viewModel.setSheetViewDatasForCurrentGroup()
         }
     }

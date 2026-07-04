@@ -203,7 +203,7 @@ extension NavigationCoordinator: NotificationHandler {
                 do {
                     let repository = DIManager.shared.getTodoCertificationsRepository()
                     let reviews = try await repository.getReviews()
-                    
+
                     if reviews.isEmpty { return }
                     await MainActor.run { self.showModal(reviews: reviews) }
                 } catch {

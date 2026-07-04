@@ -54,7 +54,8 @@ extension GroupJoinViewController: GroupJoinDelegate {
     }
     
     func joinGroupAction() {
-        runTask { [self] in
+        runTask { [weak self] in
+            guard let self else { return }
             let groupInfo = try await self.viewModel.joinGroup()
             self.coordinator?.setNavigationController(
                 CompleteViewController(),
@@ -70,7 +71,7 @@ extension GroupJoinViewController: GroupJoinDelegate {
                             code == .CGF0003 ? .fullGroup :
                             code == .CGF0004 || code == .CGF0005 ? .unableToParticipate :
                             nil else { return }
-                
+
                 self?.coordinator?.showPopup(type: .alert, alertType: alertType) { [weak self] _ in
                     guard let self else { return }
                     self.coordinator?.popViewController()

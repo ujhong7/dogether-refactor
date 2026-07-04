@@ -54,7 +54,8 @@ extension CertificateImageViewController: CertificateImageDelegate {
     }
     
     func uploadImageAction(image: UIImage) {
-        runTask { [self] in
+        runTask { [weak self] in
+            guard let self else { return }
             self.viewModel.updateButtonStatus(status: .disabled)
 
             try await self.viewModel.uploadImage(image: image)

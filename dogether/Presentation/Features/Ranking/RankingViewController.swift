@@ -37,7 +37,8 @@ final class RankingViewController: BaseViewController {
 
 extension RankingViewController {
     private func loadRankingView() {
-        runTask { [self] in
+        runTask { [weak self] in
+            guard let self else { return }
             try await self.viewModel.loadRankingView()
         }
     }
@@ -50,7 +51,8 @@ protocol RankingDelegate {
 
 extension RankingViewController: RankingDelegate {
     func goCertificationViewAction(rankingEntity: RankingEntity) {
-        runTask { [self] in
+        runTask { [weak self] in
+            guard let self else { return }
             let (index, todos) = try await self.viewModel.getMemberTodos(memberId: rankingEntity.memberId)
 
             let certificationViewController = CertificationViewController()

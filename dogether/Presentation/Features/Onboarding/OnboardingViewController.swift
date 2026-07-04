@@ -25,14 +25,15 @@ protocol OnboardingDelegate {
 
 extension OnboardingViewController: OnboardingDelegate {
     func loginAction(loginType: LoginTypes) {
-        runTask { [self] in
+        runTask { [weak self] in
+            guard let self else { return }
             try await self.viewModel.login(loginType: loginType)
-            
+
             if try await self.viewModel.checkParticipating() {
                 self.coordinator?.setNavigationController(StartViewController())
                 return
             }
-            
+
             self.coordinator?.setNavigationController(MainViewController())
         } catch: { [weak self] error in
             if let error = error as? NetworkError, case let .dogetherError(code, _) = error {

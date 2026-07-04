@@ -38,13 +38,15 @@ final class StatsViewController: BaseViewController {
 
 extension StatsViewController {
     private func loadStatsView() {
-        runTask { [self] in
+        runTask { [weak self] in
+            guard let self else { return }
             try await self.viewModel.loadStatsView()
         }
     }
     
     private func reloadStats() {
-        runTask { [self] in
+        runTask { [weak self] in
+            guard let self else { return }
             try await self.viewModel.fetchStatsViewDatas()
         }
     }
@@ -64,7 +66,8 @@ extension StatsViewController: StatsDelegate {
     func selectGroupAction(index: Int) {
         self.viewModel.groupViewDatas.update { $0.index = index }
         
-        runTask { [self] in
+        runTask { [weak self] in
+            guard let self else { return }
             try await self.viewModel.saveLastSelectedGroupIndex(index: index)
             try await self.viewModel.fetchStatsViewDatas()
         }

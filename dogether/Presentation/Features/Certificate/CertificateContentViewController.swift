@@ -51,7 +51,8 @@ extension CertificateContentViewController: CertificateContentDelegate {
     }
     
     func certifyTodoAction() {
-        runTask { [self] in
+        runTask { [weak self] in
+            guard let self else { return }
             try await self.viewModel.certifyTodo()
 
             self.coordinator?.popViewControllers(num: 2)

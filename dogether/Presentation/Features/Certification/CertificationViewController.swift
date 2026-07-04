@@ -32,7 +32,8 @@ final class CertificationViewController: BaseViewController {
 
 extension CertificationViewController {
     private func onAppear() {
-        runTask { [self] in
+        runTask { [weak self] in
+            guard let self else { return }
             try await self.viewModel.readTodo()
         }
     }
@@ -52,7 +53,8 @@ extension CertificationViewController: CertificationDelegate {
 
         for (index, view) in stackView.arrangedSubviews.enumerated() {
             if view.frame.contains(location) {
-                runTask { [self] in
+                runTask { [weak self] in
+                    guard let self else { return }
                     try await self.viewModel.setIndex(index: index)
                 }
                 return
@@ -81,7 +83,8 @@ extension CertificationViewController: CertificationDelegate {
         }, completion: { [weak self] finished in
             guard let self else { return }
             if finished {
-                runTask { [self] in
+                runTask { [weak self] in
+                    guard let self else { return }
                     try await self.viewModel.setIndex(index: nextIndex)
                 }
             }
@@ -89,7 +92,8 @@ extension CertificationViewController: CertificationDelegate {
     }
     
     func certificationListScrollEndAction(index: Int) {
-        runTask { [self] in
+        runTask { [weak self] in
+            guard let self else { return }
             try await self.viewModel.setIndex(index: index)
         }
     }

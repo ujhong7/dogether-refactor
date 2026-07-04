@@ -20,7 +20,8 @@ final class SplashViewController: BaseViewController {
 
 extension SplashViewController {
     private func onAppear() {
-        runTask { [self] in
+        runTask { [weak self] in
+            guard let self else { return }
             try await self.viewModel.launchApp()
 
             if try await self.viewModel.checkUpdate() {
