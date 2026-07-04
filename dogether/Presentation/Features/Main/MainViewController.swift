@@ -160,17 +160,17 @@ extension MainViewController: MainDelegate {
     func inviteAction() {
         let group = self.viewModel.currentGroup
 
-        runTask { [self] in
-            let inviteItems = try await SystemManager.inviteGroup(
+        runTask {
+            try await SystemManager.inviteGroup(
                 groupName: group.name,
                 joinCode: group.joinCode
             )
-
+        } success: { [weak self] inviteItems in
             let activityVC = UIActivityViewController(
                 activityItems: inviteItems,
                 applicationActivities: nil
             )
-            self.present(activityVC, animated: true)
+            self?.present(activityVC, animated: true)
         }
     }
     

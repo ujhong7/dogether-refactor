@@ -71,10 +71,11 @@ class BaseViewController: UIViewController, CoordinatorDelegate {
 
 // MARK: - async task
 extension BaseViewController {
-    func runTask(
+    func runTask<Value>(
         showLoading: Bool = true,
         retryOnCommonNetworkError: Bool = true,
-        operation: @escaping () async throws -> Void,
+        operation: @escaping () async throws -> Value,
+        success: ((Value) -> Void)? = nil,
         catch errorHandler: ((Error) -> Void)? = nil
     ) {
         Task { [weak self] in
@@ -83,23 +84,26 @@ extension BaseViewController {
                 showLoading: showLoading,
                 retryOnCommonNetworkError: retryOnCommonNetworkError,
                 operation: operation,
+                success: success,
                 catch: errorHandler
             )
         }
     }
 
-    private func executeTask(
+    private func executeTask<Value>(
         showLoading: Bool,
         retryOnCommonNetworkError: Bool,
-        operation: @escaping () async throws -> Void,
+        operation: @escaping () async throws -> Value,
+        success: ((Value) -> Void)?,
         catch errorHandler: ((Error) -> Void)?
     ) async {
         while true {
             if showLoading { LoadingManager.shared.showLoading() }
 
             do {
-                try await operation()
+                let value = try await operation()
                 if showLoading { LoadingManager.shared.hideLoading() }
+                success?(value)
                 return
             } catch {
                 if showLoading { LoadingManager.shared.hideLoading() }
@@ -121,6 +125,8 @@ extension BaseViewController {
     }
 
     private func isCommonNetworkError(_ error: Error) -> Bool {
+        if error is URLError || error is DecodingError { return true }
+
         guard let error = error as? NetworkError else { return false }
         guard case let .dogetherError(code, _) = error else { return true }
 

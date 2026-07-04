@@ -18,12 +18,12 @@ final class CompleteViewController: BaseViewController {
     }
     
     override func setViewDatas() {
-         if let datas = datas as? CompleteViewDatas {
-             self.viewModel.completeViewDatas.accept(datas)
-         }
-         
-         bind(self.viewModel.completeViewDatas)
-     }
+        if let datas = datas as? CompleteViewDatas {
+            self.viewModel.completeViewDatas.accept(datas)
+        }
+
+        bind(self.viewModel.completeViewDatas)
+    }
 }
 
 protocol CompleteDelegate: AnyObject {
@@ -37,19 +37,19 @@ extension CompleteViewController: CompleteDelegate {
     }
     
     func shareJoinCodeAction() {
-           let data = self.viewModel.completeViewDatas.value
+        let data = self.viewModel.completeViewDatas.value
 
-           runTask { [self] in
-               let inviteItems = try await SystemManager.inviteGroup(
-                   groupName: data.groupEntity.name,
-                   joinCode: data.joinCode
-               )
-
-               let activityVC = UIActivityViewController(
-                   activityItems: inviteItems,
-                   applicationActivities: nil
-               )
-               self.present(activityVC, animated: true)
-           }
-       }
+        runTask {
+            try await SystemManager.inviteGroup(
+                groupName: data.groupEntity.name,
+                joinCode: data.joinCode
+            )
+        } success: { [weak self] inviteItems in
+            let activityVC = UIActivityViewController(
+                activityItems: inviteItems,
+                applicationActivities: nil
+            )
+            self?.present(activityVC, animated: true)
+        }
+    }
 }
