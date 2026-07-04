@@ -16,11 +16,11 @@ class NetworkManager {
     func request<T: Decodable>(_ endpoint: NetworkEndpoint) async throws -> T {
         // MARK: 공통 에러 발생 시 에러 뷰의 "재시도" 입력을 기다렸다가 같은 요청을 반복합니다
         while true {
-            LoadingManager.shared.showLoading()
+            await LoadingManager.shared.showLoading()
 
             do {
                 let response: ServerResponse<T> = try await NetworkService.shared.request(endpoint)
-                LoadingManager.shared.hideLoading()
+                await LoadingManager.shared.hideLoading()
 
                 if T.self == EmptyData.self { return EmptyData() as! T }
 
@@ -32,7 +32,7 @@ class NetworkManager {
 
                 return data
             } catch {
-                LoadingManager.shared.hideLoading()
+                await LoadingManager.shared.hideLoading()
 
                 if checkCommonError(error) {
                     await waitForRetry()

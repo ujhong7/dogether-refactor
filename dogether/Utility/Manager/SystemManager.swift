@@ -15,11 +15,13 @@ struct SystemManager {
     static let appStoreOpenUrlString = "itms-apps://itunes.apple.com/app/apple-store/\(SystemManager.appleID)"
     static let chottuLinkAPIKey = "c_app_O6DbHOINzQfp7Cu6a1Bmk3PYBGsyOwAj"
     
+    @MainActor
     func terminateApp() {
         UIApplication.shared.perform(#selector(NSXPCConnection.suspend))
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { exit(0) }
     }
     
+    @MainActor
     func openAppStore() {
         guard let url = URL(string: SystemManager.appStoreOpenUrlString) else { return }
         if UIApplication.shared.canOpenURL(url) {
@@ -27,6 +29,7 @@ struct SystemManager {
         }
     }
     
+    @MainActor
     func openSettingApp() {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         if UIApplication.shared.canOpenURL(url) {
@@ -48,10 +51,16 @@ extension SystemManager {
           .setAndroidBehaviour(CLDynamicLinkBehaviour.app)
           .build()
 
-          LoadingManager.shared.showLoading()
-          defer { LoadingManager.shared.hideLoading() }
+          await LoadingManager.shared.showLoading()
         
-          let shortURL = try await ChottuLink.createDynamicLink(for: builder)
+          let shortURL: String?
+          do {
+              shortURL = try await ChottuLink.createDynamicLink(for: builder)
+              await LoadingManager.shared.hideLoading()
+          } catch {
+              await LoadingManager.shared.hideLoading()
+              throw error
+          }
 
           return ["""
           ✨ [\(groupName)]에서 당신의 참여를 기다리고 있어요

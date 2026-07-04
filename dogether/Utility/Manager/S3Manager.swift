@@ -13,16 +13,26 @@ final class S3Manager {
     private init() {}
     
     func uploadImage(image: UIImage?) async throws -> String? {
-        LoadingManager.shared.showLoading()
-        defer { LoadingManager.shared.hideLoading() }
+        await LoadingManager.shared.showLoading()
         
-        let request: PresignedUrlRequest = PresignedUrlRequest(dailyTodoId: 0, uploadFileTypes: [FileTypes.image.rawValue])
-        let response: PresignedUrlResponse = try await NetworkManager.shared.request(
-            S3Router.presignedUrls(presignedUrlRequest: request)
-        )
-        
-        guard let imageData = image?.pngData(), let presignedUrl = URL(string: response.presignedUrls[0]) else { return nil }
-        return try await uploadImageToS3(imageData: imageData, presignedUrl: presignedUrl)
+        do {
+            let request: PresignedUrlRequest = PresignedUrlRequest(dailyTodoId: 0, uploadFileTypes: [FileTypes.image.rawValue])
+            let response: PresignedUrlResponse = try await NetworkManager.shared.request(
+                S3Router.presignedUrls(presignedUrlRequest: request)
+            )
+            
+            guard let imageData = image?.pngData(), let presignedUrl = URL(string: response.presignedUrls[0]) else {
+                await LoadingManager.shared.hideLoading()
+                return nil
+            }
+            
+            let imageUrl = try await uploadImageToS3(imageData: imageData, presignedUrl: presignedUrl)
+            await LoadingManager.shared.hideLoading()
+            return imageUrl
+        } catch {
+            await LoadingManager.shared.hideLoading()
+            throw error
+        }
     }
     
     // TODO: 추후 NetworkLayer로 이동

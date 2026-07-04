@@ -7,6 +7,7 @@
 
 import UIKit
 
+@MainActor
 final class LoadingManager {
     static let shared = LoadingManager()
     
@@ -15,35 +16,28 @@ final class LoadingManager {
     
     private init() { }
     
-    // MARK: loadingCount / loadingWindow는 항상 메인 액터에서만 접근하여 데이터 레이스를 방지합니다
     func showLoading() {
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            loadingCount += 1
+        loadingCount += 1
 
-            guard loadingWindow == nil,
-                  let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
-            let window = UIWindow(windowScene: windowScene)
-            let loadingViewController = LoadingViewController()
+        guard loadingWindow == nil,
+              let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+        let window = UIWindow(windowScene: windowScene)
+        let loadingViewController = LoadingViewController()
 
-            window.frame = UIScreen.main.bounds
-            window.rootViewController = loadingViewController
-            window.windowLevel = .alert + 99
-            window.makeKeyAndVisible()
+        window.frame = UIScreen.main.bounds
+        window.rootViewController = loadingViewController
+        window.windowLevel = .alert + 99
+        window.makeKeyAndVisible()
 
-            loadingWindow = window
-        }
+        loadingWindow = window
     }
 
     func hideLoading() {
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            loadingCount -= 1
+        loadingCount = max(loadingCount - 1, 0)
 
-            if loadingCount <= 0 {
-                loadingWindow?.isHidden = true
-                loadingWindow = nil
-            }
+        if loadingCount == 0 {
+            loadingWindow?.isHidden = true
+            loadingWindow = nil
         }
     }
 }
