@@ -200,11 +200,19 @@ extension NavigationCoordinator: NotificationHandler {
         case .certification:
             Task { [weak self] in
                 guard let self else { return }
-                let repository = DIManager.shared.getTodoCertificationsRepository()
-                let reviews = try await repository.getReviews()
-                
-                if reviews.isEmpty { return }
-                await MainActor.run { self.showModal(reviews: reviews) }
+                do {
+                    let repository = DIManager.shared.getTodoCertificationsRepository()
+                    let reviews = try await repository.getReviews()
+                    
+                    if reviews.isEmpty { return }
+                    await MainActor.run { self.showModal(reviews: reviews) }
+                } catch {
+                    await MainActor.run {
+                        self.showErrorView { [weak self] in
+                            self?.handleNotification(userInfo: userInfo)
+                        }
+                    }
+                }
             }
             
         case .review:
