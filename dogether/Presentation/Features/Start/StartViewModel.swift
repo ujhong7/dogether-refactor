@@ -7,6 +7,7 @@
 
 import RxRelay
 
+@MainActor
 final class StartViewModel {
     private(set) var startViewDatas = BehaviorRelay<StartViewDatas>(value: StartViewDatas())
 }

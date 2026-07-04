@@ -7,6 +7,7 @@
 
 import RxRelay
 
+@MainActor
 final class CertificationViewModel {
     private let challengeGroupsUseCase: ChallengeGroupUseCase
     

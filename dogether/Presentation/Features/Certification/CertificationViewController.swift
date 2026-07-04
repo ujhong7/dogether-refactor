@@ -82,7 +82,12 @@ extension CertificationViewController: CertificationDelegate {
             scrollView.setContentOffset(newOffset, animated: false)
         }, completion: { [weak self] finished in
             guard let self else { return }
-            if finished { Task { try await self.viewModel.setIndex(index: nextIndex) } }
+            if finished {
+                Task { [weak self] in
+                    guard let self else { return }
+                    try await viewModel.setIndex(index: nextIndex)
+                }
+            }
         })
     }
     
@@ -92,7 +97,7 @@ extension CertificationViewController: CertificationDelegate {
             try await viewModel.setIndex(index: index)
         }
     }
-    
+
     func goCertificateViewAction(todo: TodoEntity) {
         let certificateImageViewController = CertificateImageViewController()
         let certificateViewDatas = CertificateViewDatas(todo: todo)

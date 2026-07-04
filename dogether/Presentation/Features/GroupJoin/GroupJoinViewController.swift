@@ -57,15 +57,13 @@ extension GroupJoinViewController: GroupJoinDelegate {
         Task {
             do {
                 let groupInfo = try await viewModel.joinGroup()
-                await MainActor.run {
-                    coordinator?.setNavigationController(
-                        CompleteViewController(),
-                        datas: CompleteViewDatas(
-                            groupType: .join,
-                            groupEntity: groupInfo
-                        )
+                coordinator?.setNavigationController(
+                    CompleteViewController(),
+                    datas: CompleteViewDatas(
+                        groupType: .join,
+                        groupEntity: groupInfo
                     )
-                }
+                )
             } catch let error as NetworkError {
                 if case let .dogetherError(code, _) = error {
                     guard let alertType: AlertTypes =

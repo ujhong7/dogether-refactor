@@ -9,6 +9,7 @@ import UIKit
 
 import RxRelay
 
+@MainActor
 final class RankingViewModel {
     private let groupUseCase: GroupUseCase
     private let challengeGroupsUseCase: ChallengeGroupUseCase

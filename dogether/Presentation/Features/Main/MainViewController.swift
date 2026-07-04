@@ -74,10 +74,8 @@ extension MainViewController {
             guard let self else { return }
             let reviews = try await viewModel.getReviews()
             if reviews.isEmpty { return }
-            
-            await MainActor.run {
-                self.coordinator?.showModal(reviews: reviews)
-            }
+
+            self.coordinator?.showModal(reviews: reviews)
         }
     }
     
@@ -150,8 +148,9 @@ extension MainViewController: MainDelegate {
         viewModel.saveLastSelectedGroupIndex(index: index)
         
         viewModel.sheetViewDatas.update { $0.dateOffset = 0 }
-        
-        Task {
+
+        Task { [weak self] in
+            guard let self else { return }
             try await viewModel.setSheetViewDatasForCurrentGroup()
         }
     }
@@ -172,13 +171,11 @@ extension MainViewController: MainDelegate {
                     joinCode: group.joinCode
                 )
 
-                await MainActor.run {
-                    let activityVC = UIActivityViewController(
-                        activityItems: inviteItems,
-                        applicationActivities: nil
-                    )
-                    present(activityVC, animated: true)
-                }
+                let activityVC = UIActivityViewController(
+                    activityItems: inviteItems,
+                    applicationActivities: nil
+                )
+                present(activityVC, animated: true)
             } catch {
                 // FIXME: 초대 링크 생성 실패 처리
             }
@@ -190,8 +187,9 @@ extension MainViewController: MainDelegate {
             $0.dateOffset -= 1
             $0.filter = .all
         }
-        
-        Task {
+
+        Task { [weak self] in
+            guard let self else { return }
             try await viewModel.setSheetViewDatasForCurrentGroup()
         }
     }
@@ -201,8 +199,9 @@ extension MainViewController: MainDelegate {
             $0.dateOffset += 1
             $0.filter = .all
         }
-        
-        Task {
+
+        Task { [weak self] in
+            guard let self else { return }
             try await viewModel.setSheetViewDatasForCurrentGroup()
         }
     }

@@ -7,6 +7,7 @@
 
 import UIKit
 
+@MainActor
 final class LoadingManager {
     static let shared = LoadingManager()
     
@@ -17,32 +18,26 @@ final class LoadingManager {
     
     func showLoading() {
         loadingCount += 1
-        
-        if loadingWindow == nil {
-            Task { @MainActor [weak self] in
-                guard let self, let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
-                let window = UIWindow(windowScene: windowScene)
-                let loadingViewController = LoadingViewController()
-                
-                window.frame = UIScreen.main.bounds
-                window.rootViewController = loadingViewController
-                window.windowLevel = .alert + 99
-                window.makeKeyAndVisible()
-                
-                loadingWindow = window
-            }
-        }
+
+        guard loadingWindow == nil,
+              let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+        let window = UIWindow(windowScene: windowScene)
+        let loadingViewController = LoadingViewController()
+
+        window.frame = UIScreen.main.bounds
+        window.rootViewController = loadingViewController
+        window.windowLevel = .alert + 99
+        window.makeKeyAndVisible()
+
+        loadingWindow = window
     }
-    
+
     func hideLoading() {
-        loadingCount -= 1
-        
-        if loadingCount <= 0 {
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                loadingWindow?.isHidden = true
-                loadingWindow = nil
-            }
+        loadingCount = max(loadingCount - 1, 0)
+
+        if loadingCount == 0 {
+            loadingWindow?.isHidden = true
+            loadingWindow = nil
         }
     }
 }

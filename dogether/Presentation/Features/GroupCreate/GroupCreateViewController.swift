@@ -60,19 +60,18 @@ extension GroupCreateViewController: GroupCreateDelegate {
     }
     
     func createGroup() {
-        Task {
+        Task { [weak self] in
+            guard let self else { return }
             let joinCode = try await viewModel.createGroup()
-            await MainActor.run {
-                let completeViewController = CompleteViewController()
-                let completeViewDatas = CompleteViewDatas(
-                    groupType: .create,
-                    joinCode: joinCode,
-                    groupEntity: GroupEntity(
-                        name: viewModel.groupCreateViewDatas.value.groupName
-                    )
+            let completeViewController = CompleteViewController()
+            let completeViewDatas = CompleteViewDatas(
+                groupType: .create,
+                joinCode: joinCode,
+                groupEntity: GroupEntity(
+                    name: viewModel.groupCreateViewDatas.value.groupName
                 )
-                coordinator?.setNavigationController(completeViewController, datas: completeViewDatas)
-            }
+            )
+            coordinator?.setNavigationController(completeViewController, datas: completeViewDatas)
         }
     }
 }

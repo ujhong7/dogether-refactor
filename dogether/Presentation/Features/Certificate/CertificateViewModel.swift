@@ -9,6 +9,7 @@ import UIKit
 
 import RxRelay
 
+@MainActor
 final class CertificateViewModel {
     private let challengeGroupUseCase: ChallengeGroupUseCase
     

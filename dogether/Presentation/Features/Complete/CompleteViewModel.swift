@@ -7,6 +7,7 @@
 
 import RxRelay
 
+@MainActor
 final class CompleteViewModel {
     private(set) var completeViewDatas = BehaviorRelay<CompleteViewDatas>(value: CompleteViewDatas())
 }

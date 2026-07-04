@@ -7,6 +7,7 @@
 
 import RxRelay
 
+@MainActor
 final class OnboardingViewModel {
     private let authUseCase: AuthUseCase
     private let groupUseCase: GroupUseCase

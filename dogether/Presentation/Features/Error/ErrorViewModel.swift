@@ -9,6 +9,7 @@ import Foundation
 
 import RxRelay
 
+@MainActor
 final class ErrorViewModel {
     private(set) var buttonViewDatas = BehaviorRelay<DogetherButtonViewDatas>(value: DogetherButtonViewDatas())
 }

@@ -46,13 +46,11 @@ extension CompleteViewController: CompleteDelegate {
                        joinCode: data.joinCode
                    )
 
-                   await MainActor.run {
-                       let activityVC = UIActivityViewController(
-                           activityItems: inviteItems,
-                           applicationActivities: nil
-                       )
-                       present(activityVC, animated: true)
-                   }
+                   let activityVC = UIActivityViewController(
+                       activityItems: inviteItems,
+                       applicationActivities: nil
+                   )
+                   present(activityVC, animated: true)
 
                } catch {
                    // FIXME: 초대 링크 생성 실패 에러처리

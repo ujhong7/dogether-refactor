@@ -42,9 +42,7 @@ extension SettingViewController: SettingDelegate {
                 guard let self else { return }
                 try await viewModel.withdraw()
                 viewModel.logout()
-                await MainActor.run {
-                    self.coordinator?.setNavigationController(OnboardingViewController())
-                }
+                self.coordinator?.setNavigationController(OnboardingViewController())
             }
         }
     }

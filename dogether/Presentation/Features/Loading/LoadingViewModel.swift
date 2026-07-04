@@ -7,6 +7,7 @@
 
 import RxRelay
 
+@MainActor
 final class LoadingViewModel {
     private(set) var loadingViewDatas = BehaviorRelay<LoadingViewDatas>(value: LoadingViewDatas())
     

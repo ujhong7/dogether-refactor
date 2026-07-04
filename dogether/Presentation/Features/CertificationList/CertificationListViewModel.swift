@@ -7,6 +7,7 @@
 
 import RxRelay
 
+@MainActor
 final class CertificationListViewModel {
     private let userUseCase: UserUseCase
     

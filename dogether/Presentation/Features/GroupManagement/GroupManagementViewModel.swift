@@ -7,6 +7,7 @@
 
 import RxRelay
 
+@MainActor
 final class GroupManagementViewModel {
     private let authUseCase: AuthUseCase
     private let groupUseCase: GroupUseCase

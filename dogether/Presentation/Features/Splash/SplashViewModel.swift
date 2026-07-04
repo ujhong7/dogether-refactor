@@ -7,6 +7,7 @@
 
 import RxRelay
 
+@MainActor
 final class SplashViewModel {
     private let appLaunchUseCase: AppLaunchUseCase
     private let groupUseCase: GroupUseCase

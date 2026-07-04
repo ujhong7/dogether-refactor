@@ -9,6 +9,7 @@ import Foundation
 
 import RxRelay
 
+@MainActor
 final class TodoWriteViewModel {
     private let challengeGroupsUseCase: ChallengeGroupUseCase
     

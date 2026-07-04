@@ -8,6 +8,7 @@
 import Foundation
 import RxRelay
 
+@MainActor
 final class StatsViewModel {
     private let userUseCase: UserUseCase
     private let groupUseCase: GroupUseCase
@@ -59,7 +60,8 @@ extension StatsViewModel {
 
 extension StatsViewModel {
     func saveLastSelectedGroupIndex(index: Int) {
-        Task {
+        Task { [weak self] in
+            guard let self else { return }
             try await groupUseCase.saveLastSelectedGroup(groupId: groupViewDatas.value.groups[index].id)
         }
     }
