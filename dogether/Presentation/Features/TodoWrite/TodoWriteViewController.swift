@@ -23,15 +23,15 @@ final class TodoWriteViewController: BaseViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        viewModel.updateIsFirstResponder(isFirstResponder: true)
+        self.viewModel.updateIsFirstResponder(isFirstResponder: true)
     }
     
     override func setViewDatas() {
         if let datas = datas as? TodoWriteViewDatas {
-            viewModel.todoWriteViewDatas.accept(datas)
+            self.viewModel.todoWriteViewDatas.accept(datas)
         }
         
-        bind(viewModel.todoWriteViewDatas)
+        bind(self.viewModel.todoWriteViewDatas)
     }
 }
 
@@ -46,26 +46,25 @@ protocol TodoWriteDelegate {
 
 extension TodoWriteViewController: TodoWriteDelegate {
     func updateIsShowKeyboardAction(isShowKeyboard: Bool) {
-        viewModel.updateIsShowKeyboard(isShowKeyboard: isShowKeyboard)
+        self.viewModel.updateIsShowKeyboard(isShowKeyboard: isShowKeyboard)
     }
     
     func updateTodoAction(todo: String) {
-        viewModel.updateTodo(todo: todo)
+        self.viewModel.updateTodo(todo: todo)
     }
     
     func addTodoAction(todoMaxCount: Int) {
-        viewModel.addTodo(todoMaxCount: todoMaxCount)
+        self.viewModel.addTodo(todoMaxCount: todoMaxCount)
     }
     
     func removeTodoAction(index: Int) {
-        viewModel.removeTodo(index: index)
+        self.viewModel.removeTodo(index: index)
     }
     
     func saveTodoAction() {
-        coordinator?.showPopup(type: .alert, alertType: .saveTodo) { [weak self] _ in
+        self.coordinator?.showPopup(type: .alert, alertType: .saveTodo) { [weak self] _ in
             guard let self else { return }
-            Task { [weak self] in
-                guard let self else { return }
+            runTask { [self] in
                 try await self.viewModel.createTodos()
                 self.coordinator?.popViewController()
             }

@@ -20,16 +20,16 @@ final class GroupJoinViewController: BaseViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        viewModel.updateIsFirstResponder(isFirstResponder: true)
+        self.viewModel.updateIsFirstResponder(isFirstResponder: true)
     }
     
     override func setViewDatas() {
         if let datas = datas as? GroupJoinViewDatas {
-            viewModel.groupJoinViewDatas.accept(datas)
+            self.viewModel.groupJoinViewDatas.accept(datas)
         }
         
-        bind(viewModel.groupJoinViewDatas)
-        bind(viewModel.joinButtonViewDatas)
+        bind(self.viewModel.groupJoinViewDatas)
+        bind(self.viewModel.joinButtonViewDatas)
     }
 }
 
@@ -42,40 +42,38 @@ protocol GroupJoinDelegate {
 
 extension GroupJoinViewController: GroupJoinDelegate {
     func updateCodeAction(code: String) {
-        viewModel.updateCode(code: code)
+        self.viewModel.updateCode(code: code)
     }
     
     func updateButtonStatusAction(status: ButtonStatus) {
-        viewModel.updateButtonStatus(status: status)
+        self.viewModel.updateButtonStatus(status: status)
     }
     
     func updateKeyboardHeightAction(height: CGFloat) {
-        viewModel.updateKeyboardHeight(height: height)
+        self.viewModel.updateKeyboardHeight(height: height)
     }
     
     func joinGroupAction() {
-        Task {
-            do {
-                let groupInfo = try await viewModel.joinGroup()
-                coordinator?.setNavigationController(
-                    CompleteViewController(),
-                    datas: CompleteViewDatas(
-                        groupType: .join,
-                        groupEntity: groupInfo
-                    )
+        runTask { [self] in
+            let groupInfo = try await self.viewModel.joinGroup()
+            self.coordinator?.setNavigationController(
+                CompleteViewController(),
+                datas: CompleteViewDatas(
+                    groupType: .join,
+                    groupEntity: groupInfo
                 )
-            } catch let error as NetworkError {
-                if case let .dogetherError(code, _) = error {
-                    guard let alertType: AlertTypes =
-                            code == .CGF0002 ? .alreadyParticipated :
-                                code == .CGF0003 ? .fullGroup :
-                                code == .CGF0004 || code == .CGF0005 ? .unableToParticipate :
-                                nil else { return }
-                    
-                    coordinator?.showPopup(type: .alert, alertType: alertType) { [weak self] _ in
-                        guard let self else { return }
-                        coordinator?.popViewController()
-                    }
+            )
+        } catch: { [weak self] error in
+            if let error = error as? NetworkError, case let .dogetherError(code, _) = error {
+                guard let alertType: AlertTypes =
+                        code == .CGF0002 ? .alreadyParticipated :
+                            code == .CGF0003 ? .fullGroup :
+                            code == .CGF0004 || code == .CGF0005 ? .unableToParticipate :
+                            nil else { return }
+                
+                self?.coordinator?.showPopup(type: .alert, alertType: alertType) { [weak self] _ in
+                    guard let self else { return }
+                    self.coordinator?.popViewController()
                 }
             }
         }

@@ -24,22 +24,21 @@ final class RankingViewController: BaseViewController {
         
         loadRankingView()
         
-        coordinator?.updateViewController = loadRankingView
+        self.coordinator?.updateViewController = loadRankingView
     }
     
     override func setViewDatas() {
         guard let datas = datas as? RankingViewDatas else { return }
-        viewModel.rankingViewDatas.accept(datas)
+        self.viewModel.rankingViewDatas.accept(datas)
         
-        bind(viewModel.rankingViewDatas)
+        bind(self.viewModel.rankingViewDatas)
     }
 }
 
 extension RankingViewController {
     private func loadRankingView() {
-        Task { [weak self] in
-            guard let self else { return }
-            try await viewModel.loadRankingView()
+        runTask { [self] in
+            try await self.viewModel.loadRankingView()
         }
     }
 }
@@ -51,19 +50,18 @@ protocol RankingDelegate {
 
 extension RankingViewController: RankingDelegate {
     func goCertificationViewAction(rankingEntity: RankingEntity) {
-        Task { [weak self] in
-            guard let self else { return }
-            let (index, todos) = try await viewModel.getMemberTodos(memberId: rankingEntity.memberId)
+        runTask { [self] in
+            let (index, todos) = try await self.viewModel.getMemberTodos(memberId: rankingEntity.memberId)
 
             let certificationViewController = CertificationViewController()
             let certificationViewDatas = CertificationViewDatas(
                 title: "\(rankingEntity.name)님의 인증 정보",
                 todos: todos,
                 index: index,
-                groupId: viewModel.rankingViewDatas.value.groupId,
+                groupId: self.viewModel.rankingViewDatas.value.groupId,
                 rankingEntity: rankingEntity
             )
-            coordinator?.pushViewController(certificationViewController, datas: certificationViewDatas)
+            self.coordinator?.pushViewController(certificationViewController, datas: certificationViewDatas)
         }
     }
 }

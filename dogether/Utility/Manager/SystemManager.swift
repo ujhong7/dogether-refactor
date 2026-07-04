@@ -55,16 +55,8 @@ extension SystemManager {
           .setAndroidBehaviour(CLDynamicLinkBehaviour.app)
           .build()
 
-          await LoadingManager.shared.showLoading()
-        
           let shortURL: String?
-          do {
-              shortURL = try await ChottuLink.createDynamicLink(for: builder)
-              await LoadingManager.shared.hideLoading()
-          } catch {
-              await LoadingManager.shared.hideLoading()
-              throw error
-          }
+          shortURL = try await ChottuLink.createDynamicLink(for: builder)
 
           guard let shortURL else {
               throw SystemError.invalidDynamicLink

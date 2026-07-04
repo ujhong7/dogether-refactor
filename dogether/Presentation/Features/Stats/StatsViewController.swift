@@ -24,30 +24,28 @@ final class StatsViewController: BaseViewController {
         
         loadStatsView()
         
-        coordinator?.updateViewController = loadStatsView
+        self.coordinator?.updateViewController = loadStatsView
     }
 
     override func setViewDatas() {
-        bind(viewModel.bottomSheetViewDatas)
-        bind(viewModel.groupViewDatas)
-        bind(viewModel.achievementViewDatas)
-        bind(viewModel.myRankViewDatas)
-        bind(viewModel.summaryViewDatas)
+        bind(self.viewModel.bottomSheetViewDatas)
+        bind(self.viewModel.groupViewDatas)
+        bind(self.viewModel.achievementViewDatas)
+        bind(self.viewModel.myRankViewDatas)
+        bind(self.viewModel.summaryViewDatas)
     }
 }
 
 extension StatsViewController {
     private func loadStatsView() {
-        Task { [weak self] in
-            guard let self else { return }
-            try await viewModel.loadStatsView()
+        runTask { [self] in
+            try await self.viewModel.loadStatsView()
         }
     }
     
     private func reloadStats() {
-        Task { [weak self] in
-            guard let self else { return }
-            try await viewModel.fetchStatsViewDatas()
+        runTask { [self] in
+            try await self.viewModel.fetchStatsViewDatas()
         }
     }
 }
@@ -60,17 +58,19 @@ protocol StatsDelegate {
 
 extension StatsViewController: StatsDelegate {
     func updateBottomSheetVisibleAction(isShowSheet: Bool) {
-        viewModel.bottomSheetViewDatas.update { $0.isShowSheet = isShowSheet }
+        self.viewModel.bottomSheetViewDatas.update { $0.isShowSheet = isShowSheet }
     }
     
     func selectGroupAction(index: Int) {
-        viewModel.groupViewDatas.update { $0.index = index }
-        viewModel.saveLastSelectedGroupIndex(index: index)
+        self.viewModel.groupViewDatas.update { $0.index = index }
         
-        reloadStats()
+        runTask { [self] in
+            try await self.viewModel.saveLastSelectedGroupIndex(index: index)
+            try await self.viewModel.fetchStatsViewDatas()
+        }
     }
     
     func addGroupAction() {
-        coordinator?.pushViewController(GroupCreateViewController())
+        self.coordinator?.pushViewController(GroupCreateViewController())
     }
 }

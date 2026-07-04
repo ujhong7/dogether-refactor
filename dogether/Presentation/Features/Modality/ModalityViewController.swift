@@ -22,11 +22,11 @@ final class ModalityViewController: BaseViewController {
     
     override func setViewDatas() {
         if let datas = datas as? ExaminateViewDatas {
-            viewModel.examinateViewDatas.accept(datas)
+            self.viewModel.examinateViewDatas.accept(datas)
         }
         
-        bind(viewModel.examinateViewDatas)
-        bind(viewModel.examinateButtonViewDatas)
+        bind(self.viewModel.examinateViewDatas)
+        bind(self.viewModel.examinateButtonViewDatas)
     }
 }
 
@@ -38,32 +38,31 @@ protocol ExaminateDelegate {
 
 extension ModalityViewController: ExaminateDelegate {
     func updateReviewsAction(reviews: [ReviewEntity]) {
-        viewModel.setReviews(reviews: reviews)
+        self.viewModel.setReviews(reviews: reviews)
     }
     
     func examinateAction(type: FilterTypes) {
-        viewModel.setResult(result: type.reviewResult)
-        viewModel.setFeedback()
-        viewModel.setButtonStatus(status: type == .approve ? .enabled : .disabled)
+        self.viewModel.setResult(result: type.reviewResult)
+        self.viewModel.setFeedback()
+        self.viewModel.setButtonStatus(status: type == .approve ? .enabled : .disabled)
 
-        coordinator?.showPopup(type: .examinate) { [weak self] reviewFeedback in
+        self.coordinator?.showPopup(type: .examinate) { [weak self] reviewFeedback in
             guard let self, let reviewFeedback = reviewFeedback as? String else { return }
-            viewModel.setFeedback(feedback: reviewFeedback)
-            viewModel.setButtonStatus(status: .enabled)
+            self.viewModel.setFeedback(feedback: reviewFeedback)
+            self.viewModel.setButtonStatus(status: .enabled)
         }
     }
     
     func sendAction() {
-        Task { [weak self] in
-            guard let self else { return }
-            try await viewModel.reviewTodo()
-            if viewModel.examinateViewDatas.value.reviews.count == viewModel.examinateViewDatas.value.index + 1 {
-                coordinator?.hideModal()
+        runTask { [self] in
+            try await self.viewModel.reviewTodo()
+            if self.viewModel.examinateViewDatas.value.reviews.count == self.viewModel.examinateViewDatas.value.index + 1 {
+                self.coordinator?.hideModal()
             } else {
-                viewModel.setIndex(direction: .next)
-                viewModel.setResult()
-                viewModel.setFeedback()
-                viewModel.setButtonStatus(status: .disabled)
+                self.viewModel.setIndex(direction: .next)
+                self.viewModel.setResult()
+                self.viewModel.setFeedback()
+                self.viewModel.setButtonStatus(status: .disabled)
             }
         }
     }

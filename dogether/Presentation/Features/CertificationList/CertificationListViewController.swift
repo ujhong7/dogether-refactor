@@ -23,14 +23,14 @@ final class CertificationListViewController: BaseViewController {
         super.viewWillAppear(animated)
         
         // FIXME: 추후에 API 세분화 되면 Stats API만 updateViewController 지정, 호출 필요 x
-//        coordinator?.updateViewController = loadSummaryView
+//        self.coordinator?.updateViewController = loadSummaryView
     }
     
     override func setViewDatas() {
-        bind(viewModel.bottomSheetViewDatas)
-        bind(viewModel.sortViewDatas)
-        bind(viewModel.statsViewDatas)
-        bind(viewModel.certificationListViewDatas)
+        bind(self.viewModel.bottomSheetViewDatas)
+        bind(self.viewModel.sortViewDatas)
+        bind(self.viewModel.statsViewDatas)
+        bind(self.viewModel.certificationListViewDatas)
     }
 }
 
@@ -40,9 +40,8 @@ extension CertificationListViewController {
     }
     
     private func loadCertificationListView(page: Int = 0) {
-        Task { [weak self] in
-            guard let self else { return }
-            try await viewModel.loadCertificationList(page: page)
+        runTask { [self] in
+            try await self.viewModel.loadCertificationList(page: page)
         }
     }
 }
@@ -57,26 +56,26 @@ protocol CertificationListPageDelegate {
 
 extension CertificationListViewController: CertificationListPageDelegate {
     func updateBottomSheetVisibleAction(isShowSheet: Bool) {
-        viewModel.bottomSheetViewDatas.update { $0.isShowSheet = isShowSheet }
+        self.viewModel.bottomSheetViewDatas.update { $0.isShowSheet = isShowSheet }
     }
     
     func selectSortAction(index: Int) {
-        viewModel.updateSortIndex(index: index)
+        self.viewModel.updateSortIndex(index: index)
         
         loadCertificationListView()
     }
     
     func selectFilterAction(filterType: FilterTypes) {
-        viewModel.updateFilter(filter: filterType)
+        self.viewModel.updateFilter(filter: filterType)
     }
     
     func selectCertificationAction(title: String, todos: [TodoEntity], index: Int) {
         let certificationViewController = CertificationViewController()
         let certificationViewDatas = CertificationViewDatas(title: title, todos: todos, index: index)
-        coordinator?.pushViewController(certificationViewController, datas: certificationViewDatas)
+        self.coordinator?.pushViewController(certificationViewController, datas: certificationViewDatas)
     }
     
     func didScrollToBottom() {
-        loadCertificationListView(page: viewModel.certificationListViewDatas.value.currentPage + 1)
+        loadCertificationListView(page: self.viewModel.certificationListViewDatas.value.currentPage + 1)
     }
 }

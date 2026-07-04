@@ -26,13 +26,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.makeKeyAndVisible()
         
         coordinator = NavigationCoordinator(navigationController: navigationController)
-        NetworkManager.shared.coordinator = coordinator
         PushNoticeManager.shared.delegate = coordinator
         
         Task { @MainActor in
-            if let userActivity = connectionOptions.userActivities.first {
-                try await DeepLinkManager.shared.resolveUrl(userActivity: userActivity)
-            }
+            await resolveDeepLink(userActivity: connectionOptions.userActivities.first)
             
             coordinator?.setNavigationController(SplashViewController())
         }
@@ -40,7 +37,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
         Task { @MainActor in
-            try await DeepLinkManager.shared.resolveUrl(userActivity: userActivity)
+            await resolveDeepLink(userActivity: userActivity)
             
             if let coordinator, coordinator.checkCurrentViewController(
                 SplashViewController.self,
@@ -53,6 +50,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 let groupJoinViewDatas = GroupJoinViewDatas(code: code)
                 coordinator?.pushViewController(groupJoinViewController, datas: groupJoinViewDatas)
             }
+        }
+    }
+
+    private func resolveDeepLink(userActivity: NSUserActivity?) async {
+        guard let userActivity else { return }
+
+        do {
+            try await DeepLinkManager.shared.resolveUrl(userActivity: userActivity)
+        } catch {
+            return
         }
     }
 
@@ -88,4 +95,3 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 
 }
-

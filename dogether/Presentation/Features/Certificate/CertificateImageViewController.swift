@@ -21,11 +21,11 @@ final class CertificateImageViewController: BaseViewController {
     
     override func setViewDatas() {
         if let datas = datas as? CertificateViewDatas {
-            viewModel.certificateViewDatas.accept(datas)
+            self.viewModel.certificateViewDatas.accept(datas)
         }
         
-        bind(viewModel.certificateViewDatas)
-        bind(viewModel.certificateButtonViewDatas)
+        bind(self.viewModel.certificateViewDatas)
+        bind(self.viewModel.certificateButtonViewDatas)
     }
 }
 
@@ -39,31 +39,28 @@ protocol CertificateImageDelegate {
 extension CertificateImageViewController: CertificateImageDelegate {
     func goCertificateContentViewAction() {
         let certificateContentViewController = CertificateContentViewController()
-        let certificateViewDatas = viewModel.certificateViewDatas.value
-        coordinator?.pushViewController(certificateContentViewController, datas: certificateViewDatas)
+        let certificateViewDatas = self.viewModel.certificateViewDatas.value
+        self.coordinator?.pushViewController(certificateContentViewController, datas: certificateViewDatas)
     }
     
     func showPopupAction(type: AlertTypes) {
-        coordinator?.showPopup(type: .alert, alertType: type) { _ in
+        self.coordinator?.showPopup(type: .alert, alertType: type) { _ in
             SystemManager().openSettingApp()
         }
     }
     
     func presentPickerControllerAction(pickerController: UIViewController) {
-        present(pickerController, animated: true)
+        self.present(pickerController, animated: true)
     }
     
     func uploadImageAction(image: UIImage) {
-        // FIXME: 추후 S3Manager를 NetworkManager로 합치면서 loading 로직도 제거해요
-        Task {
-            viewModel.updateButtonStatus(status: .disabled)
-            
-            do {
-                try await viewModel.uploadImage(image: image)
-                viewModel.updateButtonStatus(status: .enabled)
-            } catch {
-                // TODO: 예외 케이스 핸들링
-            }
+        runTask { [self] in
+            self.viewModel.updateButtonStatus(status: .disabled)
+
+            try await self.viewModel.uploadImage(image: image)
+            self.viewModel.updateButtonStatus(status: .enabled)
+        } catch: { [weak self] _ in
+            self?.viewModel.updateButtonStatus(status: .enabled)
         }
     }
 }

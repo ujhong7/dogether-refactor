@@ -20,11 +20,11 @@ final class GroupCreateViewController: BaseViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        viewModel.updateIsFirstResponder(isFirstResponder: true)
+        self.viewModel.updateIsFirstResponder(isFirstResponder: true)
     }
     
     override func setViewDatas() {
-        bind(viewModel.groupCreateViewDatas)
+        bind(self.viewModel.groupCreateViewDatas)
     }
 }
 
@@ -40,38 +40,37 @@ protocol GroupCreateDelegate {
 
 extension GroupCreateViewController: GroupCreateDelegate {
     func updateStep(step: CreateGroupSteps?) {
-        viewModel.updateStep(step: step)
+        self.viewModel.updateStep(step: step)
     }
     
     func updateGroupNameAction(groupName: String) {
-        viewModel.updateGroupName(groupName: groupName)
+        self.viewModel.updateGroupName(groupName: groupName)
     }
     
     func updateCountAction(currentCount: Int, min: Int, max: Int) {
-        viewModel.updateMemberCount(count: currentCount, min: min, max: max)
+        self.viewModel.updateMemberCount(count: currentCount, min: min, max: max)
     }
     
     func updateDuration(duration: GroupChallengeDurations) {
-        viewModel.updateDuration(duration: duration)
+        self.viewModel.updateDuration(duration: duration)
     }
     
     func updateStartAt(startAt: GroupStartAts) {
-        viewModel.updateStartAt(startAt: startAt)
+        self.viewModel.updateStartAt(startAt: startAt)
     }
     
     func createGroup() {
-        Task { [weak self] in
-            guard let self else { return }
-            let joinCode = try await viewModel.createGroup()
+        runTask { [self] in
+            let joinCode = try await self.viewModel.createGroup()
             let completeViewController = CompleteViewController()
             let completeViewDatas = CompleteViewDatas(
                 groupType: .create,
                 joinCode: joinCode,
                 groupEntity: GroupEntity(
-                    name: viewModel.groupCreateViewDatas.value.groupName
+                    name: self.viewModel.groupCreateViewDatas.value.groupName
                 )
             )
-            coordinator?.setNavigationController(completeViewController, datas: completeViewDatas)
+            self.coordinator?.setNavigationController(completeViewController, datas: completeViewDatas)
         }
     }
 }

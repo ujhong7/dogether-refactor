@@ -108,10 +108,7 @@ extension MainViewModel {
 }
 
 extension MainViewModel {
-    func saveLastSelectedGroupIndex(index: Int) {
-        Task { [weak self] in
-            guard let self else { return }
-            try await groupUseCase.saveLastSelectedGroup(groupId: groupViewDatas.value.groups[index].id)
-        }
+    func saveLastSelectedGroupIndex(index: Int) async throws {
+        try await groupUseCase.saveLastSelectedGroup(groupId: groupViewDatas.value.groups[index].id)
     }
 }

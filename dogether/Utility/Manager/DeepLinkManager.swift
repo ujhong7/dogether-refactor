@@ -9,6 +9,7 @@ import Foundation
 
 import ChottuLinkSDK
 
+@MainActor
 final class DeepLinkManager {
     static let shared = DeepLinkManager()
 

@@ -20,24 +20,23 @@ final class SplashViewController: BaseViewController {
 
 extension SplashViewController {
     private func onAppear() {
-        Task { [weak self] in
-            guard let self else { return }
-            try await viewModel.launchApp()
+        runTask { [self] in
+            try await self.viewModel.launchApp()
 
-            if try await viewModel.checkUpdate() {
-                coordinator?.setNavigationController(UpdateViewController())
+            if try await self.viewModel.checkUpdate() {
+                self.coordinator?.setNavigationController(UpdateViewController())
                 return
             }
 
-            if viewModel.checkLogin() {
-                coordinator?.setNavigationController(OnboardingViewController())
+            if self.viewModel.checkLogin() {
+                self.coordinator?.setNavigationController(OnboardingViewController())
                 return
             }
 
-            if try await viewModel.checkParticipating() {
-                coordinator?.setNavigationController(StartViewController())
+            if try await self.viewModel.checkParticipating() {
+                self.coordinator?.setNavigationController(StartViewController())
             } else {
-                coordinator?.setNavigationController(MainViewController())
+                self.coordinator?.setNavigationController(MainViewController())
             }
         }
     }

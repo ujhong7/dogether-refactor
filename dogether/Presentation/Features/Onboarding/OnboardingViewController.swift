@@ -25,22 +25,19 @@ protocol OnboardingDelegate {
 
 extension OnboardingViewController: OnboardingDelegate {
     func loginAction(loginType: LoginTypes) {
-        Task { [weak self] in
-            guard let self else { return }
-            do {
-                try await viewModel.login(loginType: loginType)
-                
-                if try await viewModel.checkParticipating() {
-                    coordinator?.setNavigationController(StartViewController())
-                    return
-                }
-                
-                coordinator?.setNavigationController(MainViewController())
-            } catch let error as NetworkError {
-                if case let .dogetherError(code, _) = error {
-                    if code == .ATF0002 {
-                        coordinator?.showPopup(type: .alert, alertType: .needRevoke)
-                    }
+        runTask { [self] in
+            try await self.viewModel.login(loginType: loginType)
+            
+            if try await self.viewModel.checkParticipating() {
+                self.coordinator?.setNavigationController(StartViewController())
+                return
+            }
+            
+            self.coordinator?.setNavigationController(MainViewController())
+        } catch: { [weak self] error in
+            if let error = error as? NetworkError, case let .dogetherError(code, _) = error {
+                if code == .ATF0002 {
+                    self?.coordinator?.showPopup(type: .alert, alertType: .needRevoke)
                 }
             }
         }

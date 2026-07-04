@@ -26,14 +26,14 @@ final class MainViewController: BaseViewController {
         
         loadMainView()
         
-        coordinator?.updateViewController = loadMainView
+        self.coordinator?.updateViewController = loadMainView
     }
     
     override func setViewDatas() {
-        bind(viewModel.bottomSheetViewDatas)
-        bind(viewModel.groupViewDatas)
-        bind(viewModel.sheetViewDatas)
-        bind(viewModel.timerViewDatas)
+        bind(self.viewModel.bottomSheetViewDatas)
+        bind(self.viewModel.groupViewDatas)
+        bind(self.viewModel.sheetViewDatas)
+        bind(self.viewModel.timerViewDatas)
     }
 }
 
@@ -45,13 +45,12 @@ extension MainViewController {
         if let code = DeepLinkManager.shared.consumeInviteCode() {
             let groupJoinViewController = GroupJoinViewController()
             let groupJoinViewDatas = GroupJoinViewDatas(code: code)
-            coordinator?.pushViewController(groupJoinViewController, datas: groupJoinViewDatas)
+            self.coordinator?.pushViewController(groupJoinViewController, datas: groupJoinViewDatas)
         }
     }
     
     private func checkAuthorization() {
-        Task { [weak self] in
-            guard let self else { return }
+        runTask(showLoading: false, retryOnCommonNetworkError: false) { [self] in
             let userNoti = UNUserNotificationCenter.current()
             let settings = await userNoti.notificationSettings()
             
@@ -59,7 +58,7 @@ extension MainViewController {
             case .notDetermined:
                 try await userNoti.requestAuthorization(options: [.alert, .badge, .sound])
             case .denied:
-                coordinator?.showPopup(type: .alert, alertType: .pushNotice) { _ in
+                self.coordinator?.showPopup(type: .alert, alertType: .pushNotice) { _ in
                     SystemManager().openSettingApp()
                 }
             default:    // MARK: .authorized, .provisional, .ephemeral
@@ -70,9 +69,8 @@ extension MainViewController {
     
     private func getReviews() {
         // ???: 화면 전환을 고려하면 일부러 강한 참조를 걸어야할까
-        Task { [weak self] in
-            guard let self else { return }
-            let reviews = try await viewModel.getReviews()
+        runTask { [self] in
+            let reviews = try await self.viewModel.getReviews()
             if reviews.isEmpty { return }
 
             self.coordinator?.showModal(reviews: reviews)
@@ -80,17 +78,16 @@ extension MainViewController {
     }
     
     private func loadMainView() {
-        Task { [weak self] in
-            guard let self else { return }
-            let groupViewDatas = try await viewModel.getGroups()
-            viewModel.groupViewDatas.accept(groupViewDatas)
+        runTask { [self] in
+            let groupViewDatas = try await self.viewModel.getGroups()
+            self.viewModel.groupViewDatas.accept(groupViewDatas)
             
             if groupViewDatas.groups.isEmpty {
-                coordinator?.setNavigationController(StartViewController())
+                self.coordinator?.setNavigationController(StartViewController())
                 return
             }
             
-            try await viewModel.setSheetViewDatasForCurrentGroup()
+            try await self.viewModel.setSheetViewDatasForCurrentGroup()
         }
     }
 }
@@ -118,131 +115,124 @@ protocol MainDelegate {
 
 extension MainViewController: MainDelegate {
     func updateAlphaBySheet(alpha: CGFloat) {
-        viewModel.sheetViewDatas.update { $0.alpha = alpha }
+        self.viewModel.sheetViewDatas.update { $0.alpha = alpha }
     }
     
     func updateSheetStatus(sheetStatus: SheetStatus) {
-        viewModel.sheetViewDatas.update { $0.sheetStatus = sheetStatus }
+        self.viewModel.sheetViewDatas.update { $0.sheetStatus = sheetStatus }
     }
     
     func updateYOffsetOfSheet(yOffset: CGFloat) {
-        viewModel.sheetViewDatas.update { $0.yOffset = yOffset }
+        self.viewModel.sheetViewDatas.update { $0.yOffset = yOffset }
     }
     
     func updateIsScrollOnTop(isScrollOnTop: Bool) {
-        viewModel.sheetViewDatas.update { $0.isScrollOnTop = isScrollOnTop }
+        self.viewModel.sheetViewDatas.update { $0.isScrollOnTop = isScrollOnTop }
     }
     
     func goRankingViewAction() {
         let rankingViewController = RankingViewController()
-        let rankingViewDatas = RankingViewDatas(groupId: viewModel.currentGroup.id)
-        coordinator?.pushViewController(rankingViewController, datas: rankingViewDatas)
+        let rankingViewDatas = RankingViewDatas(groupId: self.viewModel.currentGroup.id)
+        self.coordinator?.pushViewController(rankingViewController, datas: rankingViewDatas)
     }
     
     func updateBottomSheetVisibleAction(isShowSheet: Bool) {
-        viewModel.bottomSheetViewDatas.update { $0.isShowSheet = isShowSheet }
+        self.viewModel.bottomSheetViewDatas.update { $0.isShowSheet = isShowSheet }
     }
     
     func selectGroupAction(index: Int) {
-        viewModel.groupViewDatas.update { $0.index = index }
-        viewModel.saveLastSelectedGroupIndex(index: index)
+        self.viewModel.groupViewDatas.update { $0.index = index }
         
-        viewModel.sheetViewDatas.update { $0.dateOffset = 0 }
+        self.viewModel.sheetViewDatas.update { $0.dateOffset = 0 }
 
-        Task { [weak self] in
-            guard let self else { return }
-            try await viewModel.setSheetViewDatasForCurrentGroup()
+        runTask { [self] in
+            try await self.viewModel.saveLastSelectedGroupIndex(index: index)
+            try await self.viewModel.setSheetViewDatasForCurrentGroup()
         }
     }
     
     func addGroupAction() {
         let startViewController = StartViewController()
         let startViewDatas = StartViewDatas(isFirstGroup: false)
-        coordinator?.pushViewController(startViewController, datas: startViewDatas)
+        self.coordinator?.pushViewController(startViewController, datas: startViewDatas)
     }
     
     func inviteAction() {
-        let group = viewModel.currentGroup
+        let group = self.viewModel.currentGroup
 
-        Task {
-            do {
-                let inviteItems = try await SystemManager.inviteGroup(
-                    groupName: group.name,
-                    joinCode: group.joinCode
-                )
+        runTask { [self] in
+            let inviteItems = try await SystemManager.inviteGroup(
+                groupName: group.name,
+                joinCode: group.joinCode
+            )
 
-                let activityVC = UIActivityViewController(
-                    activityItems: inviteItems,
-                    applicationActivities: nil
-                )
-                present(activityVC, animated: true)
-            } catch {
-                // FIXME: 초대 링크 생성 실패 처리
-            }
+            let activityVC = UIActivityViewController(
+                activityItems: inviteItems,
+                applicationActivities: nil
+            )
+            self.present(activityVC, animated: true)
         }
     }
     
     func goPastAction() {
-        viewModel.sheetViewDatas.update {
+        self.viewModel.sheetViewDatas.update {
             $0.dateOffset -= 1
             $0.filter = .all
         }
 
-        Task { [weak self] in
-            guard let self else { return }
-            try await viewModel.setSheetViewDatasForCurrentGroup()
+        runTask { [self] in
+            try await self.viewModel.setSheetViewDatasForCurrentGroup()
         }
     }
     
     func goFutureAction() {
-        viewModel.sheetViewDatas.update {
+        self.viewModel.sheetViewDatas.update {
             $0.dateOffset += 1
             $0.filter = .all
         }
 
-        Task { [weak self] in
-            guard let self else { return }
-            try await viewModel.setSheetViewDatasForCurrentGroup()
+        runTask { [self] in
+            try await self.viewModel.setSheetViewDatasForCurrentGroup()
         }
     }
     
     func startTimerAction() {
-        viewModel.startTimer()
+        self.viewModel.startTimer()
     }
     
     func stopTimerAction() {
-        viewModel.stopTimer()
+        self.viewModel.stopTimer()
     }
     
     func goWriteTodoViewAction(todos: [TodoEntity]) {
         let todoWriteViewController = TodoWriteViewController()
         let todoWriteViewDatas = TodoWriteViewDatas(
-            groupId: viewModel.currentGroup.id,
+            groupId: self.viewModel.currentGroup.id,
             todos: todos.map { WriteTodoEntity(content: $0.content, enabled: false) }
         )
-        coordinator?.pushViewController(todoWriteViewController, datas: todoWriteViewDatas)
+        self.coordinator?.pushViewController(todoWriteViewController, datas: todoWriteViewDatas)
     }
     
     func selectFilterAction(filterType: FilterTypes) {
-        let filter = filterType == viewModel.sheetViewDatas.value.filter ? .all : filterType
-        viewModel.sheetViewDatas.update { $0.filter = filter }
+        let filter = filterType == self.viewModel.sheetViewDatas.value.filter ? .all : filterType
+        self.viewModel.sheetViewDatas.update { $0.filter = filter }
     }
     
     func goCertificateViewAction(todo: TodoEntity) {
         let certificateImageViewController = CertificateImageViewController()
         let certificateViewDatas = CertificateViewDatas(todo: todo)
-        coordinator?.pushViewController(certificateImageViewController, datas: certificateViewDatas)
+        self.coordinator?.pushViewController(certificateImageViewController, datas: certificateViewDatas)
     }
     
     func goCertificationViewAction(index: Int) {
         let certificationViewController = CertificationViewController()
         let certificationViewDatas = CertificationViewDatas(
             title: "내 인증 정보",
-            todos: viewModel.sheetViewDatas.value.todoList.filter {
-                viewModel.sheetViewDatas.value.filter == .all || viewModel.sheetViewDatas.value.filter == FilterTypes(status: $0.status.rawValue)
+            todos: self.viewModel.sheetViewDatas.value.todoList.filter {
+                self.viewModel.sheetViewDatas.value.filter == .all || self.viewModel.sheetViewDatas.value.filter == FilterTypes(status: $0.status.rawValue)
             },
             index: index
         )
-        coordinator?.pushViewController(certificationViewController, datas: certificationViewDatas)
+        self.coordinator?.pushViewController(certificationViewController, datas: certificationViewDatas)
     }
 }
