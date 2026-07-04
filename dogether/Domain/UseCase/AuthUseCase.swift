@@ -21,6 +21,7 @@ final class AuthUseCase: NSObject {
 
     private typealias AppleAuthInfo = (idToken: String, name: String?, authorizationCode: String)
     private var continuation: CheckedContinuation<AppleAuthInfo, Error>?
+    private var authorizationController: ASAuthorizationController?
 
     init(repository: AuthProtocol) {
         self.repository = repository
@@ -33,9 +34,9 @@ extension AuthUseCase: ASAuthorizationControllerDelegate {
     /// 기본적으로 fullName을 요청합니다. (fullName은 최초 1회 로그인에만 전달됨)
     private func requestAppleLogin() async throws -> AppleAuthInfo {
         try await withCheckedThrowingContinuation { continuation in
-            // 이전 요청이 미완료 상태라면 중복 진입을 막고 정리합니다
-            if let previous = self.continuation {
-                previous.resume(throwing: AuthError.duplicatedRequest)
+            guard self.continuation == nil else {
+                continuation.resume(throwing: AuthError.duplicatedRequest)
+                return
             }
             self.continuation = continuation
 
@@ -44,6 +45,7 @@ extension AuthUseCase: ASAuthorizationControllerDelegate {
 
             let controller = ASAuthorizationController(authorizationRequests: [request])
             controller.delegate = self
+            self.authorizationController = controller
             controller.performRequests()
         }
     }
@@ -51,14 +53,18 @@ extension AuthUseCase: ASAuthorizationControllerDelegate {
     private func resume(returning value: AppleAuthInfo) {
         continuation?.resume(returning: value)
         continuation = nil
+        authorizationController = nil
     }
 
     private func resume(throwing error: Error) {
         continuation?.resume(throwing: error)
         continuation = nil
+        authorizationController = nil
     }
 
     func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        guard controller === authorizationController else { return }
+
         guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
               let idTokenData = appleIDCredential.identityToken,
               let idToken = String(data: idTokenData, encoding: .utf8),
@@ -81,6 +87,8 @@ extension AuthUseCase: ASAuthorizationControllerDelegate {
     }
 
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        guard controller === authorizationController else { return }
+
         resume(throwing: error)
     }
 }

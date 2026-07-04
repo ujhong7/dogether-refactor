@@ -13,19 +13,20 @@ final class S3Manager {
     private init() {}
     
     func uploadImage(image: UIImage?) async throws -> String? {
-        await LoadingManager.shared.showLoading()
+        let request: PresignedUrlRequest = PresignedUrlRequest(dailyTodoId: 0, uploadFileTypes: [FileTypes.image.rawValue])
+        let response: PresignedUrlResponse = try await NetworkManager.shared.request(
+            S3Router.presignedUrls(presignedUrlRequest: request)
+        )
         
+        guard let imageData = image?.pngData(),
+              let presignedUrlString = response.presignedUrls.first,
+              let presignedUrl = URL(string: presignedUrlString) else {
+            return nil
+        }
+
+        await LoadingManager.shared.showLoading()
+
         do {
-            let request: PresignedUrlRequest = PresignedUrlRequest(dailyTodoId: 0, uploadFileTypes: [FileTypes.image.rawValue])
-            let response: PresignedUrlResponse = try await NetworkManager.shared.request(
-                S3Router.presignedUrls(presignedUrlRequest: request)
-            )
-            
-            guard let imageData = image?.pngData(), let presignedUrl = URL(string: response.presignedUrls[0]) else {
-                await LoadingManager.shared.hideLoading()
-                return nil
-            }
-            
             let imageUrl = try await uploadImageToS3(imageData: imageData, presignedUrl: presignedUrl)
             await LoadingManager.shared.hideLoading()
             return imageUrl

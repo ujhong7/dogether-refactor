@@ -9,6 +9,10 @@ import UIKit
 
 import ChottuLinkSDK
 
+enum SystemError: Error {
+    case invalidDynamicLink
+}
+
 struct SystemManager {
     static let appleID = 6741416012
     static let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
@@ -62,6 +66,10 @@ extension SystemManager {
               throw error
           }
 
+          guard let shortURL else {
+              throw SystemError.invalidDynamicLink
+          }
+
           return ["""
           ✨ [\(groupName)]에서 당신의 참여를 기다리고 있어요
 
@@ -69,7 +77,7 @@ extension SystemManager {
           투두 챌린지 서비스 두게더에서
           팀원들과 함께 목표 달성을 시작해보세요 💪
           
-          👉 초대코드: \(joinCode) (\(shortURL!))
+          👉 초대코드: \(joinCode) (\(shortURL))
           """]
       }
 }

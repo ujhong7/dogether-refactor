@@ -20,9 +20,11 @@ class NetworkManager {
 
             do {
                 let response: ServerResponse<T> = try await NetworkService.shared.request(endpoint)
-                await LoadingManager.shared.hideLoading()
 
-                if T.self == EmptyData.self { return EmptyData() as! T }
+                if T.self == EmptyData.self {
+                    await LoadingManager.shared.hideLoading()
+                    return EmptyData() as! T
+                }
 
                 guard let data = response.data else {
                     if let dogetherCode = DogetherCodes(rawValue: response.code) {
@@ -30,12 +32,13 @@ class NetworkManager {
                     } else { throw NetworkError.unknown }
                 }
 
+                await LoadingManager.shared.hideLoading()
                 return data
             } catch {
                 await LoadingManager.shared.hideLoading()
 
                 if checkCommonError(error) {
-                    await waitForRetry()
+                    try await waitForRetry(error: error)
                     continue
                 } else {
                     throw handleDetailError(error)
@@ -58,11 +61,10 @@ extension NetworkManager {
     }
     
     /// 에러 뷰의 "재시도" 입력이 들어올 때까지 대기합니다.
-    /// (coordinator가 없으면 즉시 반환하여 호출부의 재시도 루프가 진행되도록 합니다)
-    private func waitForRetry() async {
-        await withCheckedContinuation { continuation in
+    private func waitForRetry(error: Error) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             guard let coordinator else {
-                continuation.resume()
+                continuation.resume(throwing: handleDetailError(error))
                 return
             }
             coordinator.showErrorView {
