@@ -24,14 +24,14 @@ final class RankingViewController: BaseViewController {
         
         loadRankingView()
         
-        self.coordinator?.updateViewController = loadRankingView
+        coordinator?.updateViewController = loadRankingView
     }
     
     override func setViewDatas() {
         guard let datas = datas as? RankingViewDatas else { return }
-        self.viewModel.rankingViewDatas.accept(datas)
+        viewModel.rankingViewDatas.accept(datas)
         
-        bind(self.viewModel.rankingViewDatas)
+        bind(viewModel.rankingViewDatas)
     }
 }
 
@@ -39,7 +39,7 @@ extension RankingViewController {
     private func loadRankingView() {
         runTask { [weak self] in
             guard let self else { return }
-            try await self.viewModel.loadRankingView()
+            try await viewModel.loadRankingView()
         }
     }
 }
@@ -53,17 +53,17 @@ extension RankingViewController: RankingDelegate {
     func goCertificationViewAction(rankingEntity: RankingEntity) {
         runTask { [weak self] in
             guard let self else { return }
-            let (index, todos) = try await self.viewModel.getMemberTodos(memberId: rankingEntity.memberId)
+            let (index, todos) = try await viewModel.getMemberTodos(memberId: rankingEntity.memberId)
 
             let certificationViewController = CertificationViewController()
             let certificationViewDatas = CertificationViewDatas(
                 title: "\(rankingEntity.name)님의 인증 정보",
                 todos: todos,
                 index: index,
-                groupId: self.viewModel.rankingViewDatas.value.groupId,
+                groupId: viewModel.rankingViewDatas.value.groupId,
                 rankingEntity: rankingEntity
             )
-            self.coordinator?.pushViewController(certificationViewController, datas: certificationViewDatas)
+            coordinator?.pushViewController(certificationViewController, datas: certificationViewDatas)
         }
     }
 }

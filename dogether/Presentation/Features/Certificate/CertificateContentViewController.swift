@@ -20,17 +20,17 @@ final class CertificateContentViewController: BaseViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        self.viewModel.updateIsFirstResponder(isFirstResponder: true)
+        viewModel.updateIsFirstResponder(isFirstResponder: true)
     }
     
     override func setViewDatas() {
         if let datas = datas as? CertificateViewDatas {
-            self.viewModel.certificateViewDatas.accept(datas)
+            viewModel.certificateViewDatas.accept(datas)
         }
         
-        bind(self.viewModel.certificateViewDatas)
-        bind(self.viewModel.certificateTextViewDatas)
-        bind(self.viewModel.certificateButtonViewDatas)
+        bind(viewModel.certificateViewDatas)
+        bind(viewModel.certificateTextViewDatas)
+        bind(viewModel.certificateButtonViewDatas)
     }
 }
 
@@ -42,20 +42,20 @@ protocol CertificateContentDelegate {
 
 extension CertificateContentViewController: CertificateContentDelegate {
     func updateKeyboardHeightAction(height: CGFloat) {
-        self.viewModel.updateKeyboardHeight(height: height)
-        self.viewModel.updateIsFirstResponder(isFirstResponder: height > 0)
+        viewModel.updateKeyboardHeight(height: height)
+        viewModel.updateIsFirstResponder(isFirstResponder: height > 0)
     }
     
     func updateContentAction(content: String) {
-        self.viewModel.updateContent(content: content)
+        viewModel.updateContent(content: content)
     }
     
     func certifyTodoAction() {
         runTask { [weak self] in
             guard let self else { return }
-            try await self.viewModel.certifyTodo()
+            try await viewModel.certifyTodo()
 
-            self.coordinator?.popViewControllers(num: 2)
+            coordinator?.popViewControllers(num: 2)
         }
     }
 }

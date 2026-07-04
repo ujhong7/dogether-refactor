@@ -207,7 +207,7 @@ extension NavigationCoordinator: NotificationHandler {
                     if reviews.isEmpty { return }
                     await MainActor.run { self.showModal(reviews: reviews) }
                 } catch {
-                    await self.handleNotificationError(error, userInfo: userInfo)
+                    await handleNotificationError(error, userInfo: userInfo)
                 }
             }
             
@@ -259,7 +259,7 @@ extension NavigationCoordinator: NotificationHandler {
         showPopup(type: .alert, alertType: .needLogout) { [weak self] _ in
             guard let self else { return }
             UserDefaultsManager.logout()
-            self.setNavigationController(OnboardingViewController())
+            setNavigationController(OnboardingViewController())
         }
 
         return true

@@ -22,22 +22,22 @@ extension SplashViewController {
     private func onAppear() {
         runTask { [weak self] in
             guard let self else { return }
-            try await self.viewModel.launchApp()
+            try await viewModel.launchApp()
 
-            if try await self.viewModel.checkUpdate() {
-                self.coordinator?.setNavigationController(UpdateViewController())
+            if try await viewModel.checkUpdate() {
+                coordinator?.setNavigationController(UpdateViewController())
                 return
             }
 
-            if self.viewModel.checkLogin() {
-                self.coordinator?.setNavigationController(OnboardingViewController())
+            if viewModel.checkLogin() {
+                coordinator?.setNavigationController(OnboardingViewController())
                 return
             }
 
-            if try await self.viewModel.checkParticipating() {
-                self.coordinator?.setNavigationController(StartViewController())
+            if try await viewModel.checkParticipating() {
+                coordinator?.setNavigationController(StartViewController())
             } else {
-                self.coordinator?.setNavigationController(MainViewController())
+                coordinator?.setNavigationController(MainViewController())
             }
         }
     }

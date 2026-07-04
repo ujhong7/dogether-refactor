@@ -20,8 +20,8 @@ final class MyPageViewController: BaseViewController {
     }
     
     override func setViewDatas() {
-        bind(self.viewModel.profileViewDatas)
-        bind(self.viewModel.statsButtonViewDatas)
+        bind(viewModel.profileViewDatas)
+        bind(viewModel.statsButtonViewDatas)
     }
 }
 
@@ -29,7 +29,7 @@ extension MyPageViewController {
     private func onAppear() {
         runTask { [weak self] in
             guard let self else { return }
-            try await self.viewModel.loadProfileView()
+            try await viewModel.loadProfileView()
         }
     }
 }
@@ -43,15 +43,15 @@ protocol MyPageDelegate: AnyObject {
 
 extension MyPageViewController: MyPageDelegate {
     func goStatsViewAction() {
-        self.coordinator?.pushViewController(StatsViewController())
+        coordinator?.pushViewController(StatsViewController())
     }
     func goMyTodoListAction() {
-        self.coordinator?.pushViewController(CertificationListViewController())
+        coordinator?.pushViewController(CertificationListViewController())
     }
     func goGroupManagementAction() {
-        self.coordinator?.pushViewController(GroupManagementViewController())
+        coordinator?.pushViewController(GroupManagementViewController())
     }
     func goSettingViewAction() {
-        self.coordinator?.pushViewController(SettingViewController())
+        coordinator?.pushViewController(SettingViewController())
     }
 }

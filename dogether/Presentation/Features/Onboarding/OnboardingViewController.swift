@@ -27,14 +27,14 @@ extension OnboardingViewController: OnboardingDelegate {
     func loginAction(loginType: LoginTypes) {
         runTask { [weak self] in
             guard let self else { return }
-            try await self.viewModel.login(loginType: loginType)
+            try await viewModel.login(loginType: loginType)
 
-            if try await self.viewModel.checkParticipating() {
-                self.coordinator?.setNavigationController(StartViewController())
+            if try await viewModel.checkParticipating() {
+                coordinator?.setNavigationController(StartViewController())
                 return
             }
 
-            self.coordinator?.setNavigationController(MainViewController())
+            coordinator?.setNavigationController(MainViewController())
         } catch: { [weak self] error in
             if let error = error as? NetworkError, case let .dogetherError(code, _) = error {
                 if code == .ATF0002 {

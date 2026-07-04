@@ -21,11 +21,11 @@ final class CertificateImageViewController: BaseViewController {
     
     override func setViewDatas() {
         if let datas = datas as? CertificateViewDatas {
-            self.viewModel.certificateViewDatas.accept(datas)
+            viewModel.certificateViewDatas.accept(datas)
         }
         
-        bind(self.viewModel.certificateViewDatas)
-        bind(self.viewModel.certificateButtonViewDatas)
+        bind(viewModel.certificateViewDatas)
+        bind(viewModel.certificateButtonViewDatas)
     }
 }
 
@@ -39,27 +39,27 @@ protocol CertificateImageDelegate {
 extension CertificateImageViewController: CertificateImageDelegate {
     func goCertificateContentViewAction() {
         let certificateContentViewController = CertificateContentViewController()
-        let certificateViewDatas = self.viewModel.certificateViewDatas.value
-        self.coordinator?.pushViewController(certificateContentViewController, datas: certificateViewDatas)
+        let certificateViewDatas = viewModel.certificateViewDatas.value
+        coordinator?.pushViewController(certificateContentViewController, datas: certificateViewDatas)
     }
     
     func showPopupAction(type: AlertTypes) {
-        self.coordinator?.showPopup(type: .alert, alertType: type) { _ in
+        coordinator?.showPopup(type: .alert, alertType: type) { _ in
             SystemManager().openSettingApp()
         }
     }
     
     func presentPickerControllerAction(pickerController: UIViewController) {
-        self.present(pickerController, animated: true)
+        present(pickerController, animated: true)
     }
     
     func uploadImageAction(image: UIImage) {
         runTask { [weak self] in
             guard let self else { return }
-            self.viewModel.updateButtonStatus(status: .disabled)
+            viewModel.updateButtonStatus(status: .disabled)
 
-            try await self.viewModel.uploadImage(image: image)
-            self.viewModel.updateButtonStatus(status: .enabled)
+            try await viewModel.uploadImage(image: image)
+            viewModel.updateButtonStatus(status: .enabled)
         } catch: { [weak self] _ in
             self?.viewModel.updateButtonStatus(status: .enabled)
         }

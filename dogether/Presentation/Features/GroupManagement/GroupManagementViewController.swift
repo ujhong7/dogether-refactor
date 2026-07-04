@@ -22,13 +22,13 @@ final class GroupManagementViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        self.loadGroups()
+        loadGroups()
         
-        self.coordinator?.updateViewController = loadGroups
+        coordinator?.updateViewController = loadGroups
     }
 
     override func setViewDatas() {
-        bind(self.viewModel.groupManagementViewDatas)
+        bind(viewModel.groupManagementViewDatas)
     }
 }
 
@@ -36,7 +36,7 @@ extension GroupManagementViewController {
     private func loadGroups() {
         runTask { [weak self] in
             guard let self else { return }
-            try await self.viewModel.loadGroups()
+            try await viewModel.loadGroups()
         }
     }
 }
@@ -49,17 +49,17 @@ protocol GroupManagementDelegate: AnyObject {
 
 extension GroupManagementViewController: GroupManagementDelegate {
     func leaveGroupAction(_ group: GroupEntity) {
-        self.coordinator?.showPopup(type: .alert, alertType: .leaveGroup) { [weak self] _ in
+        coordinator?.showPopup(type: .alert, alertType: .leaveGroup) { [weak self] _ in
             guard let self else { return }
             runTask { [weak self] in
                 guard let self else { return }
-                try await self.viewModel.leaveGroup(groupId: group.id)
-                try await self.viewModel.loadGroups()
+                try await viewModel.leaveGroup(groupId: group.id)
+                try await viewModel.loadGroups()
             }
         }
     }
     
     func addGroupAction() {
-        self.coordinator?.pushViewController(GroupCreateViewController())
+        coordinator?.pushViewController(GroupCreateViewController())
     }
 }

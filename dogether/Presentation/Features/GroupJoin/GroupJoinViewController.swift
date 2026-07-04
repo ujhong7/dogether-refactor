@@ -20,16 +20,16 @@ final class GroupJoinViewController: BaseViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        self.viewModel.updateIsFirstResponder(isFirstResponder: true)
+        viewModel.updateIsFirstResponder(isFirstResponder: true)
     }
     
     override func setViewDatas() {
         if let datas = datas as? GroupJoinViewDatas {
-            self.viewModel.groupJoinViewDatas.accept(datas)
+            viewModel.groupJoinViewDatas.accept(datas)
         }
         
-        bind(self.viewModel.groupJoinViewDatas)
-        bind(self.viewModel.joinButtonViewDatas)
+        bind(viewModel.groupJoinViewDatas)
+        bind(viewModel.joinButtonViewDatas)
     }
 }
 
@@ -42,22 +42,22 @@ protocol GroupJoinDelegate {
 
 extension GroupJoinViewController: GroupJoinDelegate {
     func updateCodeAction(code: String) {
-        self.viewModel.updateCode(code: code)
+        viewModel.updateCode(code: code)
     }
     
     func updateButtonStatusAction(status: ButtonStatus) {
-        self.viewModel.updateButtonStatus(status: status)
+        viewModel.updateButtonStatus(status: status)
     }
     
     func updateKeyboardHeightAction(height: CGFloat) {
-        self.viewModel.updateKeyboardHeight(height: height)
+        viewModel.updateKeyboardHeight(height: height)
     }
     
     func joinGroupAction() {
         runTask { [weak self] in
             guard let self else { return }
-            let groupInfo = try await self.viewModel.joinGroup()
-            self.coordinator?.setNavigationController(
+            let groupInfo = try await viewModel.joinGroup()
+            coordinator?.setNavigationController(
                 CompleteViewController(),
                 datas: CompleteViewDatas(
                     groupType: .join,
@@ -74,7 +74,7 @@ extension GroupJoinViewController: GroupJoinDelegate {
 
                 self?.coordinator?.showPopup(type: .alert, alertType: alertType) { [weak self] _ in
                     guard let self else { return }
-                    self.coordinator?.popViewController()
+                    coordinator?.popViewController()
                 }
             }
         }

@@ -28,21 +28,21 @@ protocol SettingDelegate {
 
 extension SettingViewController: SettingDelegate {
     func logoutAction() {
-        self.coordinator?.showPopup(type: .alert, alertType: .logout) { [weak self] _ in
+        coordinator?.showPopup(type: .alert, alertType: .logout) { [weak self] _ in
             guard let self else { return }
-            self.viewModel.logout()
-            self.coordinator?.setNavigationController(OnboardingViewController())
+            viewModel.logout()
+            coordinator?.setNavigationController(OnboardingViewController())
         }
     }
     
     func withdrawAction() {
-        self.coordinator?.showPopup(type: .alert, alertType: .withdraw) { [weak self] _ in
+        coordinator?.showPopup(type: .alert, alertType: .withdraw) { [weak self] _ in
             guard let self else { return }
             runTask { [weak self] in
                 guard let self else { return }
-                try await self.viewModel.withdraw()
-                self.viewModel.logout()
-                self.coordinator?.setNavigationController(OnboardingViewController())
+                try await viewModel.withdraw()
+                viewModel.logout()
+                coordinator?.setNavigationController(OnboardingViewController())
             }
         }
     }

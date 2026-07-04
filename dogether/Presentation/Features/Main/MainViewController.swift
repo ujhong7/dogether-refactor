@@ -26,14 +26,14 @@ final class MainViewController: BaseViewController {
         
         loadMainView()
         
-        self.coordinator?.updateViewController = loadMainView
+        coordinator?.updateViewController = loadMainView
     }
     
     override func setViewDatas() {
-        bind(self.viewModel.bottomSheetViewDatas)
-        bind(self.viewModel.groupViewDatas)
-        bind(self.viewModel.sheetViewDatas)
-        bind(self.viewModel.timerViewDatas)
+        bind(viewModel.bottomSheetViewDatas)
+        bind(viewModel.groupViewDatas)
+        bind(viewModel.sheetViewDatas)
+        bind(viewModel.timerViewDatas)
     }
 }
 
@@ -45,7 +45,7 @@ extension MainViewController {
         if let code = DeepLinkManager.shared.consumeInviteCode() {
             let groupJoinViewController = GroupJoinViewController()
             let groupJoinViewDatas = GroupJoinViewDatas(code: code)
-            self.coordinator?.pushViewController(groupJoinViewController, datas: groupJoinViewDatas)
+            coordinator?.pushViewController(groupJoinViewController, datas: groupJoinViewDatas)
         }
     }
     
@@ -59,7 +59,7 @@ extension MainViewController {
             case .notDetermined:
                 try await userNoti.requestAuthorization(options: [.alert, .badge, .sound])
             case .denied:
-                self.coordinator?.showPopup(type: .alert, alertType: .pushNotice) { _ in
+                coordinator?.showPopup(type: .alert, alertType: .pushNotice) { _ in
                     SystemManager().openSettingApp()
                 }
             default:    // MARK: .authorized, .provisional, .ephemeral
@@ -72,25 +72,25 @@ extension MainViewController {
         // ???: 화면 전환을 고려하면 일부러 강한 참조를 걸어야할까
         runTask { [weak self] in
             guard let self else { return }
-            let reviews = try await self.viewModel.getReviews()
+            let reviews = try await viewModel.getReviews()
             if reviews.isEmpty { return }
 
-            self.coordinator?.showModal(reviews: reviews)
+            coordinator?.showModal(reviews: reviews)
         }
     }
     
     private func loadMainView() {
         runTask { [weak self] in
             guard let self else { return }
-            let groupViewDatas = try await self.viewModel.getGroups()
-            self.viewModel.groupViewDatas.accept(groupViewDatas)
+            let groupViewDatas = try await viewModel.getGroups()
+            viewModel.groupViewDatas.accept(groupViewDatas)
             
             if groupViewDatas.groups.isEmpty {
-                self.coordinator?.setNavigationController(StartViewController())
+                coordinator?.setNavigationController(StartViewController())
                 return
             }
             
-            try await self.viewModel.setSheetViewDatasForCurrentGroup()
+            try await viewModel.setSheetViewDatasForCurrentGroup()
         }
     }
 }
@@ -118,51 +118,51 @@ protocol MainDelegate {
 
 extension MainViewController: MainDelegate {
     func updateAlphaBySheet(alpha: CGFloat) {
-        self.viewModel.sheetViewDatas.update { $0.alpha = alpha }
+        viewModel.sheetViewDatas.update { $0.alpha = alpha }
     }
     
     func updateSheetStatus(sheetStatus: SheetStatus) {
-        self.viewModel.sheetViewDatas.update { $0.sheetStatus = sheetStatus }
+        viewModel.sheetViewDatas.update { $0.sheetStatus = sheetStatus }
     }
     
     func updateYOffsetOfSheet(yOffset: CGFloat) {
-        self.viewModel.sheetViewDatas.update { $0.yOffset = yOffset }
+        viewModel.sheetViewDatas.update { $0.yOffset = yOffset }
     }
     
     func updateIsScrollOnTop(isScrollOnTop: Bool) {
-        self.viewModel.sheetViewDatas.update { $0.isScrollOnTop = isScrollOnTop }
+        viewModel.sheetViewDatas.update { $0.isScrollOnTop = isScrollOnTop }
     }
     
     func goRankingViewAction() {
         let rankingViewController = RankingViewController()
-        let rankingViewDatas = RankingViewDatas(groupId: self.viewModel.currentGroup.id)
-        self.coordinator?.pushViewController(rankingViewController, datas: rankingViewDatas)
+        let rankingViewDatas = RankingViewDatas(groupId: viewModel.currentGroup.id)
+        coordinator?.pushViewController(rankingViewController, datas: rankingViewDatas)
     }
     
     func updateBottomSheetVisibleAction(isShowSheet: Bool) {
-        self.viewModel.bottomSheetViewDatas.update { $0.isShowSheet = isShowSheet }
+        viewModel.bottomSheetViewDatas.update { $0.isShowSheet = isShowSheet }
     }
     
     func selectGroupAction(index: Int) {
-        self.viewModel.groupViewDatas.update { $0.index = index }
+        viewModel.groupViewDatas.update { $0.index = index }
         
-        self.viewModel.sheetViewDatas.update { $0.dateOffset = 0 }
+        viewModel.sheetViewDatas.update { $0.dateOffset = 0 }
 
         runTask { [weak self] in
             guard let self else { return }
-            try await self.viewModel.saveLastSelectedGroupIndex(index: index)
-            try await self.viewModel.setSheetViewDatasForCurrentGroup()
+            try await viewModel.saveLastSelectedGroupIndex(index: index)
+            try await viewModel.setSheetViewDatasForCurrentGroup()
         }
     }
     
     func addGroupAction() {
         let startViewController = StartViewController()
         let startViewDatas = StartViewDatas(isFirstGroup: false)
-        self.coordinator?.pushViewController(startViewController, datas: startViewDatas)
+        coordinator?.pushViewController(startViewController, datas: startViewDatas)
     }
     
     func inviteAction() {
-        let group = self.viewModel.currentGroup
+        let group = viewModel.currentGroup
 
         runTask {
             try await SystemManager.inviteGroup(
@@ -179,66 +179,66 @@ extension MainViewController: MainDelegate {
     }
     
     func goPastAction() {
-        self.viewModel.sheetViewDatas.update {
+        viewModel.sheetViewDatas.update {
             $0.dateOffset -= 1
             $0.filter = .all
         }
 
         runTask { [weak self] in
             guard let self else { return }
-            try await self.viewModel.setSheetViewDatasForCurrentGroup()
+            try await viewModel.setSheetViewDatasForCurrentGroup()
         }
     }
     
     func goFutureAction() {
-        self.viewModel.sheetViewDatas.update {
+        viewModel.sheetViewDatas.update {
             $0.dateOffset += 1
             $0.filter = .all
         }
 
         runTask { [weak self] in
             guard let self else { return }
-            try await self.viewModel.setSheetViewDatasForCurrentGroup()
+            try await viewModel.setSheetViewDatasForCurrentGroup()
         }
     }
     
     func startTimerAction() {
-        self.viewModel.startTimer()
+        viewModel.startTimer()
     }
     
     func stopTimerAction() {
-        self.viewModel.stopTimer()
+        viewModel.stopTimer()
     }
     
     func goWriteTodoViewAction(todos: [TodoEntity]) {
         let todoWriteViewController = TodoWriteViewController()
         let todoWriteViewDatas = TodoWriteViewDatas(
-            groupId: self.viewModel.currentGroup.id,
+            groupId: viewModel.currentGroup.id,
             todos: todos.map { WriteTodoEntity(content: $0.content, enabled: false) }
         )
-        self.coordinator?.pushViewController(todoWriteViewController, datas: todoWriteViewDatas)
+        coordinator?.pushViewController(todoWriteViewController, datas: todoWriteViewDatas)
     }
     
     func selectFilterAction(filterType: FilterTypes) {
-        let filter = filterType == self.viewModel.sheetViewDatas.value.filter ? .all : filterType
-        self.viewModel.sheetViewDatas.update { $0.filter = filter }
+        let filter = filterType == viewModel.sheetViewDatas.value.filter ? .all : filterType
+        viewModel.sheetViewDatas.update { $0.filter = filter }
     }
     
     func goCertificateViewAction(todo: TodoEntity) {
         let certificateImageViewController = CertificateImageViewController()
         let certificateViewDatas = CertificateViewDatas(todo: todo)
-        self.coordinator?.pushViewController(certificateImageViewController, datas: certificateViewDatas)
+        coordinator?.pushViewController(certificateImageViewController, datas: certificateViewDatas)
     }
     
     func goCertificationViewAction(index: Int) {
         let certificationViewController = CertificationViewController()
         let certificationViewDatas = CertificationViewDatas(
             title: "내 인증 정보",
-            todos: self.viewModel.sheetViewDatas.value.todoList.filter {
-                self.viewModel.sheetViewDatas.value.filter == .all || self.viewModel.sheetViewDatas.value.filter == FilterTypes(status: $0.status.rawValue)
+            todos: viewModel.sheetViewDatas.value.todoList.filter {
+                viewModel.sheetViewDatas.value.filter == .all || viewModel.sheetViewDatas.value.filter == FilterTypes(status: $0.status.rawValue)
             },
             index: index
         )
-        self.coordinator?.pushViewController(certificationViewController, datas: certificationViewDatas)
+        coordinator?.pushViewController(certificationViewController, datas: certificationViewDatas)
     }
 }

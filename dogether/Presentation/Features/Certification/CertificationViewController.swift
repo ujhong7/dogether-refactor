@@ -23,10 +23,10 @@ final class CertificationViewController: BaseViewController {
     
     override func setViewDatas() {
         if let datas = datas as? CertificationViewDatas {
-            self.viewModel.certificationViewDatas.accept(datas)
+            viewModel.certificationViewDatas.accept(datas)
         }
         
-        bind(self.viewModel.certificationViewDatas)
+        bind(viewModel.certificationViewDatas)
     }
 }
 
@@ -34,7 +34,7 @@ extension CertificationViewController {
     private func onAppear() {
         runTask { [weak self] in
             guard let self else { return }
-            try await self.viewModel.readTodo()
+            try await viewModel.readTodo()
         }
     }
 }
@@ -55,7 +55,7 @@ extension CertificationViewController: CertificationDelegate {
             if view.frame.contains(location) {
                 runTask { [weak self] in
                     guard let self else { return }
-                    try await self.viewModel.setIndex(index: index)
+                    try await viewModel.setIndex(index: index)
                 }
                 return
             }
@@ -85,7 +85,7 @@ extension CertificationViewController: CertificationDelegate {
             if finished {
                 runTask { [weak self] in
                     guard let self else { return }
-                    try await self.viewModel.setIndex(index: nextIndex)
+                    try await viewModel.setIndex(index: nextIndex)
                 }
             }
         })
@@ -94,13 +94,13 @@ extension CertificationViewController: CertificationDelegate {
     func certificationListScrollEndAction(index: Int) {
         runTask { [weak self] in
             guard let self else { return }
-            try await self.viewModel.setIndex(index: index)
+            try await viewModel.setIndex(index: index)
         }
     }
 
     func goCertificateViewAction(todo: TodoEntity) {
         let certificateImageViewController = CertificateImageViewController()
         let certificateViewDatas = CertificateViewDatas(todo: todo)
-        self.coordinator?.pushViewController(certificateImageViewController, datas: certificateViewDatas)
+        coordinator?.pushViewController(certificateImageViewController, datas: certificateViewDatas)
     }
 }
