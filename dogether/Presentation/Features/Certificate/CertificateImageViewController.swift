@@ -54,16 +54,14 @@ extension CertificateImageViewController: CertificateImageDelegate {
     }
     
     func uploadImageAction(image: UIImage) {
-        // FIXME: 추후 S3Manager를 NetworkManager로 합치면서 loading 로직도 제거해요
-        Task {
+        runTask { [weak self] in
+            guard let self else { return }
             viewModel.updateButtonStatus(status: .disabled)
-            
-            do {
-                try await viewModel.uploadImage(image: image)
-                viewModel.updateButtonStatus(status: .enabled)
-            } catch {
-                // TODO: 예외 케이스 핸들링
-            }
+
+            try await viewModel.uploadImage(image: image)
+            viewModel.updateButtonStatus(status: .enabled)
+        } catch: { [weak self] _ in
+            self?.viewModel.updateButtonStatus(status: .enabled)
         }
     }
 }

@@ -34,7 +34,7 @@ final class GroupManagementViewController: BaseViewController {
 
 extension GroupManagementViewController {
     private func loadGroups() {
-        Task { [weak self] in
+        runTask { [weak self] in
             guard let self else { return }
             try await viewModel.loadGroups()
         }
@@ -51,10 +51,10 @@ extension GroupManagementViewController: GroupManagementDelegate {
     func leaveGroupAction(_ group: GroupEntity) {
         coordinator?.showPopup(type: .alert, alertType: .leaveGroup) { [weak self] _ in
             guard let self else { return }
-            Task { [weak self] in
+            runTask { [weak self] in
                 guard let self else { return }
                 try await viewModel.leaveGroup(groupId: group.id)
-                loadGroups()
+                try await viewModel.loadGroups()
             }
         }
     }

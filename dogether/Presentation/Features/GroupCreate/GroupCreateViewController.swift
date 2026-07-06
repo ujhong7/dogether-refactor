@@ -60,7 +60,7 @@ extension GroupCreateViewController: GroupCreateDelegate {
     }
     
     func createGroup() {
-        Task { [weak self] in
+        runTask { [weak self] in
             guard let self else { return }
             let joinCode = try await viewModel.createGroup()
             let completeViewController = CompleteViewController()

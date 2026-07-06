@@ -68,3 +68,95 @@ class BaseViewController: UIViewController, CoordinatorDelegate {
             .disposed(by: disposeBag)
     }
 }
+
+// MARK: - async task
+extension BaseViewController {
+    func runTask<Value>(
+        showLoading: Bool = true,
+        retryOnCommonNetworkError: Bool = true,
+        operation: @escaping () async throws -> Value,
+        success: ((Value) -> Void)? = nil,
+        catch errorHandler: ((Error) -> Void)? = nil
+    ) {
+        Task { [weak self] in
+            guard let self else { return }
+            await executeTask(
+                showLoading: showLoading,
+                retryOnCommonNetworkError: retryOnCommonNetworkError,
+                operation: operation,
+                success: success,
+                catch: errorHandler
+            )
+        }
+    }
+
+    private func executeTask<Value>(
+        showLoading: Bool,
+        retryOnCommonNetworkError: Bool,
+        operation: @escaping () async throws -> Value,
+        success: ((Value) -> Void)?,
+        catch errorHandler: ((Error) -> Void)?
+    ) async {
+        while true {
+            if showLoading { LoadingManager.shared.showLoading() }
+
+            do {
+                let value = try await operation()
+                if showLoading { LoadingManager.shared.hideLoading() }
+                success?(value)
+                return
+            } catch {
+                if showLoading { LoadingManager.shared.hideLoading() }
+
+                if retryOnCommonNetworkError, isCommonNetworkError(error) {
+                    guard await waitForRetry() else {
+                        errorHandler?(error)
+                        return
+                    }
+                    continue
+                }
+
+                if handleNetworkError(error) { return }
+
+                errorHandler?(error)
+                return
+            }
+        }
+    }
+
+    private func isCommonNetworkError(_ error: Error) -> Bool {
+        if error is URLError || error is DecodingError { return true }
+
+        guard let error = error as? NetworkError else { return false }
+        guard case let .dogetherError(code, _) = error else { return true }
+
+        return !(code == .ATF0002 || code == .ATF0003 ||
+                 code == .CGF0002 || code == .CGF0003 || code == .CGF0004 || code == .CGF0005)
+    }
+
+    private func waitForRetry() async -> Bool {
+        guard let coordinator else { return false }
+
+        await withCheckedContinuation { continuation in
+            coordinator.showErrorView {
+                continuation.resume()
+            }
+        }
+
+        return true
+    }
+
+    private func handleNetworkError(_ error: Error) -> Bool {
+        guard let error = error as? NetworkError,
+              case let .dogetherError(code, _) = error,
+              code == .ATF0003 else { return false }
+
+        coordinator?.showPopup(type: .alert, alertType: .needLogout) { [weak self] _ in
+            guard let self else { return }
+            UserDefaultsManager.logout()
+            coordinator?.setNavigationController(OnboardingViewController())
+        }
+
+        return true
+    }
+}

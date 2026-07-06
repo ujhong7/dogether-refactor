@@ -50,7 +50,7 @@ extension MainViewController {
     }
     
     private func checkAuthorization() {
-        Task { [weak self] in
+        runTask(showLoading: false, retryOnCommonNetworkError: false) { [weak self] in
             guard let self else { return }
             let userNoti = UNUserNotificationCenter.current()
             let settings = await userNoti.notificationSettings()
@@ -70,17 +70,17 @@ extension MainViewController {
     
     private func getReviews() {
         // ???: 화면 전환을 고려하면 일부러 강한 참조를 걸어야할까
-        Task { [weak self] in
+        runTask { [weak self] in
             guard let self else { return }
             let reviews = try await viewModel.getReviews()
             if reviews.isEmpty { return }
 
-            self.coordinator?.showModal(reviews: reviews)
+            coordinator?.showModal(reviews: reviews)
         }
     }
     
     private func loadMainView() {
-        Task { [weak self] in
+        runTask { [weak self] in
             guard let self else { return }
             let groupViewDatas = try await viewModel.getGroups()
             viewModel.groupViewDatas.accept(groupViewDatas)
@@ -145,12 +145,12 @@ extension MainViewController: MainDelegate {
     
     func selectGroupAction(index: Int) {
         viewModel.groupViewDatas.update { $0.index = index }
-        viewModel.saveLastSelectedGroupIndex(index: index)
         
         viewModel.sheetViewDatas.update { $0.dateOffset = 0 }
 
-        Task { [weak self] in
+        runTask { [weak self] in
             guard let self else { return }
+            try await viewModel.saveLastSelectedGroupIndex(index: index)
             try await viewModel.setSheetViewDatasForCurrentGroup()
         }
     }
@@ -164,21 +164,17 @@ extension MainViewController: MainDelegate {
     func inviteAction() {
         let group = viewModel.currentGroup
 
-        Task {
-            do {
-                let inviteItems = try await SystemManager.inviteGroup(
-                    groupName: group.name,
-                    joinCode: group.joinCode
-                )
-
-                let activityVC = UIActivityViewController(
-                    activityItems: inviteItems,
-                    applicationActivities: nil
-                )
-                present(activityVC, animated: true)
-            } catch {
-                // FIXME: 초대 링크 생성 실패 처리
-            }
+        runTask {
+            try await SystemManager.inviteGroup(
+                groupName: group.name,
+                joinCode: group.joinCode
+            )
+        } success: { [weak self] inviteItems in
+            let activityVC = UIActivityViewController(
+                activityItems: inviteItems,
+                applicationActivities: nil
+            )
+            self?.present(activityVC, animated: true)
         }
     }
     
@@ -188,7 +184,7 @@ extension MainViewController: MainDelegate {
             $0.filter = .all
         }
 
-        Task { [weak self] in
+        runTask { [weak self] in
             guard let self else { return }
             try await viewModel.setSheetViewDatasForCurrentGroup()
         }
@@ -200,7 +196,7 @@ extension MainViewController: MainDelegate {
             $0.filter = .all
         }
 
-        Task { [weak self] in
+        runTask { [weak self] in
             guard let self else { return }
             try await viewModel.setSheetViewDatasForCurrentGroup()
         }

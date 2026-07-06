@@ -18,12 +18,12 @@ final class CompleteViewController: BaseViewController {
     }
     
     override func setViewDatas() {
-         if let datas = datas as? CompleteViewDatas {
-             viewModel.completeViewDatas.accept(datas)
-         }
-         
-         bind(viewModel.completeViewDatas)
-     }
+        if let datas = datas as? CompleteViewDatas {
+            self.viewModel.completeViewDatas.accept(datas)
+        }
+
+        bind(self.viewModel.completeViewDatas)
+    }
 }
 
 protocol CompleteDelegate: AnyObject {
@@ -33,28 +33,23 @@ protocol CompleteDelegate: AnyObject {
 
 extension CompleteViewController: CompleteDelegate {
     func goHomeAction() {
-        coordinator?.setNavigationController(MainViewController())
+        self.coordinator?.setNavigationController(MainViewController())
     }
     
     func shareJoinCodeAction() {
-           let data = viewModel.completeViewDatas.value
+        let data = self.viewModel.completeViewDatas.value
 
-           Task {
-               do {
-                   let inviteItems = try await SystemManager.inviteGroup(
-                       groupName: data.groupEntity.name,
-                       joinCode: data.joinCode
-                   )
-
-                   let activityVC = UIActivityViewController(
-                       activityItems: inviteItems,
-                       applicationActivities: nil
-                   )
-                   present(activityVC, animated: true)
-
-               } catch {
-                   // FIXME: 초대 링크 생성 실패 에러처리
-               }
-           }
-       }
+        runTask {
+            try await SystemManager.inviteGroup(
+                groupName: data.groupEntity.name,
+                joinCode: data.joinCode
+            )
+        } success: { [weak self] inviteItems in
+            let activityVC = UIActivityViewController(
+                activityItems: inviteItems,
+                applicationActivities: nil
+            )
+            self?.present(activityVC, animated: true)
+        }
+    }
 }

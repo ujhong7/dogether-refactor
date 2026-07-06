@@ -40,7 +40,7 @@ extension CertificationListViewController {
     }
     
     private func loadCertificationListView(page: Int = 0) {
-        Task { [weak self] in
+        runTask { [weak self] in
             guard let self else { return }
             try await viewModel.loadCertificationList(page: page)
         }

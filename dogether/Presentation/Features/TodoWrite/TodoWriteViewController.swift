@@ -64,10 +64,10 @@ extension TodoWriteViewController: TodoWriteDelegate {
     func saveTodoAction() {
         coordinator?.showPopup(type: .alert, alertType: .saveTodo) { [weak self] _ in
             guard let self else { return }
-            Task { [weak self] in
+            runTask { [weak self] in
                 guard let self else { return }
-                try await self.viewModel.createTodos()
-                self.coordinator?.popViewController()
+                try await viewModel.createTodos()
+                coordinator?.popViewController()
             }
         }
     }

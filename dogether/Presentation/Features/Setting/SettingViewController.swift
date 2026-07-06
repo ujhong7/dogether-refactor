@@ -38,11 +38,11 @@ extension SettingViewController: SettingDelegate {
     func withdrawAction() {
         coordinator?.showPopup(type: .alert, alertType: .withdraw) { [weak self] _ in
             guard let self else { return }
-            Task { [weak self] in
+            runTask { [weak self] in
                 guard let self else { return }
                 try await viewModel.withdraw()
                 viewModel.logout()
-                self.coordinator?.setNavigationController(OnboardingViewController())
+                coordinator?.setNavigationController(OnboardingViewController())
             }
         }
     }

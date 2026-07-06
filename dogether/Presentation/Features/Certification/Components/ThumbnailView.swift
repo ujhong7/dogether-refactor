@@ -58,15 +58,19 @@ final class ThumbnailView: BaseView {
                 
                 Task { [weak self] in
                     guard let self, let imageUrl = datas.imageUrl, let url = URL(string: imageUrl) else { return }
-                    let (data, _) = try await URLSession.shared.data(from: url)
-                    let image = UIImage(data: data)
-                    
-                    guard let image else { return }
-                    imageView.image = image
-                    
-                    imageView.snp.remakeConstraints {
-                        $0.center.equalToSuperview()
-                        $0.width.height.equalToSuperview()
+                    do {
+                        let (data, _) = try await URLSession.shared.data(from: url)
+                        let image = UIImage(data: data)
+
+                        guard let image else { return }
+                        imageView.image = image
+
+                        imageView.snp.remakeConstraints {
+                            $0.center.equalToSuperview()
+                            $0.width.height.equalToSuperview()
+                        }
+                    } catch {
+                        return
                     }
                 }
             }

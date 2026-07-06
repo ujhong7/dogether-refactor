@@ -54,7 +54,7 @@ extension ModalityViewController: ExaminateDelegate {
     }
     
     func sendAction() {
-        Task { [weak self] in
+        runTask { [weak self] in
             guard let self else { return }
             try await viewModel.reviewTodo()
             if viewModel.examinateViewDatas.value.reviews.count == viewModel.examinateViewDatas.value.index + 1 {

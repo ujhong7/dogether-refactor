@@ -51,11 +51,11 @@ extension CertificateContentViewController: CertificateContentDelegate {
     }
     
     func certifyTodoAction() {
-        Task { [weak self] in
+        runTask { [weak self] in
             guard let self else { return }
-            try await self.viewModel.certifyTodo()
+            try await viewModel.certifyTodo()
 
-            self.coordinator?.popViewControllers(num: 2)
+            coordinator?.popViewControllers(num: 2)
         }
     }
 }

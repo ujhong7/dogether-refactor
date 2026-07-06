@@ -27,7 +27,7 @@ final class MyPageViewController: BaseViewController {
 
 extension MyPageViewController {
     private func onAppear() {
-        Task { [weak self] in
+        runTask { [weak self] in
             guard let self else { return }
             try await viewModel.loadProfileView()
         }

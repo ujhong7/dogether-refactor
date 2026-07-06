@@ -24,16 +24,7 @@ final class S3Manager {
             return nil
         }
 
-        await LoadingManager.shared.showLoading()
-
-        do {
-            let imageUrl = try await uploadImageToS3(imageData: imageData, presignedUrl: presignedUrl)
-            await LoadingManager.shared.hideLoading()
-            return imageUrl
-        } catch {
-            await LoadingManager.shared.hideLoading()
-            throw error
-        }
+        return try await uploadImageToS3(imageData: imageData, presignedUrl: presignedUrl)
     }
     
     // TODO: 추후 NetworkLayer로 이동

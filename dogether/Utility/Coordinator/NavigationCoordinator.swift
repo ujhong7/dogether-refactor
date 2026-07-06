@@ -200,11 +200,15 @@ extension NavigationCoordinator: NotificationHandler {
         case .certification:
             Task { [weak self] in
                 guard let self else { return }
-                let repository = DIManager.shared.getTodoCertificationsRepository()
-                let reviews = try await repository.getReviews()
-                
-                if reviews.isEmpty { return }
-                await MainActor.run { self.showModal(reviews: reviews) }
+                do {
+                    let repository = DIManager.shared.getTodoCertificationsRepository()
+                    let reviews = try await repository.getReviews()
+
+                    if reviews.isEmpty { return }
+                    await MainActor.run { self.showModal(reviews: reviews) }
+                } catch {
+                    await handleNotificationError(error, userInfo: userInfo)
+                }
             }
             
         case .review:
@@ -234,6 +238,41 @@ extension NavigationCoordinator: NotificationHandler {
             
             updateViewController?()
         }
+    }
+
+    private func handleNotificationError(_ error: Error, userInfo: [AnyHashable: Any]) async {
+        if handleAuthorizationError(error) { return }
+        guard isCommonNetworkError(error) else { return }
+
+        await MainActor.run {
+            showErrorView { [weak self] in
+                self?.handleNotification(userInfo: userInfo)
+            }
+        }
+    }
+
+    private func handleAuthorizationError(_ error: Error) -> Bool {
+        guard let error = error as? NetworkError,
+              case let .dogetherError(code, _) = error,
+              code == .ATF0003 else { return false }
+
+        showPopup(type: .alert, alertType: .needLogout) { [weak self] _ in
+            guard let self else { return }
+            UserDefaultsManager.logout()
+            setNavigationController(OnboardingViewController())
+        }
+
+        return true
+    }
+
+    private func isCommonNetworkError(_ error: Error) -> Bool {
+        if error is URLError || error is DecodingError { return true }
+
+        guard let error = error as? NetworkError else { return false }
+        guard case let .dogetherError(code, _) = error else { return true }
+
+        return !(code == .ATF0002 || code == .ATF0003 ||
+                 code == .CGF0002 || code == .CGF0003 || code == .CGF0004 || code == .CGF0005)
     }
 }
 
