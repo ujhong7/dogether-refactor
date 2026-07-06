@@ -7,6 +7,7 @@
 
 import Foundation
 
+// UserDefaults는 thread-safe하며, 이 래퍼는 shared store 외부의 mutable state를 갖지 않음
 final class UserDefaultsManager: @unchecked Sendable {
     static let shared = UserDefaultsManager()
     private let userDefaults = UserDefaults.standard

@@ -108,27 +108,24 @@ extension NavigationCoordinator {
         animated: Bool = true,
         completion: ((Any) -> Void)? = nil
     ) {
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            let popupViewController = PopupViewController()
-            
-            switch type {
-            case .alert:
-                let alertPopupViewDatas = AlertPopupViewDatas(type: alertType)
-                popupViewController.datas = alertPopupViewDatas
-                
-            case .examinate:
-                let examinatePopupViewDatas = ExaminatePopupViewDatas()
-                popupViewController.datas = examinatePopupViewDatas
-            }
-            
-            popupViewController.coordinator = self
-            popupViewController.completion = completion
-            popupViewController.modalPresentationStyle = .overFullScreen
-            popupViewController.modalTransitionStyle = .crossDissolve
-            
-            lastViewController?.present(popupViewController, animated: animated)
+        let popupViewController = PopupViewController()
+
+        switch type {
+        case .alert:
+            let alertPopupViewDatas = AlertPopupViewDatas(type: alertType)
+            popupViewController.datas = alertPopupViewDatas
+
+        case .examinate:
+            let examinatePopupViewDatas = ExaminatePopupViewDatas()
+            popupViewController.datas = examinatePopupViewDatas
         }
+
+        popupViewController.coordinator = self
+        popupViewController.completion = completion
+        popupViewController.modalPresentationStyle = .overFullScreen
+        popupViewController.modalTransitionStyle = .crossDissolve
+
+        lastViewController?.present(popupViewController, animated: animated)
     }
     
     func hidePopup(animated: Bool = true) {
@@ -168,20 +165,17 @@ extension NavigationCoordinator {
 // MARK: error
 extension NavigationCoordinator {
     func showErrorView(completion: @escaping () -> Void) {
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            if let errorViewController = navigationController.presentedViewController as? ErrorViewController {
-                errorViewController.completions.append(completion)
-            } else {
-                let errorViewController = ErrorViewController()
-                
-                errorViewController.coordinator = self
-                errorViewController.completions.append(completion)
-                errorViewController.modalPresentationStyle = .overFullScreen
-                errorViewController.modalTransitionStyle = .crossDissolve
-                
-                navigationController.present(errorViewController, animated: true)
-            }
+        if let errorViewController = navigationController.presentedViewController as? ErrorViewController {
+            errorViewController.completions.append(completion)
+        } else {
+            let errorViewController = ErrorViewController()
+
+            errorViewController.coordinator = self
+            errorViewController.completions.append(completion)
+            errorViewController.modalPresentationStyle = .overFullScreen
+            errorViewController.modalTransitionStyle = .crossDissolve
+
+            navigationController.present(errorViewController, animated: true)
         }
     }
     
