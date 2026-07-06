@@ -30,6 +30,7 @@ final class ModalityViewController: BaseViewController {
     }
 }
 
+@MainActor
 protocol ExaminateDelegate {
     func updateReviewsAction(reviews: [ReviewEntity])
     func examinateAction(type: FilterTypes)

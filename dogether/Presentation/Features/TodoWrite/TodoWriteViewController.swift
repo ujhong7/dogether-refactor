@@ -36,6 +36,7 @@ final class TodoWriteViewController: BaseViewController {
 }
 
 // MARK: - delegate
+@MainActor
 protocol TodoWriteDelegate {
     func updateIsShowKeyboardAction(isShowKeyboard: Bool)
     func updateTodoAction(todo: String)

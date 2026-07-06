@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol TodoCertificationsProtocol {
+protocol TodoCertificationsProtocol: Sendable {
     func getReviews() async throws -> [ReviewEntity]
     func reviewTodo(todoId: String, reviewTodoRequest: ReviewTodoRequest) async throws
 }

@@ -7,6 +7,6 @@
 
 import Foundation
 
-protocol AppInfoProtocol {
+protocol AppInfoProtocol: Sendable {
     func checkUpdate(appVersion: String) async throws -> Bool
 }

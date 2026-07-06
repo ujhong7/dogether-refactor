@@ -29,6 +29,7 @@ final class GroupCreateViewController: BaseViewController {
 }
 
 // MARK: - delegate
+@MainActor
 protocol GroupCreateDelegate {
     func updateStep(step: CreateGroupSteps?)
     func updateGroupNameAction(groupName: String)

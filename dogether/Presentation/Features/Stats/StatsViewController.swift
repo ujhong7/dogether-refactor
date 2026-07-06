@@ -52,6 +52,7 @@ extension StatsViewController {
     }
 }
 
+@MainActor
 protocol StatsDelegate {
     func updateBottomSheetVisibleAction(isShowSheet: Bool)
     func selectGroupAction(index: Int)

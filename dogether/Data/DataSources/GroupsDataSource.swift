@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class GroupsDataSource {
+final class GroupsDataSource: Sendable {
     static let shared = GroupsDataSource()
     
     private init() { }

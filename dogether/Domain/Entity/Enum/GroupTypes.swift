@@ -47,6 +47,7 @@ enum GroupTypes: Int, CaseIterable {
         }
     }
     
+    @MainActor
     var destination: BaseViewController {
         switch self {
         case .create:

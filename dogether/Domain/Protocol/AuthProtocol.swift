@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol AuthProtocol {
+protocol AuthProtocol: Sendable {
     func login(
         loginType: LoginTypes,
         providerId: String,
@@ -16,4 +16,3 @@ protocol AuthProtocol {
     func saveNotiToken(saveNotiTokenRequest: SaveNotiTokenRequest) async throws
     func withdraw(loginType: LoginTypes, authorizationCode: String?) async throws
 }
-

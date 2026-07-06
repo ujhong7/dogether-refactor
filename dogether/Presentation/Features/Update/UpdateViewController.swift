@@ -18,6 +18,7 @@ final class UpdateViewController: BaseViewController {
 }
 
 // MARK: - delegate
+@MainActor
 protocol UpdateDelegate {
     func updateAction()
 }

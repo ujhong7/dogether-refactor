@@ -7,6 +7,8 @@
 
 import UIKit
 
+// associated object 키는 안정적인 저장소가 필요하며, tap action은 메인 액터에서만 접근함
+@MainActor
 private var UIViewTapActionKey: UInt8 = 0
 
 extension UIView {

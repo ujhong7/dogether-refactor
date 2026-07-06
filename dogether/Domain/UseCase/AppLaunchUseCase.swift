@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class AppLaunchUseCase {
+final class AppLaunchUseCase: Sendable {
     private let repository: AppInfoProtocol
     
     init(repository: AppInfoProtocol) {

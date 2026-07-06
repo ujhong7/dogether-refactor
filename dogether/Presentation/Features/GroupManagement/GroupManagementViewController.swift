@@ -42,6 +42,7 @@ extension GroupManagementViewController {
 }
 
 // MARK: - delegate
+@MainActor
 protocol GroupManagementDelegate: AnyObject {
     func leaveGroupAction(_ group: GroupEntity)
     func addGroupAction()

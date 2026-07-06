@@ -40,6 +40,7 @@ extension CertificationViewController {
 }
 
 // MARK: - delegate
+@MainActor
 protocol CertificationDelegate {
     func thumbnailTapAction(_ stackView: UIStackView, _ gesture: UITapGestureRecognizer)
     func certificationTapAction(_ scrollView: UIScrollView, _ stackView: UIStackView, _ gesture: UITapGestureRecognizer)

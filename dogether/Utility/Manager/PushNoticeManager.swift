@@ -8,10 +8,12 @@
 import FirebaseMessaging
 import UserNotifications
 
+@MainActor
 protocol NotificationHandler: AnyObject {
     func handleNotification(userInfo: [AnyHashable: Any])
 }
 
+@MainActor
 final class PushNoticeManager: NSObject, UNUserNotificationCenterDelegate {
     weak var delegate: NotificationHandler?
     

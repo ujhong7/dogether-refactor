@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol ChallengeGroupsProtocol {
+protocol ChallengeGroupsProtocol: Sendable {
     func createTodos(groupId: String, createTodosRequest: CreateTodosRequest) async throws
     func getMyTodos(groupId: String, date: String) async throws -> [TodoEntity]
     func getMemberTodos(groupId: Int, memberId: Int) async throws -> (index: Int, todos: [TodoEntity])

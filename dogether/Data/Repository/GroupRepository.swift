@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class GroupRepository: GroupProtocol {
+final class GroupRepository: GroupProtocol, Sendable {
     private let groupsDataSource: GroupsDataSource
     
     init(groupsDataSource: GroupsDataSource = .shared) {

@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class AppInfoDataSource {
+final class AppInfoDataSource: Sendable {
     static let shared = AppInfoDataSource()
     
     private init() { }

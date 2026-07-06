@@ -33,6 +33,7 @@ final class GroupJoinViewController: BaseViewController {
     }
 }
 
+@MainActor
 protocol GroupJoinDelegate {
     func updateCodeAction(code: String)
     func updateButtonStatusAction(status: ButtonStatus)

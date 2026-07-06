@@ -27,6 +27,7 @@ final class ErrorViewController: BaseViewController {
     }
 }
 
+@MainActor
 protocol ErrorDelegate {
     func retryAction()
 }

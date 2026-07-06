@@ -34,6 +34,7 @@ extension MyPageViewController {
     }
 }
 
+@MainActor
 protocol MyPageDelegate: AnyObject {
     func goStatsViewAction()
     func goMyTodoListAction()

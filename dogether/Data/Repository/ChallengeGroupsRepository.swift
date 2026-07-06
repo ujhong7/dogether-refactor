@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class ChallengeGroupsRepository: ChallengeGroupsProtocol {
+final class ChallengeGroupsRepository: ChallengeGroupsProtocol, Sendable {
     private let challengeGroupsDataSource: ChallengeGroupsDataSource
     
     init(challengeGroupsDataSource: ChallengeGroupsDataSource = .shared) {

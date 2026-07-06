@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class ChallengeGroupUseCase {
+final class ChallengeGroupUseCase: Sendable {
     private let repository: ChallengeGroupsProtocol
     
     init(repository: ChallengeGroupsProtocol) {

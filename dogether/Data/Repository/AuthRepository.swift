@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class AuthRepository: AuthProtocol {
+final class AuthRepository: AuthProtocol, Sendable {
     private let authDataSource: AuthDataSource
     private let notificationDataSource: NotificationDataSource
     
@@ -38,4 +38,3 @@ final class AuthRepository: AuthProtocol {
         try await authDataSource.withdraw(withdrawRequest: request)
     }
 }
-
