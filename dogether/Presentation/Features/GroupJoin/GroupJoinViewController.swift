@@ -55,7 +55,14 @@ extension GroupJoinViewController: GroupJoinDelegate {
     }
     
     func joinGroupAction() {
-        runTask { [weak self] in
+        runTask(onAlertComplete: { [weak self] alertType in
+            switch alertType {
+            case .alreadyParticipated, .fullGroup, .unableToParticipate:
+                self?.coordinator?.popViewController()
+            default:
+                break
+            }
+        }) { [weak self] in
             guard let self else { return }
             let groupInfo = try await viewModel.joinGroup()
             coordinator?.setNavigationController(
@@ -65,19 +72,6 @@ extension GroupJoinViewController: GroupJoinDelegate {
                     groupEntity: groupInfo
                 )
             )
-        } catch: { [weak self] error in
-            if let error = error as? NetworkError, case let .dogetherError(code, _) = error {
-                guard let alertType: AlertTypes =
-                        code == .CGF0002 ? .alreadyParticipated :
-                            code == .CGF0003 ? .fullGroup :
-                            code == .CGF0004 || code == .CGF0005 ? .unableToParticipate :
-                            nil else { return }
-
-                self?.coordinator?.showPopup(type: .alert, alertType: alertType) { [weak self] _ in
-                    guard let self else { return }
-                    coordinator?.popViewController()
-                }
-            }
         }
     }
 }

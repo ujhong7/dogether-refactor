@@ -74,6 +74,7 @@ extension BaseViewController {
     func runTask<Value>(
         showLoading: Bool = true,
         retryOnCommonNetworkError: Bool = true,
+        onAlertComplete: ((AlertTypes) -> Void)? = nil,
         operation: @escaping () async throws -> Value,
         success: ((Value) -> Void)? = nil,
         catch errorHandler: ((Error) -> Void)? = nil
@@ -83,6 +84,7 @@ extension BaseViewController {
             await executeTask(
                 showLoading: showLoading,
                 retryOnCommonNetworkError: retryOnCommonNetworkError,
+                onAlertComplete: onAlertComplete,
                 operation: operation,
                 success: success,
                 catch: errorHandler
@@ -93,6 +95,7 @@ extension BaseViewController {
     private func executeTask<Value>(
         showLoading: Bool,
         retryOnCommonNetworkError: Bool,
+        onAlertComplete: ((AlertTypes) -> Void)?,
         operation: @escaping () async throws -> Value,
         success: ((Value) -> Void)?,
         catch errorHandler: ((Error) -> Void)?
@@ -108,30 +111,28 @@ extension BaseViewController {
             } catch {
                 if showLoading { LoadingManager.shared.hideLoading() }
 
-                if retryOnCommonNetworkError, isCommonNetworkError(error) {
+                switch AppErrorAction.resolve(for: error) {
+                case .retry where retryOnCommonNetworkError:
                     guard await waitForRetry() else {
                         errorHandler?(error)
                         return
                     }
                     continue
+
+                case .retry, .passThrough:
+                    errorHandler?(error)
+                    return
+
+                case .logout:
+                    showLogoutPopup()
+                    return
+
+                case .alert(let alertType):
+                    showAlertPopup(alertType, completion: onAlertComplete)
+                    return
                 }
-
-                if handleNetworkError(error) { return }
-
-                errorHandler?(error)
-                return
             }
         }
-    }
-
-    private func isCommonNetworkError(_ error: Error) -> Bool {
-        if error is URLError || error is DecodingError { return true }
-
-        guard let error = error as? NetworkError else { return false }
-        guard case let .dogetherError(code, _) = error else { return true }
-
-        return !(code == .ATF0002 || code == .ATF0003 ||
-                 code == .CGF0002 || code == .CGF0003 || code == .CGF0004 || code == .CGF0005)
     }
 
     private func waitForRetry() async -> Bool {
@@ -146,17 +147,17 @@ extension BaseViewController {
         return true
     }
 
-    private func handleNetworkError(_ error: Error) -> Bool {
-        guard let error = error as? NetworkError,
-              case let .dogetherError(code, _) = error,
-              code == .ATF0003 else { return false }
-
+    private func showLogoutPopup() {
         coordinator?.showPopup(type: .alert, alertType: .needLogout) { [weak self] _ in
             guard let self else { return }
             UserDefaultsManager.logout()
             coordinator?.setNavigationController(OnboardingViewController())
         }
+    }
 
-        return true
+    private func showAlertPopup(_ alertType: AlertTypes, completion: ((AlertTypes) -> Void)?) {
+        coordinator?.showPopup(type: .alert, alertType: alertType) { _ in
+            completion?(alertType)
+        }
     }
 }

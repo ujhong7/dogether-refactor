@@ -237,38 +237,24 @@ extension NavigationCoordinator: NotificationHandler {
     }
 
     private func handleNotificationError(_ error: Error, userInfo: [AnyHashable: Any]) async {
-        if handleAuthorizationError(error) { return }
-        guard isCommonNetworkError(error) else { return }
-
-        await MainActor.run {
+        switch AppErrorAction.resolve(for: error) {
+        case .retry:
             showErrorView { [weak self] in
                 self?.handleNotification(userInfo: userInfo)
             }
+        case .logout:
+            showLogoutPopup()
+        case .alert, .passThrough:
+            return
         }
     }
 
-    private func handleAuthorizationError(_ error: Error) -> Bool {
-        guard let error = error as? NetworkError,
-              case let .dogetherError(code, _) = error,
-              code == .ATF0003 else { return false }
-
+    private func showLogoutPopup() {
         showPopup(type: .alert, alertType: .needLogout) { [weak self] _ in
             guard let self else { return }
             UserDefaultsManager.logout()
             setNavigationController(OnboardingViewController())
         }
-
-        return true
-    }
-
-    private func isCommonNetworkError(_ error: Error) -> Bool {
-        if error is URLError || error is DecodingError { return true }
-
-        guard let error = error as? NetworkError else { return false }
-        guard case let .dogetherError(code, _) = error else { return true }
-
-        return !(code == .ATF0002 || code == .ATF0003 ||
-                 code == .CGF0002 || code == .CGF0003 || code == .CGF0004 || code == .CGF0005)
     }
 }
 

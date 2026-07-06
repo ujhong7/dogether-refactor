@@ -36,12 +36,6 @@ extension OnboardingViewController: OnboardingDelegate {
             }
 
             coordinator?.setNavigationController(MainViewController())
-        } catch: { [weak self] error in
-            if let error = error as? NetworkError, case let .dogetherError(code, _) = error {
-                if code == .ATF0002 {
-                    self?.coordinator?.showPopup(type: .alert, alertType: .needRevoke)
-                }
-            }
         }
     }
 }
