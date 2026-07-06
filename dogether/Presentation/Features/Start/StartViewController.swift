@@ -39,6 +39,7 @@ extension StartViewController {
 }
 
 // MARK: - delegate
+@MainActor
 protocol StartDelegate {
     func startAction(_ destination: BaseViewController)
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class NotificationDataSource {
+final class NotificationDataSource: Sendable {
     static let shared = NotificationDataSource()
     
     private init() { }

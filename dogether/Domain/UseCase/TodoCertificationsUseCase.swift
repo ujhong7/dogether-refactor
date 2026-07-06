@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class TodoCertificationsUseCase {
+final class TodoCertificationsUseCase: Sendable {
     private let repository: TodoCertificationsProtocol
     
     init(repository: TodoCertificationsProtocol) {

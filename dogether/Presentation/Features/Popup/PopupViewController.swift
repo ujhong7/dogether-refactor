@@ -63,6 +63,7 @@ extension PopupViewController {
     }
 }
 
+@MainActor
 protocol PopupDelegate {
     func completeAction()
     func hidePopup()

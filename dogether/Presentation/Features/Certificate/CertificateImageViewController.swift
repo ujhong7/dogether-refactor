@@ -29,6 +29,7 @@ final class CertificateImageViewController: BaseViewController {
     }
 }
 
+@MainActor
 protocol CertificateImageDelegate {
     func goCertificateContentViewAction()
     func showPopupAction(type: AlertTypes)

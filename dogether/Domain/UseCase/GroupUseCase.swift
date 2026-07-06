@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class GroupUseCase {
+final class GroupUseCase: Sendable {
     private let repository: GroupProtocol
     
     init(repository: GroupProtocol) {

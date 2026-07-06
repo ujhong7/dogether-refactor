@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol UserProtocol {
+protocol UserProtocol: Sendable {
     func getStatsViewDatas(groupId: Int) async throws -> (
         achievementViewDatas: AchievementViewDatas,
         rankViewDatas: StatsRankViewDatas,

@@ -34,6 +34,7 @@ final class CertificateContentViewController: BaseViewController {
     }
 }
 
+@MainActor
 protocol CertificateContentDelegate {
     func updateKeyboardHeightAction(height: CGFloat)
     func updateContentAction(content: String)

@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class TodoCertificationsDataSource {
+final class TodoCertificationsDataSource: Sendable {
     static let shared = TodoCertificationsDataSource()
     
     private init() { }

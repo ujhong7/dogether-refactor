@@ -45,6 +45,7 @@ extension RankingViewController {
 }
 
 // MARK: - delegate
+@MainActor
 protocol RankingDelegate {
     func goCertificationViewAction(rankingEntity: RankingEntity)
 }

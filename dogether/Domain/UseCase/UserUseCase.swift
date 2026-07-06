@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class UserUseCase {
+final class UserUseCase: Sendable {
     private let repository: UserProtocol
     
     init(repository: UserProtocol) {

@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol GroupProtocol {
+protocol GroupProtocol: Sendable {
     func createGroup(groupCreateViewDatas: GroupCreateViewDatas) async throws -> String
     func joinGroup(joinGroupRequest: JoinGroupRequest) async throws -> JoinGroupResponse
     func leaveGroup(groupId: String) async throws

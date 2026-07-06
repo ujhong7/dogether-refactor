@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class DIManager {
+final class DIManager: Sendable {
     static let shared = DIManager()
     
     private init() { }

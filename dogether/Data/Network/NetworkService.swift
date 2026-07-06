@@ -7,7 +7,7 @@
 
 import Foundation
 
-class NetworkService {
+final class NetworkService: Sendable {
     private let serverURL: URL?
     
     // MARK: 배포마다 releaseMode 수정 (추후 자동화)

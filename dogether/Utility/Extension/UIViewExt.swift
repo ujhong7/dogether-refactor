@@ -7,6 +7,7 @@
 
 import UIKit
 
+@MainActor
 private var UIViewTapActionKey: UInt8 = 0
 
 extension UIView {

@@ -96,6 +96,7 @@ extension MainViewController {
 }
 
 // MARK: - delegate
+@MainActor
 protocol MainDelegate {
     func updateAlphaBySheet(alpha: CGFloat)
     func updateSheetStatus(sheetStatus: SheetStatus)

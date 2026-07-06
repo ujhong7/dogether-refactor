@@ -8,10 +8,12 @@
 import UIKit
 
 // MARK: AnyObject를 채택해 '클래스 전용' 프로토콜로 만들어 줌
+@MainActor
 protocol CoordinatorDelegate: AnyObject {
     var coordinator: NavigationCoordinator? { get set }
 }
 
+@MainActor
 final class NavigationCoordinator: NSObject {
     private let navigationController: UINavigationController
     private var modalityWindow: UIWindow? = nil

@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class UserDataSource {
+final class UserDataSource: Sendable {
     static let shared = UserDataSource()
     
     private init() {}

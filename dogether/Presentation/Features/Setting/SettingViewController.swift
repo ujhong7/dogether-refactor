@@ -21,6 +21,7 @@ final class SettingViewController: BaseViewController {
 }
 
 // MARK: - delegate
+@MainActor
 protocol SettingDelegate {
     func logoutAction()
     func withdrawAction()

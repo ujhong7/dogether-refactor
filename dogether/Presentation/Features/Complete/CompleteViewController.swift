@@ -26,6 +26,7 @@ final class CompleteViewController: BaseViewController {
     }
 }
 
+@MainActor
 protocol CompleteDelegate: AnyObject {
     func goHomeAction()
     func shareJoinCodeAction()

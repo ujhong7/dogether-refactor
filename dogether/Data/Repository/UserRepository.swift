@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class UserRepository: UserProtocol {
+final class UserRepository: UserProtocol, Sendable {
     private let userDataSource: UserDataSource
     
     init(userDataSource: UserDataSource = .shared) {
@@ -19,6 +19,7 @@ final class UserRepository: UserProtocol {
         rankViewDatas: StatsRankViewDatas,
         summaryViewDatas: StatsSummaryViewDatas
     ) {
+        let userDataSource = userDataSource
         async let activityResponse = userDataSource.getMyGroupActivity(groupId: groupId)
         async let statsResponse = userDataSource.getMyCertificationStats(groupId: groupId)
 
@@ -52,6 +53,7 @@ final class UserRepository: UserProtocol {
         statsViewDatas: StatsViewDatas,
         certificationListViewDatas: CertificationListViewDatas
     ) {
+        let userDataSource = userDataSource
         async let activityResponse = userDataSource.getMyActivity(sort: option.sortString, page: String(page))
         async let statsResponse = userDataSource.getMyCertificationStats()
 

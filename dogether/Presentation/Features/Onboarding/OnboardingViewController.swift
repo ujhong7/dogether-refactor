@@ -19,6 +19,7 @@ final class OnboardingViewController: BaseViewController {
 }
 
 // MARK: - delegate
+@MainActor
 protocol OnboardingDelegate {
     func loginAction(loginType: LoginTypes)
 }

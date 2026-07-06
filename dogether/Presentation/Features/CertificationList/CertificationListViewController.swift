@@ -47,6 +47,7 @@ extension CertificationListViewController {
     }
 }
 
+@MainActor
 protocol CertificationListPageDelegate {
     func updateBottomSheetVisibleAction(isShowSheet: Bool)
     func selectSortAction(index: Int)

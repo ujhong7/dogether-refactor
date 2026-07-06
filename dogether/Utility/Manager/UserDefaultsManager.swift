@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class UserDefaultsManager {
+final class UserDefaultsManager: @unchecked Sendable {
     static let shared = UserDefaultsManager()
     private let userDefaults = UserDefaults.standard
     

@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class S3Manager {
+final class S3Manager: Sendable {
     static let shared = S3Manager()
 
     private init() {}

@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class AppInfoRepository: AppInfoProtocol {
+final class AppInfoRepository: AppInfoProtocol, Sendable {
     private let appInfoDataSource: AppInfoDataSource
     
     init(appInfoDataSource: AppInfoDataSource = .shared) {
