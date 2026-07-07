@@ -25,14 +25,14 @@ final class MainViewModel {
     // MARK: - Computed
     var currentGroup: GroupEntity { groupViewDatas.value.groups[groupViewDatas.value.index] }
     
-    init() {
-        let groupRepository = DIManager.shared.getGroupRepository()
-        let challengeGroupsRepository = DIManager.shared.getChallengeGroupsRepository()
-        let todoCertificationsRepository = DIManager.shared.getTodoCertificationsRepository()
-        
-        self.groupUseCase = GroupUseCase(repository: groupRepository)
-        self.challengeGroupsUseCase = ChallengeGroupUseCase(repository: challengeGroupsRepository)
-        self.todoCertificationsUseCase = TodoCertificationsUseCase(repository: todoCertificationsRepository)
+    init(
+        groupUseCase: GroupUseCase,
+        challengeGroupsUseCase: ChallengeGroupUseCase,
+        todoCertificationsUseCase: TodoCertificationsUseCase
+    ) {
+        self.groupUseCase = groupUseCase
+        self.challengeGroupsUseCase = challengeGroupsUseCase
+        self.todoCertificationsUseCase = todoCertificationsUseCase
     }
 }
 

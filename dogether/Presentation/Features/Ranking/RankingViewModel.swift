@@ -16,12 +16,9 @@ final class RankingViewModel {
     
     private(set) var rankingViewDatas = BehaviorRelay<RankingViewDatas>(value: RankingViewDatas())
     
-    init() {
-        let groupRepository = DIManager.shared.getGroupRepository()
-        let challengeGroupsRepository = DIManager.shared.getChallengeGroupsRepository()
-        
-        self.groupUseCase = GroupUseCase(repository: groupRepository)
-        self.challengeGroupsUseCase = ChallengeGroupUseCase(repository: challengeGroupsRepository)
+    init(groupUseCase: GroupUseCase, challengeGroupsUseCase: ChallengeGroupUseCase) {
+        self.groupUseCase = groupUseCase
+        self.challengeGroupsUseCase = challengeGroupsUseCase
     }
 }
 

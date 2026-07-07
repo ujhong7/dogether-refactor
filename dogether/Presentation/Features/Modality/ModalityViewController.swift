@@ -10,7 +10,14 @@ import SnapKit
 
 final class ModalityViewController: BaseViewController {
     private let examinatePage = ExaminatePage()
-    private let viewModel = ModalityViewModel()
+    private let viewModel: ModalityViewModel
+
+    init(viewModel: ModalityViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
         examinatePage.delegate = self

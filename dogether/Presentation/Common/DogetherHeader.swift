@@ -14,7 +14,8 @@ final class DogetherHeader: BaseView {
             myPageButton.addAction(
                 UIAction { [weak self] _ in
                     guard let self else { return }
-                    delegate?.coordinator?.pushViewController(MyPageViewController())
+                    guard let coordinator = delegate?.coordinator else { return }
+                    coordinator.pushViewController(coordinator.appFactory.makeMyPageViewController())
                 }, for: .touchUpInside
             )
         }

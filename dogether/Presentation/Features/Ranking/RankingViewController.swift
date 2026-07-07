@@ -9,7 +9,14 @@ import UIKit
 
 final class RankingViewController: BaseViewController {
     private let rankingPage = RankingPage()
-    private let viewModel = RankingViewModel()
+    private let viewModel: RankingViewModel
+
+    init(viewModel: RankingViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
         rankingPage.delegate = self
@@ -56,7 +63,8 @@ extension RankingViewController: RankingDelegate {
             guard let self else { return }
             let (index, todos) = try await viewModel.getMemberTodos(memberId: rankingEntity.memberId)
 
-            let certificationViewController = CertificationViewController()
+            guard let coordinator else { return }
+            let certificationViewController = coordinator.appFactory.makeCertificationViewController()
             let certificationViewDatas = CertificationViewDatas(
                 title: "\(rankingEntity.name)님의 인증 정보",
                 todos: todos,
@@ -64,7 +72,7 @@ extension RankingViewController: RankingDelegate {
                 groupId: viewModel.rankingViewDatas.value.groupId,
                 rankingEntity: rankingEntity
             )
-            coordinator?.pushViewController(certificationViewController, datas: certificationViewDatas)
+            coordinator.pushViewController(certificationViewController, datas: certificationViewDatas)
         }
     }
 }

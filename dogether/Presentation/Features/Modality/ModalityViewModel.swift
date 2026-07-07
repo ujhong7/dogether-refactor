@@ -21,9 +21,8 @@ final class ModalityViewModel {
     // MARK: - Computed
     var currentReview: ReviewEntity { examinateViewDatas.value.reviews[examinateViewDatas.value.index] }
     
-    init() {
-        let todoCertificationsRepository = DIManager.shared.getTodoCertificationsRepository()
-        self.todoCertificationsUseCase = TodoCertificationsUseCase(repository: todoCertificationsRepository)
+    init(todoCertificationsUseCase: TodoCertificationsUseCase) {
+        self.todoCertificationsUseCase = todoCertificationsUseCase
     }
     
     func setIndex(direction: Directions) {

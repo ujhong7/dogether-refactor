@@ -9,7 +9,14 @@ import UIKit
 
 final class CertificateImageViewController: BaseViewController {
     private let certificateImagePage = CertificateImagePage()
-    private let viewModel = CertificateViewModel()
+    private let viewModel: CertificateViewModel
+
+    init(viewModel: CertificateViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
         certificateImagePage.delegate = self
@@ -39,9 +46,10 @@ protocol CertificateImageDelegate {
 
 extension CertificateImageViewController: CertificateImageDelegate {
     func goCertificateContentViewAction() {
-        let certificateContentViewController = CertificateContentViewController()
+        guard let coordinator else { return }
+        let certificateContentViewController = coordinator.appFactory.makeCertificateContentViewController()
         let certificateViewDatas = viewModel.certificateViewDatas.value
-        coordinator?.pushViewController(certificateContentViewController, datas: certificateViewDatas)
+        coordinator.pushViewController(certificateContentViewController, datas: certificateViewDatas)
     }
     
     func showPopupAction(type: AlertTypes) {

@@ -22,12 +22,9 @@ final class StatsViewModel {
     // MARK: - Computed
     var currentGroup: GroupEntity { groupViewDatas.value.groups[groupViewDatas.value.index] }
     
-    init() {
-        let userRepository = DIManager.shared.getUserRepository()
-        let groupRepository = DIManager.shared.getGroupRepository()
-        
-        self.userUseCase = UserUseCase(repository: userRepository)
-        self.groupUseCase = GroupUseCase(repository: groupRepository)
+    init(userUseCase: UserUseCase, groupUseCase: GroupUseCase) {
+        self.userUseCase = userUseCase
+        self.groupUseCase = groupUseCase
     }
 }
 

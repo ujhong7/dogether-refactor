@@ -103,7 +103,7 @@ extension StartPage {
         button.addAction(
             UIAction { [weak self, weak button] _ in
                 guard let self, let button, let groupType = GroupTypes(rawValue: button.tag) else { return }
-                delegate?.startAction(groupType.destination)
+                delegate?.startAction(groupType)
             }, for: .touchUpInside
         )
         

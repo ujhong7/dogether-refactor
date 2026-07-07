@@ -25,13 +25,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.rootViewController = navigationController
         window?.makeKeyAndVisible()
         
-        coordinator = NavigationCoordinator(navigationController: navigationController)
+        let appFactory = AppFactory()
+        coordinator = NavigationCoordinator(navigationController: navigationController, appFactory: appFactory)
         PushNoticeManager.shared.delegate = coordinator
         
         Task { @MainActor in
             await resolveDeepLink(userActivity: connectionOptions.userActivities.first)
             
-            coordinator?.setNavigationController(SplashViewController())
+            coordinator?.setNavigationController(appFactory.makeSplashViewController())
         }
     }
     
@@ -46,9 +47,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             ) { return }
             
             if let code = DeepLinkManager.shared.consumeInviteCode() {
-                let groupJoinViewController = GroupJoinViewController()
+                guard let coordinator else { return }
+                let groupJoinViewController = coordinator.appFactory.makeGroupJoinViewController()
                 let groupJoinViewDatas = GroupJoinViewDatas(code: code)
-                coordinator?.pushViewController(groupJoinViewController, datas: groupJoinViewDatas)
+                coordinator.pushViewController(groupJoinViewController, datas: groupJoinViewDatas)
             }
         }
     }

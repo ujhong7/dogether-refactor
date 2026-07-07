@@ -14,9 +14,8 @@ final class MyPageViewModel {
     private(set) var profileViewDatas = BehaviorRelay<ProfileViewDatas>(value: ProfileViewDatas())
     private(set) var statsButtonViewDatas = BehaviorRelay<DogetherButtonViewDatas>(value: DogetherButtonViewDatas())
     
-    init() {
-        let repository = DIManager.shared.getUserRepository()
-        self.userUseCase = UserUseCase(repository: repository)
+    init(userUseCase: UserUseCase) {
+        self.userUseCase = userUseCase
     }
 }
 

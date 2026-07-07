@@ -12,7 +12,14 @@ import RxCocoa
 
 final class TodoWriteViewController: BaseViewController {
     private let todoWritePage = TodoWritePage()
-    private let viewModel = TodoWriteViewModel()
+    private let viewModel: TodoWriteViewModel
+
+    init(viewModel: TodoWriteViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
         todoWritePage.delegate = self

@@ -9,7 +9,14 @@ import UIKit
 
 final class GroupCreateViewController: BaseViewController {
     private let groupCreatePage = GroupCreatePage()
-    private let viewModel = GroupCreateViewModel()
+    private let viewModel: GroupCreateViewModel
+
+    init(viewModel: GroupCreateViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
         groupCreatePage.delegate = self
@@ -64,7 +71,8 @@ extension GroupCreateViewController: GroupCreateDelegate {
         runTask { [weak self] in
             guard let self else { return }
             let joinCode = try await viewModel.createGroup()
-            let completeViewController = CompleteViewController()
+            guard let coordinator else { return }
+            let completeViewController = coordinator.appFactory.makeCompleteViewController()
             let completeViewDatas = CompleteViewDatas(
                 groupType: .create,
                 joinCode: joinCode,
@@ -72,7 +80,7 @@ extension GroupCreateViewController: GroupCreateDelegate {
                     name: viewModel.groupCreateViewDatas.value.groupName
                 )
             )
-            coordinator?.setNavigationController(completeViewController, datas: completeViewDatas)
+            coordinator.setNavigationController(completeViewController, datas: completeViewDatas)
         }
     }
 }

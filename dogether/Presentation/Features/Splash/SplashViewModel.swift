@@ -12,12 +12,9 @@ final class SplashViewModel {
     private let appLaunchUseCase: AppLaunchUseCase
     private let groupUseCase: GroupUseCase
     
-    init() {
-        let groupRepository = DIManager.shared.getGroupRepository()
-        let appInfoRepository = DIManager.shared.getAppInfoRepository()
-        
-        self.appLaunchUseCase = AppLaunchUseCase(repository: appInfoRepository)
-        self.groupUseCase = GroupUseCase(repository: groupRepository)
+    init(appLaunchUseCase: AppLaunchUseCase, groupUseCase: GroupUseCase) {
+        self.appLaunchUseCase = appLaunchUseCase
+        self.groupUseCase = groupUseCase
     }
 }
 

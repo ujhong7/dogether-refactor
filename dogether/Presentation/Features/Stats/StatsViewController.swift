@@ -9,7 +9,14 @@ import UIKit
 
 final class StatsViewController: BaseViewController {
     private let statsPage = StatsPage()
-    private let viewModel = StatsViewModel()
+    private let viewModel: StatsViewModel
+
+    init(viewModel: StatsViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
 
     override func viewDidLoad() {
         statsPage.delegate = self
@@ -75,6 +82,7 @@ extension StatsViewController: StatsDelegate {
     }
     
     func addGroupAction() {
-        coordinator?.pushViewController(GroupCreateViewController())
+        guard let coordinator else { return }
+        coordinator.pushViewController(coordinator.appFactory.makeGroupCreateViewController())
     }
 }

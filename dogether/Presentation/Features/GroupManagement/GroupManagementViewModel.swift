@@ -14,12 +14,9 @@ final class GroupManagementViewModel {
     
     private(set) var groupManagementViewDatas = BehaviorRelay<GroupManagementViewDatas>(value: GroupManagementViewDatas())
     
-    init() {
-        let authRepository = DIManager.shared.getAuthRepository()
-        let groupRepository = DIManager.shared.getGroupRepository()
-        
-        self.authUseCase = AuthUseCase(repository: authRepository)
-        self.groupUseCase = GroupUseCase(repository: groupRepository)
+    init(authUseCase: AuthUseCase, groupUseCase: GroupUseCase) {
+        self.authUseCase = authUseCase
+        self.groupUseCase = groupUseCase
     }
 }
 

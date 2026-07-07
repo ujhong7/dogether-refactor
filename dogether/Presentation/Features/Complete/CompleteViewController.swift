@@ -34,7 +34,8 @@ protocol CompleteDelegate: AnyObject {
 
 extension CompleteViewController: CompleteDelegate {
     func goHomeAction() {
-        self.coordinator?.setNavigationController(MainViewController())
+        guard let coordinator else { return }
+        coordinator.setNavigationController(coordinator.appFactory.makeMainViewController())
     }
     
     func shareJoinCodeAction() {

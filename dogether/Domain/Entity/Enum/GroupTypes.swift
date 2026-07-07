@@ -47,13 +47,4 @@ enum GroupTypes: Int, CaseIterable {
         }
     }
     
-    @MainActor
-    var destination: BaseViewController {
-        switch self {
-        case .create:
-            return GroupCreateViewController()
-        case .join:
-            return GroupJoinViewController()
-        }
-    }
 }
