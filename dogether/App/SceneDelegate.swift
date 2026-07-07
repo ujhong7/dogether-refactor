@@ -26,7 +26,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.makeKeyAndVisible()
         
         let appFactory = AppFactory()
-        coordinator = NavigationCoordinator(navigationController: navigationController, appFactory: appFactory)
+        coordinator = appFactory.makeNavigationCoordinator(navigationController: navigationController)
         PushNoticeManager.shared.delegate = coordinator
         
         Task { @MainActor in

@@ -16,6 +16,7 @@ protocol CoordinatorDelegate: AnyObject {
 @MainActor
 final class NavigationCoordinator: NSObject {
     private let navigationController: UINavigationController
+    private let todoCertificationsUseCase: TodoCertificationsUseCase
     private var modalityWindow: UIWindow? = nil
     let appFactory: AppFactory
     
@@ -33,9 +34,14 @@ final class NavigationCoordinator: NSObject {
         return types.contains { currentViewController.isKind(of: $0) }
     }
     
-    init(navigationController: UINavigationController, appFactory: AppFactory) {
+    init(
+        navigationController: UINavigationController,
+        appFactory: AppFactory,
+        todoCertificationsUseCase: TodoCertificationsUseCase
+    ) {
         self.navigationController = navigationController
         self.appFactory = appFactory
+        self.todoCertificationsUseCase = todoCertificationsUseCase
         super.init()
         
         NotificationCenter.default.addObserver(
@@ -199,7 +205,7 @@ extension NavigationCoordinator: NotificationHandler {
             Task { [weak self] in
                 guard let self else { return }
                 do {
-                    let reviews = try await appFactory.makeTodoCertificationsUseCase().getReviews()
+                    let reviews = try await todoCertificationsUseCase.getReviews()
 
                     if reviews.isEmpty { return }
                     await MainActor.run { self.showModal(reviews: reviews) }

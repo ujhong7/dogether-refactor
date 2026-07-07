@@ -5,7 +5,7 @@
 //  Created by yujaehong on 7/6/26.
 //
 
-import Foundation
+import UIKit
 
 @MainActor
 final class AppFactory {
@@ -79,7 +79,7 @@ private extension AppFactory {
 }
 
 // MARK: - UseCase
-extension AppFactory {
+private extension AppFactory {
     func makeAppLaunchUseCase() -> AppLaunchUseCase {
         AppLaunchUseCase(repository: makeAppInfoRepository())
     }
@@ -107,6 +107,14 @@ extension AppFactory {
 
 // MARK: - ViewController
 extension AppFactory {
+    func makeNavigationCoordinator(navigationController: UINavigationController) -> NavigationCoordinator {
+        NavigationCoordinator(
+            navigationController: navigationController,
+            appFactory: self,
+            todoCertificationsUseCase: makeTodoCertificationsUseCase()
+        )
+    }
+
     func makeSplashViewController() -> SplashViewController {
         SplashViewController(
             viewModel: SplashViewModel(
@@ -194,7 +202,6 @@ extension AppFactory {
     func makeGroupManagementViewController() -> GroupManagementViewController {
         GroupManagementViewController(
             viewModel: GroupManagementViewModel(
-                authUseCase: makeAuthUseCase(),
                 groupUseCase: makeGroupUseCase()
             )
         )

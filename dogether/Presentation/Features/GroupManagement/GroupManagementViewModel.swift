@@ -9,13 +9,11 @@ import RxRelay
 
 @MainActor
 final class GroupManagementViewModel {
-    private let authUseCase: AuthUseCase
     private let groupUseCase: GroupUseCase
     
     private(set) var groupManagementViewDatas = BehaviorRelay<GroupManagementViewDatas>(value: GroupManagementViewDatas())
     
-    init(authUseCase: AuthUseCase, groupUseCase: GroupUseCase) {
-        self.authUseCase = authUseCase
+    init(groupUseCase: GroupUseCase) {
         self.groupUseCase = groupUseCase
     }
 }
