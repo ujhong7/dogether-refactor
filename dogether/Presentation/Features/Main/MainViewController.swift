@@ -9,7 +9,14 @@ import UIKit
 
 final class MainViewController: BaseViewController {
     private let mainPage = MainPage()
-    private let viewModel = MainViewModel()
+    private let viewModel: MainViewModel
+
+    init(viewModel: MainViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
         mainPage.delegate = self
@@ -43,9 +50,10 @@ extension MainViewController {
         getReviews()
         
         if let code = DeepLinkManager.shared.consumeInviteCode() {
-            let groupJoinViewController = GroupJoinViewController()
+            guard let coordinator else { return }
+            let groupJoinViewController = coordinator.appFactory.makeGroupJoinViewController()
             let groupJoinViewDatas = GroupJoinViewDatas(code: code)
-            coordinator?.pushViewController(groupJoinViewController, datas: groupJoinViewDatas)
+            coordinator.pushViewController(groupJoinViewController, datas: groupJoinViewDatas)
         }
     }
     
@@ -86,7 +94,8 @@ extension MainViewController {
             viewModel.groupViewDatas.accept(groupViewDatas)
             
             if groupViewDatas.groups.isEmpty {
-                coordinator?.setNavigationController(StartViewController())
+                guard let coordinator else { return }
+                coordinator.setNavigationController(coordinator.appFactory.makeStartViewController())
                 return
             }
             
@@ -135,9 +144,10 @@ extension MainViewController: MainDelegate {
     }
     
     func goRankingViewAction() {
-        let rankingViewController = RankingViewController()
+        guard let coordinator else { return }
+        let rankingViewController = coordinator.appFactory.makeRankingViewController()
         let rankingViewDatas = RankingViewDatas(groupId: viewModel.currentGroup.id)
-        coordinator?.pushViewController(rankingViewController, datas: rankingViewDatas)
+        coordinator.pushViewController(rankingViewController, datas: rankingViewDatas)
     }
     
     func updateBottomSheetVisibleAction(isShowSheet: Bool) {
@@ -157,9 +167,10 @@ extension MainViewController: MainDelegate {
     }
     
     func addGroupAction() {
-        let startViewController = StartViewController()
+        guard let coordinator else { return }
+        let startViewController = coordinator.appFactory.makeStartViewController()
         let startViewDatas = StartViewDatas(isFirstGroup: false)
-        coordinator?.pushViewController(startViewController, datas: startViewDatas)
+        coordinator.pushViewController(startViewController, datas: startViewDatas)
     }
     
     func inviteAction() {
@@ -212,12 +223,13 @@ extension MainViewController: MainDelegate {
     }
     
     func goWriteTodoViewAction(todos: [TodoEntity]) {
-        let todoWriteViewController = TodoWriteViewController()
+        guard let coordinator else { return }
+        let todoWriteViewController = coordinator.appFactory.makeTodoWriteViewController()
         let todoWriteViewDatas = TodoWriteViewDatas(
             groupId: viewModel.currentGroup.id,
             todos: todos.map { WriteTodoEntity(content: $0.content, enabled: false) }
         )
-        coordinator?.pushViewController(todoWriteViewController, datas: todoWriteViewDatas)
+        coordinator.pushViewController(todoWriteViewController, datas: todoWriteViewDatas)
     }
     
     func selectFilterAction(filterType: FilterTypes) {
@@ -226,13 +238,15 @@ extension MainViewController: MainDelegate {
     }
     
     func goCertificateViewAction(todo: TodoEntity) {
-        let certificateImageViewController = CertificateImageViewController()
+        guard let coordinator else { return }
+        let certificateImageViewController = coordinator.appFactory.makeCertificateImageViewController()
         let certificateViewDatas = CertificateViewDatas(todo: todo)
-        coordinator?.pushViewController(certificateImageViewController, datas: certificateViewDatas)
+        coordinator.pushViewController(certificateImageViewController, datas: certificateViewDatas)
     }
     
     func goCertificationViewAction(index: Int) {
-        let certificationViewController = CertificationViewController()
+        guard let coordinator else { return }
+        let certificationViewController = coordinator.appFactory.makeCertificationViewController()
         let certificationViewDatas = CertificationViewDatas(
             title: "내 인증 정보",
             todos: viewModel.sheetViewDatas.value.todoList.filter {
@@ -240,6 +254,6 @@ extension MainViewController: MainDelegate {
             },
             index: index
         )
-        coordinator?.pushViewController(certificationViewController, datas: certificationViewDatas)
+        coordinator.pushViewController(certificationViewController, datas: certificationViewDatas)
     }
 }

@@ -15,9 +15,8 @@ final class GroupCreateViewModel {
     
     private(set) var groupCreateViewDatas = BehaviorRelay<GroupCreateViewDatas>(value: GroupCreateViewDatas())
     
-    init() {
-        let groupRepository = DIManager.shared.getGroupRepository()
-        self.groupUseCase = GroupUseCase(repository: groupRepository)
+    init(groupUseCase: GroupUseCase) {
+        self.groupUseCase = groupUseCase
     }
 }
 

@@ -9,7 +9,14 @@ import UIKit
 
 final class CertificationViewController: BaseViewController {
     private let certificationPage = CertificationPage()
-    private let viewModel = CertificationViewModel()
+    private let viewModel: CertificationViewModel
+
+    init(viewModel: CertificationViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
         certificationPage.delegate = self
@@ -100,8 +107,9 @@ extension CertificationViewController: CertificationDelegate {
     }
 
     func goCertificateViewAction(todo: TodoEntity) {
-        let certificateImageViewController = CertificateImageViewController()
+        guard let coordinator else { return }
+        let certificateImageViewController = coordinator.appFactory.makeCertificateImageViewController()
         let certificateViewDatas = CertificateViewDatas(todo: todo)
-        coordinator?.pushViewController(certificateImageViewController, datas: certificateViewDatas)
+        coordinator.pushViewController(certificateImageViewController, datas: certificateViewDatas)
     }
 }

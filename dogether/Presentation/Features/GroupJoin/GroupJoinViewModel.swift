@@ -18,9 +18,8 @@ final class GroupJoinViewModel {
         value: DogetherButtonViewDatas(status: .disabled)
     )
     
-    init() {
-        let groupRepository = DIManager.shared.getGroupRepository()
-        self.groupUseCase = GroupUseCase(repository: groupRepository)
+    init(groupUseCase: GroupUseCase) {
+        self.groupUseCase = groupUseCase
     }
 }
 

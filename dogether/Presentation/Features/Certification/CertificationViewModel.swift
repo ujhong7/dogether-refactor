@@ -13,9 +13,8 @@ final class CertificationViewModel {
     
     private(set) var certificationViewDatas = BehaviorRelay<CertificationViewDatas>(value: CertificationViewDatas())
     
-    init() {
-        let challengeGroupsRepository = DIManager.shared.getChallengeGroupsRepository()
-        self.challengeGroupsUseCase = ChallengeGroupUseCase(repository: challengeGroupsRepository)
+    init(challengeGroupsUseCase: ChallengeGroupUseCase) {
+        self.challengeGroupsUseCase = challengeGroupsUseCase
     }
 }
 

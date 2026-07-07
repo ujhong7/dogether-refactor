@@ -9,7 +9,14 @@ import Foundation
 
 final class SettingViewController: BaseViewController {
     private let settingPage = SettingPage()
-    private let viewModel = SettingViewModel()
+    private let viewModel: SettingViewModel
+
+    init(viewModel: SettingViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
         settingPage.delegate = self
@@ -32,7 +39,8 @@ extension SettingViewController: SettingDelegate {
         coordinator?.showPopup(type: .alert, alertType: .logout) { [weak self] _ in
             guard let self else { return }
             viewModel.logout()
-            coordinator?.setNavigationController(OnboardingViewController())
+            guard let coordinator else { return }
+            coordinator.setNavigationController(coordinator.appFactory.makeOnboardingViewController())
         }
     }
     
@@ -43,7 +51,8 @@ extension SettingViewController: SettingDelegate {
                 guard let self else { return }
                 try await viewModel.withdraw()
                 viewModel.logout()
-                coordinator?.setNavigationController(OnboardingViewController())
+                guard let coordinator else { return }
+                coordinator.setNavigationController(coordinator.appFactory.makeOnboardingViewController())
             }
         }
     }

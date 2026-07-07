@@ -19,9 +19,8 @@ final class CertificateViewModel {
         value: DogetherButtonViewDatas(status: .disabled)
     )
 
-    init() {
-        let repository = DIManager.shared.getChallengeGroupsRepository()
-        self.challengeGroupUseCase = ChallengeGroupUseCase(repository: repository)
+    init(challengeGroupUseCase: ChallengeGroupUseCase) {
+        self.challengeGroupUseCase = challengeGroupUseCase
     }
 }
 

@@ -5,9 +5,18 @@
 //  Created by yujaehong on 4/21/25.
 //
 
+import UIKit
+
 final class CertificationListViewController: BaseViewController {
     private let certificationListPage = CertificationListPage()
-    private let viewModel = CertificationListViewModel()
+    private let viewModel: CertificationListViewModel
+
+    init(viewModel: CertificationListViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
         certificationListPage.delegate = self
@@ -72,9 +81,10 @@ extension CertificationListViewController: CertificationListPageDelegate {
     }
     
     func selectCertificationAction(title: String, todos: [TodoEntity], index: Int) {
-        let certificationViewController = CertificationViewController()
+        guard let coordinator else { return }
+        let certificationViewController = coordinator.appFactory.makeCertificationViewController()
         let certificationViewDatas = CertificationViewDatas(title: title, todos: todos, index: index)
-        coordinator?.pushViewController(certificationViewController, datas: certificationViewDatas)
+        coordinator.pushViewController(certificationViewController, datas: certificationViewDatas)
     }
     
     func didScrollToBottom() {

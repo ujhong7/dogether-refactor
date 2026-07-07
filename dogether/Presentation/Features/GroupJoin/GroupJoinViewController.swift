@@ -9,7 +9,14 @@ import UIKit
 
 final class GroupJoinViewController: BaseViewController {
     private let groupJoinPage = GroupJoinPage()
-    private let viewModel = GroupJoinViewModel()
+    private let viewModel: GroupJoinViewModel
+
+    init(viewModel: GroupJoinViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
         groupJoinPage.delegate = self
@@ -65,8 +72,9 @@ extension GroupJoinViewController: GroupJoinDelegate {
         }) { [weak self] in
             guard let self else { return }
             let groupInfo = try await viewModel.joinGroup()
-            coordinator?.setNavigationController(
-                CompleteViewController(),
+            guard let coordinator else { return }
+            coordinator.setNavigationController(
+                coordinator.appFactory.makeCompleteViewController(),
                 datas: CompleteViewDatas(
                     groupType: .join,
                     groupEntity: groupInfo

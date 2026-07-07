@@ -5,9 +5,18 @@
 //  Created by seungyooooong on 3/31/25.
 //
 
+import UIKit
+
 final class MyPageViewController: BaseViewController {
     private let myPage = MyPagePage()
-    private let viewModel = MyPageViewModel()
+    private let viewModel: MyPageViewModel
+
+    init(viewModel: MyPageViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
         myPage.delegate = self
@@ -44,15 +53,19 @@ protocol MyPageDelegate: AnyObject {
 
 extension MyPageViewController: MyPageDelegate {
     func goStatsViewAction() {
-        coordinator?.pushViewController(StatsViewController())
+        guard let coordinator else { return }
+        coordinator.pushViewController(coordinator.appFactory.makeStatsViewController())
     }
     func goMyTodoListAction() {
-        coordinator?.pushViewController(CertificationListViewController())
+        guard let coordinator else { return }
+        coordinator.pushViewController(coordinator.appFactory.makeCertificationListViewController())
     }
     func goGroupManagementAction() {
-        coordinator?.pushViewController(GroupManagementViewController())
+        guard let coordinator else { return }
+        coordinator.pushViewController(coordinator.appFactory.makeGroupManagementViewController())
     }
     func goSettingViewAction() {
-        coordinator?.pushViewController(SettingViewController())
+        guard let coordinator else { return }
+        coordinator.pushViewController(coordinator.appFactory.makeSettingViewController())
     }
 }

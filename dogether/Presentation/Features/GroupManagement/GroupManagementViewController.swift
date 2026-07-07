@@ -9,7 +9,14 @@ import Foundation
 
 final class GroupManagementViewController: BaseViewController {
     private let groupManagementPage = GroupManagementPage()
-    private let viewModel = GroupManagementViewModel()
+    private let viewModel: GroupManagementViewModel
+
+    init(viewModel: GroupManagementViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
 
     override func viewDidLoad() {
         groupManagementPage.delegate = self
@@ -61,6 +68,7 @@ extension GroupManagementViewController: GroupManagementDelegate {
     }
     
     func addGroupAction() {
-        coordinator?.pushViewController(GroupCreateViewController())
+        guard let coordinator else { return }
+        coordinator.pushViewController(coordinator.appFactory.makeGroupCreateViewController())
     }
 }

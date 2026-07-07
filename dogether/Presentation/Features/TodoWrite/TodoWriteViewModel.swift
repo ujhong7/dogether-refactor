@@ -15,11 +15,9 @@ final class TodoWriteViewModel {
     
     private(set) var todoWriteViewDatas = BehaviorRelay<TodoWriteViewDatas>(value: TodoWriteViewDatas())
     
-    init() {
-        let challengeGroupsRepository = DIManager.shared.getChallengeGroupsRepository()
-        self.challengeGroupsUseCase = ChallengeGroupUseCase(repository: challengeGroupsRepository)
+    init(challengeGroupsUseCase: ChallengeGroupUseCase) {
+        self.challengeGroupsUseCase = challengeGroupsUseCase
     }
-    
 }
 
 extension TodoWriteViewModel {

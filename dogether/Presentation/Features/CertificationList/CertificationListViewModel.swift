@@ -18,9 +18,8 @@ final class CertificationListViewModel {
         value: CertificationListViewDatas()
     )
     
-    init() {
-        let repository = DIManager.shared.getUserRepository()
-        self.userUseCase = UserUseCase(repository: repository)
+    init(userUseCase: UserUseCase) {
+        self.userUseCase = userUseCase
     }
 }
 

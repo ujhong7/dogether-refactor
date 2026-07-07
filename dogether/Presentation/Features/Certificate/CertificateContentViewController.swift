@@ -9,7 +9,14 @@ import UIKit
 
 final class CertificateContentViewController: BaseViewController {
     private let certificateContentPage = CertificateContentPage()
-    private let viewModel = CertificateViewModel()
+    private let viewModel: CertificateViewModel
+
+    init(viewModel: CertificateViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
         certificateContentPage.delegate = self

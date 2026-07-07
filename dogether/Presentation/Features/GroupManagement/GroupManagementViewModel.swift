@@ -9,17 +9,12 @@ import RxRelay
 
 @MainActor
 final class GroupManagementViewModel {
-    private let authUseCase: AuthUseCase
     private let groupUseCase: GroupUseCase
     
     private(set) var groupManagementViewDatas = BehaviorRelay<GroupManagementViewDatas>(value: GroupManagementViewDatas())
     
-    init() {
-        let authRepository = DIManager.shared.getAuthRepository()
-        let groupRepository = DIManager.shared.getGroupRepository()
-        
-        self.authUseCase = AuthUseCase(repository: authRepository)
-        self.groupUseCase = GroupUseCase(repository: groupRepository)
+    init(groupUseCase: GroupUseCase) {
+        self.groupUseCase = groupUseCase
     }
 }
 

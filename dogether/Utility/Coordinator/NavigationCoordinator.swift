@@ -16,7 +16,9 @@ protocol CoordinatorDelegate: AnyObject {
 @MainActor
 final class NavigationCoordinator: NSObject {
     private let navigationController: UINavigationController
+    private let todoCertificationsUseCase: TodoCertificationsUseCase
     private var modalityWindow: UIWindow? = nil
+    let appFactory: AppFactory
     
     private var lastViewController: UIViewController? {
         if let modalityWindow { return modalityWindow.rootViewController }
@@ -32,8 +34,14 @@ final class NavigationCoordinator: NSObject {
         return types.contains { currentViewController.isKind(of: $0) }
     }
     
-    init(navigationController: UINavigationController) {
+    init(
+        navigationController: UINavigationController,
+        appFactory: AppFactory,
+        todoCertificationsUseCase: TodoCertificationsUseCase
+    ) {
         self.navigationController = navigationController
+        self.appFactory = appFactory
+        self.todoCertificationsUseCase = todoCertificationsUseCase
         super.init()
         
         NotificationCenter.default.addObserver(
@@ -108,7 +116,7 @@ extension NavigationCoordinator {
         animated: Bool = true,
         completion: ((Any) -> Void)? = nil
     ) {
-        let popupViewController = PopupViewController()
+        let popupViewController = appFactory.makePopupViewController()
 
         switch type {
         case .alert:
@@ -143,7 +151,7 @@ extension NavigationCoordinator {
         } else {
             let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
             let window = UIWindow(windowScene: windowScene!)
-            let modalityViewController = ModalityViewController()
+            let modalityViewController = appFactory.makeModalityViewController()
             
             modalityViewController.coordinator = self
             modalityViewController.datas = ExaminateViewDatas(reviews: reviews)
@@ -168,7 +176,7 @@ extension NavigationCoordinator {
         if let errorViewController = navigationController.presentedViewController as? ErrorViewController {
             errorViewController.completions.append(completion)
         } else {
-            let errorViewController = ErrorViewController()
+            let errorViewController = appFactory.makeErrorViewController()
 
             errorViewController.coordinator = self
             errorViewController.completions.append(completion)
@@ -197,8 +205,7 @@ extension NavigationCoordinator: NotificationHandler {
             Task { [weak self] in
                 guard let self else { return }
                 do {
-                    let repository = DIManager.shared.getTodoCertificationsRepository()
-                    let reviews = try await repository.getReviews()
+                    let reviews = try await todoCertificationsUseCase.getReviews()
 
                     if reviews.isEmpty { return }
                     await MainActor.run { self.showModal(reviews: reviews) }
@@ -253,7 +260,7 @@ extension NavigationCoordinator: NotificationHandler {
         showPopup(type: .alert, alertType: .needLogout) { [weak self] _ in
             guard let self else { return }
             UserDefaultsManager.logout()
-            setNavigationController(OnboardingViewController())
+            setNavigationController(appFactory.makeOnboardingViewController())
         }
     }
 }

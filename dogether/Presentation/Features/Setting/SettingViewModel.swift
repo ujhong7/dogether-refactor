@@ -11,13 +11,13 @@ import Foundation
 final class SettingViewModel {
     private let authUseCase: AuthUseCase
     
-    init() {
-        let authRepository = DIManager.shared.getAuthRepository()
-        self.authUseCase = AuthUseCase(repository: authRepository)
+    init(authUseCase: AuthUseCase) {
+        self.authUseCase = authUseCase
     }
 }
 
-extension SettingViewModel {func logout() {
+extension SettingViewModel {
+    func logout() {
         authUseCase.logout()
     }
     
@@ -25,4 +25,3 @@ extension SettingViewModel {func logout() {
         try await authUseCase.withdraw()
     }
 }
-

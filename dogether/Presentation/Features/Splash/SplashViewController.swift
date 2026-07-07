@@ -5,9 +5,18 @@
 //  Created by seungyooooong on 2/15/25.
 //
 
+import UIKit
+
 final class SplashViewController: BaseViewController {
     private let splashPage = SplashPage()
-    private let viewModel = SplashViewModel()
+    private let viewModel: SplashViewModel
+
+    init(viewModel: SplashViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
         pages = [splashPage]
@@ -25,19 +34,23 @@ extension SplashViewController {
             try await viewModel.launchApp()
 
             if try await viewModel.checkUpdate() {
-                coordinator?.setNavigationController(UpdateViewController())
+                guard let coordinator else { return }
+                coordinator.setNavigationController(coordinator.appFactory.makeUpdateViewController())
                 return
             }
 
             if viewModel.checkLogin() {
-                coordinator?.setNavigationController(OnboardingViewController())
+                guard let coordinator else { return }
+                coordinator.setNavigationController(coordinator.appFactory.makeOnboardingViewController())
                 return
             }
 
             if try await viewModel.checkParticipating() {
-                coordinator?.setNavigationController(StartViewController())
+                guard let coordinator else { return }
+                coordinator.setNavigationController(coordinator.appFactory.makeStartViewController())
             } else {
-                coordinator?.setNavigationController(MainViewController())
+                guard let coordinator else { return }
+                coordinator.setNavigationController(coordinator.appFactory.makeMainViewController())
             }
         }
     }

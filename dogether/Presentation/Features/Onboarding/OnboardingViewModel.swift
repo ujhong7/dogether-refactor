@@ -12,12 +12,9 @@ final class OnboardingViewModel {
     private let authUseCase: AuthUseCase
     private let groupUseCase: GroupUseCase
     
-    init() {
-        let authRepository = DIManager.shared.getAuthRepository()
-        let groupRepository = DIManager.shared.getGroupRepository()
-        
-        self.authUseCase = AuthUseCase(repository: authRepository)
-        self.groupUseCase = GroupUseCase(repository: groupRepository)
+    init(authUseCase: AuthUseCase, groupUseCase: GroupUseCase) {
+        self.authUseCase = authUseCase
+        self.groupUseCase = groupUseCase
     }
 
     func login(loginType: LoginTypes) async throws {

@@ -151,7 +151,8 @@ extension BaseViewController {
         coordinator?.showPopup(type: .alert, alertType: .needLogout) { [weak self] _ in
             guard let self else { return }
             UserDefaultsManager.logout()
-            coordinator?.setNavigationController(OnboardingViewController())
+            guard let coordinator else { return }
+            coordinator.setNavigationController(coordinator.appFactory.makeOnboardingViewController())
         }
     }
 
