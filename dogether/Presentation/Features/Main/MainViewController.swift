@@ -49,11 +49,7 @@ extension MainViewController {
         checkAuthorization()
         getReviews()
         
-        if let code = DeepLinkManager.shared.consumeInviteCode() {
-            guard let coordinator else { return }
-            let groupJoinViewDatas = GroupJoinViewDatas(code: code)
-            coordinator.pushGroupJoin(datas: groupJoinViewDatas)
-        }
+        coordinator?.handlePendingInviteDeepLink()
     }
     
     private func checkAuthorization() {

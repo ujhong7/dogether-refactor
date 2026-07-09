@@ -39,18 +39,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
         Task { @MainActor in
             await resolveDeepLink(userActivity: userActivity)
-            
-            if let coordinator, coordinator.checkCurrentViewController(
-                SplashViewController.self,
-                UpdateViewController.self,
-                OnboardingViewController.self
-            ) { return }
-            
-            if let code = DeepLinkManager.shared.consumeInviteCode() {
-                guard let coordinator else { return }
-                let groupJoinViewDatas = GroupJoinViewDatas(code: code)
-                coordinator.pushGroupJoin(datas: groupJoinViewDatas)
-            }
+
+            coordinator?.handlePendingInviteDeepLink()
         }
     }
 

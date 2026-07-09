@@ -15,7 +15,7 @@ protocol CoordinatorDelegate: AnyObject {
 @MainActor
 protocol NavigationCoordinating: AnyObject {
     func setRefreshAction(_ action: (() -> Void)?)
-    func checkCurrentViewController(_ types: UIViewController.Type...) -> Bool
+    func handlePendingInviteDeepLink()
 
     func popViewController(animated: Bool)
     func popViewControllers(num: Int, animated: Bool)
