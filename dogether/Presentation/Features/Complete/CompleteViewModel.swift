@@ -5,14 +5,23 @@
 //  Created by seungyooooong on 2/18/25.
 //
 
+import RxCocoa
 import RxRelay
 
 @MainActor
 final class CompleteViewModel {
-    private(set) var completeViewDatas = BehaviorRelay<CompleteViewDatas>(value: CompleteViewDatas())
-}
+    struct Output {
+        let completeViewDatas: Driver<CompleteViewDatas>
+    }
 
-extension CompleteViewModel {
+    private let completeViewDatas = BehaviorRelay<CompleteViewDatas>(value: CompleteViewDatas())
+
+    var currentDatas: CompleteViewDatas { completeViewDatas.value }
+
+    var output: Output {
+        Output(completeViewDatas: completeViewDatas.asDriver())
+    }
+
     func setDatas(_ datas: CompleteViewDatas) {
         completeViewDatas.accept(datas)
     }

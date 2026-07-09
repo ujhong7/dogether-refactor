@@ -7,8 +7,10 @@
 
 import UIKit
 
+import RxRelay
+
 final class RankingPage: BasePage {
-    var delegate: RankingDelegate?
+    let rankingSelected = PublishRelay<RankingEntity>()
     
     private let navigationHeader = NavigationHeader(title: "순위")
     private let rankingTopStackView = UIStackView()
@@ -147,6 +149,6 @@ extension RankingPage {
     private func goMemberCertificationView(rankingIndex: Int) {
         guard let currentRankings, let _ = currentRankings[rankingIndex].historyReadStatus else { return }
         
-        delegate?.goCertificationViewAction(rankingEntity: currentRankings[rankingIndex])
+        rankingSelected.accept(currentRankings[rankingIndex])
     }
 }

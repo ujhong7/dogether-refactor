@@ -7,9 +7,13 @@
 
 import Foundation
 
+import RxCocoa
+import RxSwift
+
 final class GroupManagementViewController: BaseViewController {
     private let groupManagementPage = GroupManagementPage()
     private let viewModel: GroupManagementViewModel
+    private let disposeBag = DisposeBag()
 
     init(viewModel: GroupManagementViewModel) {
         self.viewModel = viewModel
@@ -19,8 +23,6 @@ final class GroupManagementViewController: BaseViewController {
     required init?(coder: NSCoder) { fatalError() }
 
     override func viewDidLoad() {
-        groupManagementPage.delegate = self
-        
         pages = [groupManagementPage]
         
         super.viewDidLoad()
@@ -35,7 +37,22 @@ final class GroupManagementViewController: BaseViewController {
     }
 
     override func setViewDatas() {
-        bind(viewModel.groupManagementViewDatas)
+        let output = viewModel.output
+        bind(output.groupManagementViewDatas)
+
+        groupManagementPage.addGroupTapped
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.coordinator?.pushGroupCreate()
+            })
+            .disposed(by: disposeBag)
+
+        groupManagementPage.leaveGroupTapped
+            .asSignal()
+            .emit(onNext: { [weak self] group in
+                self?.leaveGroup(group)
+            })
+            .disposed(by: disposeBag)
     }
 }
 
@@ -48,15 +65,8 @@ extension GroupManagementViewController {
     }
 }
 
-// MARK: - delegate
-@MainActor
-protocol GroupManagementDelegate: AnyObject {
-    func leaveGroupAction(_ group: GroupEntity)
-    func addGroupAction()
-}
-
-extension GroupManagementViewController: GroupManagementDelegate {
-    func leaveGroupAction(_ group: GroupEntity) {
+extension GroupManagementViewController {
+    private func leaveGroup(_ group: GroupEntity) {
         coordinator?.showPopup(type: .alert, alertType: .leaveGroup) { [weak self] _ in
             guard let self else { return }
             runTask { [weak self] in
@@ -65,10 +75,5 @@ extension GroupManagementViewController: GroupManagementDelegate {
                 try await viewModel.loadGroups()
             }
         }
-    }
-    
-    func addGroupAction() {
-        guard let coordinator else { return }
-        coordinator.pushGroupCreate()
     }
 }

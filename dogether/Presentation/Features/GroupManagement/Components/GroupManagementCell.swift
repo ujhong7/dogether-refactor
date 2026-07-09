@@ -6,20 +6,14 @@
 //
 
 import UIKit
+
+import RxRelay
+import RxSwift
 import SnapKit
 
 final class GroupManagementCell: BaseTableViewCell {
-    var delegate: GroupManagementDelegate? {
-        didSet {
-            leaveButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self, let currentGroup else { return }
-                    delegate?.leaveGroupAction(currentGroup)
-                },
-                for: .touchUpInside
-            )
-        }
-    }
+    let leaveTapped = PublishRelay<GroupEntity>()
+    var disposeBag = DisposeBag()
     
     private let containerView = UIView()
     private let titleLabel = UILabel()
@@ -65,7 +59,20 @@ final class GroupManagementCell: BaseTableViewCell {
         leaveButton.layer.cornerRadius = 6
     }
 
-    override func configureAction() { }
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        disposeBag = DisposeBag()
+    }
+
+    override func configureAction() {
+        leaveButton.addAction(
+            UIAction { [weak self] _ in
+                guard let self, let currentGroup else { return }
+                leaveTapped.accept(currentGroup)
+            },
+            for: .touchUpInside
+        )
+    }
 
     override func configureHierarchy() {
         contentView.addSubview(containerView)

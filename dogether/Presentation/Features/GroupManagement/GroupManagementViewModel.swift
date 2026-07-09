@@ -5,16 +5,25 @@
 //  Created by yujaehong on 4/22/25.
 //
 
+import RxCocoa
 import RxRelay
 
 @MainActor
 final class GroupManagementViewModel {
+    struct Output {
+        let groupManagementViewDatas: Driver<GroupManagementViewDatas>
+    }
+
     private let groupUseCase: GroupUseCase
     
-    private(set) var groupManagementViewDatas = BehaviorRelay<GroupManagementViewDatas>(value: GroupManagementViewDatas())
+    private let groupManagementViewDatas = BehaviorRelay<GroupManagementViewDatas>(value: GroupManagementViewDatas())
     
     init(groupUseCase: GroupUseCase) {
         self.groupUseCase = groupUseCase
+    }
+
+    var output: Output {
+        Output(groupManagementViewDatas: groupManagementViewDatas.asDriver())
     }
 }
 

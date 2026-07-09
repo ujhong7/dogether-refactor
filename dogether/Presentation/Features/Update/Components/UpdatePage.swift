@@ -7,17 +7,10 @@
 
 import UIKit
 
+import RxRelay
+
 final class UpdatePage: BasePage {
-    var delegate: UpdateDelegate? {
-        didSet {
-            updateButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.updateAction()
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let updateTapped = PublishRelay<Void>()
     
     private let typoImageView = UIImageView()
     private let titleLabel = UILabel()
@@ -59,7 +52,13 @@ final class UpdatePage: BasePage {
         updateButton.updateView(DogetherButtonViewDatas())
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        updateButton.addAction(
+            UIAction { [weak self] _ in
+                self?.updateTapped.accept(())
+            }, for: .touchUpInside
+        )
+    }
     
     override func configureHierarchy() {
         [updateContainerView, updateButton].forEach { addSubview($0) }

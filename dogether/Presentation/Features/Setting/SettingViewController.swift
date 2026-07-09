@@ -7,9 +7,13 @@
 
 import Foundation
 
+import RxCocoa
+import RxSwift
+
 final class SettingViewController: BaseViewController {
     private let settingPage = SettingPage()
     private let viewModel: SettingViewModel
+    private let disposeBag = DisposeBag()
 
     init(viewModel: SettingViewModel) {
         self.viewModel = viewModel
@@ -19,23 +23,32 @@ final class SettingViewController: BaseViewController {
     required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
-        settingPage.delegate = self
-        
         pages = [settingPage]
         
         super.viewDidLoad()
+
+        bindActions()
     }
 }
 
-// MARK: - delegate
-@MainActor
-protocol SettingDelegate {
-    func logoutAction()
-    func withdrawAction()
-}
+extension SettingViewController {
+    private func bindActions() {
+        settingPage.logoutTapped
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.logout()
+            })
+            .disposed(by: disposeBag)
 
-extension SettingViewController: SettingDelegate {
-    func logoutAction() {
+        settingPage.withdrawTapped
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.withdraw()
+            })
+            .disposed(by: disposeBag)
+    }
+
+    private func logout() {
         coordinator?.showPopup(type: .alert, alertType: .logout) { [weak self] _ in
             guard let self else { return }
             viewModel.logout()
@@ -44,7 +57,7 @@ extension SettingViewController: SettingDelegate {
         }
     }
     
-    func withdrawAction() {
+    private func withdraw() {
         coordinator?.showPopup(type: .alert, alertType: .withdraw) { [weak self] _ in
             guard let self else { return }
             runTask { [weak self] in

@@ -7,12 +7,13 @@
 
 import UIKit
 
+import RxRelay
+import RxSwift
+
 final class GroupManagementPage: BasePage {
-    var delegate: GroupManagementDelegate? {
-        didSet {
-            emptyView.groupManagementDelegate = delegate
-        }
-    }
+    let addGroupTapped = PublishRelay<Void>()
+    let leaveGroupTapped = PublishRelay<GroupEntity>()
+    private let disposeBag = DisposeBag()
     
     private let navigationHeader = NavigationHeader(title: "그룹 관리")
     private let emptyView = GroupEmptyView()
@@ -30,6 +31,10 @@ final class GroupManagementPage: BasePage {
     override func configureAction() {
         navigationHeader.delegate = coordinatorDelegate
         
+        emptyView.createGroupTapped
+            .bind(to: addGroupTapped)
+            .disposed(by: disposeBag)
+
         tableView.dataSource = self
         tableView.delegate = self
     }
@@ -84,7 +89,9 @@ extension GroupManagementPage: UITableViewDataSource, UITableViewDelegate {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "GroupManagementCell", for: indexPath) as? GroupManagementCell else { return UITableViewCell() }
 
         cell.updateView(currentGroups?[indexPath.row])
-        cell.delegate = delegate
+        cell.leaveTapped
+            .bind(to: leaveGroupTapped)
+            .disposed(by: cell.disposeBag)
 
         return cell
     }

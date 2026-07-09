@@ -7,39 +7,46 @@
 
 import UIKit
 
+import RxCocoa
+import RxSwift
+
 final class CompleteViewController: BaseViewController {
     private let completePage = CompletePage()
     private let viewModel = CompleteViewModel()
+    private let disposeBag = DisposeBag()
     
     override func viewDidLoad() {
-        completePage.delegate = self
         pages = [completePage]
         super.viewDidLoad()
     }
     
     override func setViewDatas() {
         if let datas = datas as? CompleteViewDatas {
-            self.viewModel.completeViewDatas.accept(datas)
+            self.viewModel.setDatas(datas)
         }
 
-        bind(self.viewModel.completeViewDatas)
+        let output = viewModel.output
+        bind(output.completeViewDatas)
+
+        completePage.homeTapped
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.coordinator?.setMain()
+            })
+            .disposed(by: disposeBag)
+
+        completePage.shareJoinCodeTapped
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.shareJoinCode()
+            })
+            .disposed(by: disposeBag)
     }
 }
 
-@MainActor
-protocol CompleteDelegate: AnyObject {
-    func goHomeAction()
-    func shareJoinCodeAction()
-}
-
-extension CompleteViewController: CompleteDelegate {
-    func goHomeAction() {
-        guard let coordinator else { return }
-        coordinator.setMain()
-    }
-    
-    func shareJoinCodeAction() {
-        let data = self.viewModel.completeViewDatas.value
+extension CompleteViewController {
+    private func shareJoinCode() {
+        let data = self.viewModel.currentDatas
 
         runTask {
             try await SystemManager.inviteGroup(

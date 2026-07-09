@@ -7,9 +7,13 @@
 
 import UIKit
 
+import RxCocoa
+import RxSwift
+
 final class OnboardingViewController: BaseViewController {
     private let onboardingPage = OnboardingPage()
     private let viewModel: OnboardingViewModel
+    private let disposeBag = DisposeBag()
 
     init(viewModel: OnboardingViewModel) {
         self.viewModel = viewModel
@@ -19,22 +23,25 @@ final class OnboardingViewController: BaseViewController {
     required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
-        onboardingPage.delegate = self
-        
         pages = [onboardingPage]
         
         super.viewDidLoad()
+
+        bindActions()
     }
 }
 
-// MARK: - delegate
-@MainActor
-protocol OnboardingDelegate {
-    func loginAction(loginType: LoginTypes)
-}
+extension OnboardingViewController {
+    private func bindActions() {
+        onboardingPage.loginTapped
+            .asSignal()
+            .emit(onNext: { [weak self] loginType in
+                self?.login(loginType: loginType)
+            })
+            .disposed(by: disposeBag)
+    }
 
-extension OnboardingViewController: OnboardingDelegate {
-    func loginAction(loginType: LoginTypes) {
+    private func login(loginType: LoginTypes) {
         runTask { [weak self] in
             guard let self else { return }
             try await viewModel.login(loginType: loginType)
