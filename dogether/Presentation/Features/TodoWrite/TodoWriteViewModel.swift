@@ -7,16 +7,69 @@
 
 import Foundation
 
+import RxCocoa
 import RxRelay
+import RxSwift
 
 @MainActor
 final class TodoWriteViewModel {
+    struct Input {
+        let viewDidAppear: Signal<Void>
+        let todoChanged: Signal<String>
+        let addTapped: Signal<Void>
+        let removeTapped: Signal<Int>
+        let keyboardVisibleChanged: Signal<Bool>
+    }
+
+    struct Output {
+        let todoWriteViewDatas: Driver<TodoWriteViewDatas>
+    }
+
     private let challengeGroupsUseCase: ChallengeGroupUseCase
+    private let disposeBag = DisposeBag()
     
-    private(set) var todoWriteViewDatas = BehaviorRelay<TodoWriteViewDatas>(value: TodoWriteViewDatas())
+    private let todoWriteViewDatas = BehaviorRelay<TodoWriteViewDatas>(value: TodoWriteViewDatas())
     
     init(challengeGroupsUseCase: ChallengeGroupUseCase) {
         self.challengeGroupsUseCase = challengeGroupsUseCase
+    }
+
+    func transform(input: Input) -> Output {
+        input.viewDidAppear
+            .emit(onNext: { [weak self] in
+                self?.updateIsFirstResponder(isFirstResponder: true)
+            })
+            .disposed(by: disposeBag)
+
+        input.todoChanged
+            .emit(onNext: { [weak self] todo in
+                self?.updateTodo(todo: todo)
+            })
+            .disposed(by: disposeBag)
+
+        input.addTapped
+            .emit(onNext: { [weak self] in
+                self?.addTodo()
+            })
+            .disposed(by: disposeBag)
+
+        input.removeTapped
+            .emit(onNext: { [weak self] index in
+                self?.removeTodo(index: index)
+            })
+            .disposed(by: disposeBag)
+
+        input.keyboardVisibleChanged
+            .emit(onNext: { [weak self] isShowKeyboard in
+                self?.updateIsShowKeyboard(isShowKeyboard: isShowKeyboard)
+            })
+            .disposed(by: disposeBag)
+
+        return Output(todoWriteViewDatas: todoWriteViewDatas.asDriver())
+    }
+
+    func setDatas(_ datas: TodoWriteViewDatas) {
+        todoWriteViewDatas.accept(datas)
     }
 }
 
@@ -33,7 +86,7 @@ extension TodoWriteViewModel {
         todoWriteViewDatas.update { $0.todo = todo }
     }
     
-    func addTodo(todoMaxCount: Int) {
+    func addTodo(todoMaxCount: Int = 10) {
         let todo = todoWriteViewDatas.value.todo
         let todos = todoWriteViewDatas.value.todos
         if todo.isEmpty || todos.count >= todoMaxCount { return }

@@ -7,33 +7,14 @@
 
 import UIKit
 
+import RxRelay
+
 final class TodoWritePage: BasePage {
-    var delegate: TodoWriteDelegate? {
-        didSet {
-            todoTextField.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    let todo = String((todoTextField.text ?? "").prefix(todoMaxLength))
-                    todoTextField.text = todo
-                    delegate?.updateTodoAction(todo: todo)
-                }, for: .editingChanged
-            )
-            
-            addButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.addTodoAction(todoMaxCount: todoMaxCount)
-                }, for: .touchUpInside
-            )
-            
-            saveButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.saveTodoAction()
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let todoChanged = PublishRelay<String>()
+    let addTapped = PublishRelay<Void>()
+    let saveTapped = PublishRelay<Void>()
+    let removeTapped = PublishRelay<Int>()
+    let keyboardVisibleChanged = PublishRelay<Bool>()
     
     private let navigationHeader = NavigationHeader(title: "투두 작성")
     
@@ -139,6 +120,30 @@ final class TodoWritePage: BasePage {
         }
         
         navigationHeader.delegate = coordinatorDelegate
+
+        todoTextField.addAction(
+            UIAction { [weak self] _ in
+                guard let self else { return }
+                let todo = String((todoTextField.text ?? "").prefix(todoMaxLength))
+                todoTextField.text = todo
+                todoChanged.accept(todo)
+            },
+            for: .editingChanged
+        )
+
+        addButton.addAction(
+            UIAction { [weak self] _ in
+                self?.addTapped.accept(())
+            },
+            for: .touchUpInside
+        )
+
+        saveButton.addAction(
+            UIAction { [weak self] _ in
+                self?.saveTapped.accept(())
+            },
+            for: .touchUpInside
+        )
 
         todoTextField.delegate = self
 
@@ -333,7 +338,7 @@ extension TodoWritePage: UITableViewDelegate, UITableViewDataSource {
         
         cell.setExtraInfo(todo: (currentTodos ?? [])[indexPath.row], index: indexPath.row) { [weak self] index in
             guard let self else { return }
-            delegate?.removeTodoAction(index: index)
+            removeTapped.accept(index)
         }
         
         return cell
@@ -344,15 +349,15 @@ extension TodoWritePage: UITableViewDelegate, UITableViewDataSource {
 extension TodoWritePage: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         guard addButton.isEnabled else { return false }
-        delegate?.addTodoAction(todoMaxCount: todoMaxCount)
+        addTapped.accept(())
         return true
     }
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
-        delegate?.updateIsShowKeyboardAction(isShowKeyboard: true)
+        keyboardVisibleChanged.accept(true)
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
-        delegate?.updateIsShowKeyboardAction(isShowKeyboard: false)
+        keyboardVisibleChanged.accept(false)
     }
 }

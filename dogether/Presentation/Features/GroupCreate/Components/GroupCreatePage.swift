@@ -6,16 +6,17 @@
 //
 
 import UIKit
+
+import RxRelay
 import SnapKit
 
 final class GroupCreatePage: BasePage {
-    var delegate: GroupCreateDelegate? {
-        didSet {
-            stepButtonStackView.delegate = delegate
-            stepOneView.delegate = delegate
-            stepTwoView.delegate = delegate
-        }
-    }
+    let stepChanged = PublishRelay<CreateGroupSteps?>()
+    let groupNameChanged = PublishRelay<String>()
+    let memberCountChanged = PublishRelay<(count: Int, min: Int, max: Int)>()
+    let durationSelected = PublishRelay<GroupChallengeDurations>()
+    let startAtSelected = PublishRelay<GroupStartAts>()
+    let createTapped = PublishRelay<Void>()
     
     private let navigationHeader = NavigationHeader(title: "그룹 만들기")
     private let stepInfoStackView = StepInfoStackView()
@@ -34,6 +35,9 @@ final class GroupCreatePage: BasePage {
         }
 
         navigationHeader.delegate = coordinatorDelegate
+        stepButtonStackView.delegate = self
+        stepOneView.delegate = self
+        stepTwoView.delegate = self
     }
     
     override func configureHierarchy() {
@@ -98,5 +102,41 @@ final class GroupCreatePage: BasePage {
                 stepThreeView.updateView(datas)
             }
         }
+    }
+}
+
+@MainActor
+protocol GroupCreateDelegate {
+    func updateStep(step: CreateGroupSteps?)
+    func updateGroupNameAction(groupName: String)
+    func updateCountAction(currentCount: Int, min: Int, max: Int)
+    func updateDuration(duration: GroupChallengeDurations)
+    func updateStartAt(startAt: GroupStartAts)
+    func createGroup()
+}
+
+extension GroupCreatePage: GroupCreateDelegate {
+    func updateStep(step: CreateGroupSteps?) {
+        stepChanged.accept(step)
+    }
+
+    func updateGroupNameAction(groupName: String) {
+        groupNameChanged.accept(groupName)
+    }
+
+    func updateCountAction(currentCount: Int, min: Int, max: Int) {
+        memberCountChanged.accept((currentCount, min, max))
+    }
+
+    func updateDuration(duration: GroupChallengeDurations) {
+        durationSelected.accept(duration)
+    }
+
+    func updateStartAt(startAt: GroupStartAts) {
+        startAtSelected.accept(startAt)
+    }
+
+    func createGroup() {
+        createTapped.accept(())
     }
 }
