@@ -7,29 +7,11 @@
 
 import UIKit
 
+import RxRelay
+
 final class FilterButton: BaseButton {
-    var mainDelegate: MainDelegate? {
-        didSet {
-            addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    mainDelegate?.selectFilterAction(filterType: type)
-                }, for: .touchUpInside
-            )
-        }
-    }
-    
-    var certificationListDelegate: CertificationListPageDelegate? {
-        didSet {
-            addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    certificationListDelegate?.selectFilterAction(filterType: type)
-                }, for: .touchUpInside
-            )
-        }
-    }
-    
+    let filterSelected = PublishRelay<FilterTypes>()
+
     private let type: FilterTypes
     
     init(type: FilterTypes) {
@@ -58,7 +40,14 @@ final class FilterButton: BaseButton {
         stackView.isUserInteractionEnabled = false
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        addAction(
+            UIAction { [weak self] _ in
+                guard let self else { return }
+                filterSelected.accept(type)
+            }, for: .touchUpInside
+        )
+    }
     
     override func configureHierarchy() {
         let views = icon.image == nil ? [label] : [icon, label]
