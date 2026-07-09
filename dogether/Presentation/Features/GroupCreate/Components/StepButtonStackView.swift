@@ -7,25 +7,11 @@
 
 import UIKit
 
+import RxRelay
+
 final class StepButtonStackView: BaseStackView {
-    var delegate: GroupCreateDelegate? {
-        didSet {
-            [prevButton, nextButton].forEach { button in
-                button.addAction(
-                    UIAction { [weak self] _ in
-                        guard let self, let currentStep else { return }
-                        delegate?.updateStep(step: CreateGroupSteps(rawValue: currentStep.rawValue + button.tag))
-                    }, for: .touchUpInside
-                )
-            }
-            createButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.createGroup()
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let stepChanged = PublishRelay<CreateGroupSteps?>()
+    let createTapped = PublishRelay<Void>()
     
     // FIXME: 추후 수정
     private let prevButton = UIButton()
@@ -50,7 +36,22 @@ final class StepButtonStackView: BaseStackView {
         nextButton.tag = Directions.next.tag
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        [prevButton, nextButton].forEach { button in
+            button.addAction(
+                UIAction { [weak self] _ in
+                    guard let self, let currentStep else { return }
+                    stepChanged.accept(CreateGroupSteps(rawValue: currentStep.rawValue + button.tag))
+                }, for: .touchUpInside
+            )
+        }
+
+        createButton.addAction(
+            UIAction { [weak self] _ in
+                self?.createTapped.accept(())
+            }, for: .touchUpInside
+        )
+    }
     
     override func configureHierarchy() { }
     

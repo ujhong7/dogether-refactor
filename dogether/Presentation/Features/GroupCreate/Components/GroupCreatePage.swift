@@ -8,6 +8,7 @@
 import UIKit
 
 import RxRelay
+import RxSwift
 import SnapKit
 
 final class GroupCreatePage: BasePage {
@@ -25,6 +26,7 @@ final class GroupCreatePage: BasePage {
     private var stepOneView = StepOneView()
     private var stepTwoView = StepTwoView()
     private var stepThreeView = StepThreeView()
+    private let disposeBag = DisposeBag()
     
     override func configureView() { }
     
@@ -35,9 +37,30 @@ final class GroupCreatePage: BasePage {
         }
 
         navigationHeader.delegate = coordinatorDelegate
-        stepButtonStackView.delegate = self
-        stepOneView.delegate = self
-        stepTwoView.delegate = self
+
+        stepButtonStackView.stepChanged
+            .bind(to: stepChanged)
+            .disposed(by: disposeBag)
+
+        stepButtonStackView.createTapped
+            .bind(to: createTapped)
+            .disposed(by: disposeBag)
+
+        stepOneView.groupNameChanged
+            .bind(to: groupNameChanged)
+            .disposed(by: disposeBag)
+
+        stepOneView.memberCountChanged
+            .bind(to: memberCountChanged)
+            .disposed(by: disposeBag)
+
+        stepTwoView.durationSelected
+            .bind(to: durationSelected)
+            .disposed(by: disposeBag)
+
+        stepTwoView.startAtSelected
+            .bind(to: startAtSelected)
+            .disposed(by: disposeBag)
     }
     
     override func configureHierarchy() {
@@ -102,41 +125,5 @@ final class GroupCreatePage: BasePage {
                 stepThreeView.updateView(datas)
             }
         }
-    }
-}
-
-@MainActor
-protocol GroupCreateDelegate {
-    func updateStep(step: CreateGroupSteps?)
-    func updateGroupNameAction(groupName: String)
-    func updateCountAction(currentCount: Int, min: Int, max: Int)
-    func updateDuration(duration: GroupChallengeDurations)
-    func updateStartAt(startAt: GroupStartAts)
-    func createGroup()
-}
-
-extension GroupCreatePage: GroupCreateDelegate {
-    func updateStep(step: CreateGroupSteps?) {
-        stepChanged.accept(step)
-    }
-
-    func updateGroupNameAction(groupName: String) {
-        groupNameChanged.accept(groupName)
-    }
-
-    func updateCountAction(currentCount: Int, min: Int, max: Int) {
-        memberCountChanged.accept((currentCount, min, max))
-    }
-
-    func updateDuration(duration: GroupChallengeDurations) {
-        durationSelected.accept(duration)
-    }
-
-    func updateStartAt(startAt: GroupStartAts) {
-        startAtSelected.accept(startAt)
-    }
-
-    func createGroup() {
-        createTapped.accept(())
     }
 }

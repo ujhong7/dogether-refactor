@@ -7,19 +7,10 @@
 
 import UIKit
 
+import RxRelay
+
 final class CounterView: BaseView {
-    var delegate: GroupCreateDelegate? {
-        didSet {
-            [minusButton, plusButton].forEach { button in
-                button.addAction(
-                    UIAction { [weak self, weak button] _ in
-                        guard let self, let currentCount, let button else { return }
-                        delegate?.updateCountAction(currentCount: currentCount + button.tag, min: min, max: max)
-                    }, for: .touchUpInside
-                )
-            }
-        }
-    }
+    let memberCountChanged = PublishRelay<(count: Int, min: Int, max: Int)>()
     
     private let dogetherCountView = UIView()
     private let minusButton = UIButton()
@@ -70,7 +61,16 @@ final class CounterView: BaseView {
         maxLabel.font = Fonts.body2S
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        [minusButton, plusButton].forEach { button in
+            button.addAction(
+                UIAction { [weak self, weak button] _ in
+                    guard let self, let currentCount, let button else { return }
+                    memberCountChanged.accept((currentCount + button.tag, min, max))
+                }, for: .touchUpInside
+            )
+        }
+    }
     
     override func configureHierarchy() {
         [dogetherCountView, minLabel, maxLabel].forEach { addSubview($0) }
