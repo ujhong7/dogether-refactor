@@ -33,7 +33,7 @@ final class MainViewController: BaseViewController {
         
         loadMainView()
         
-        coordinator?.updateViewController = loadMainView
+        coordinator?.setRefreshAction(loadMainView)
     }
     
     override func setViewDatas() {
@@ -49,12 +49,7 @@ extension MainViewController {
         checkAuthorization()
         getReviews()
         
-        if let code = DeepLinkManager.shared.consumeInviteCode() {
-            guard let coordinator else { return }
-            let groupJoinViewController = coordinator.appFactory.makeGroupJoinViewController()
-            let groupJoinViewDatas = GroupJoinViewDatas(code: code)
-            coordinator.pushViewController(groupJoinViewController, datas: groupJoinViewDatas)
-        }
+        coordinator?.handlePendingInviteDeepLink()
     }
     
     private func checkAuthorization() {
@@ -95,7 +90,7 @@ extension MainViewController {
             
             if groupViewDatas.groups.isEmpty {
                 guard let coordinator else { return }
-                coordinator.setNavigationController(coordinator.appFactory.makeStartViewController())
+                coordinator.setStart()
                 return
             }
             
@@ -145,9 +140,8 @@ extension MainViewController: MainDelegate {
     
     func goRankingViewAction() {
         guard let coordinator else { return }
-        let rankingViewController = coordinator.appFactory.makeRankingViewController()
         let rankingViewDatas = RankingViewDatas(groupId: viewModel.currentGroup.id)
-        coordinator.pushViewController(rankingViewController, datas: rankingViewDatas)
+        coordinator.pushRanking(datas: rankingViewDatas)
     }
     
     func updateBottomSheetVisibleAction(isShowSheet: Bool) {
@@ -168,9 +162,8 @@ extension MainViewController: MainDelegate {
     
     func addGroupAction() {
         guard let coordinator else { return }
-        let startViewController = coordinator.appFactory.makeStartViewController()
         let startViewDatas = StartViewDatas(isFirstGroup: false)
-        coordinator.pushViewController(startViewController, datas: startViewDatas)
+        coordinator.pushStart(datas: startViewDatas)
     }
     
     func inviteAction() {
@@ -224,12 +217,11 @@ extension MainViewController: MainDelegate {
     
     func goWriteTodoViewAction(todos: [TodoEntity]) {
         guard let coordinator else { return }
-        let todoWriteViewController = coordinator.appFactory.makeTodoWriteViewController()
         let todoWriteViewDatas = TodoWriteViewDatas(
             groupId: viewModel.currentGroup.id,
             todos: todos.map { WriteTodoEntity(content: $0.content, enabled: false) }
         )
-        coordinator.pushViewController(todoWriteViewController, datas: todoWriteViewDatas)
+        coordinator.pushTodoWrite(datas: todoWriteViewDatas)
     }
     
     func selectFilterAction(filterType: FilterTypes) {
@@ -239,14 +231,12 @@ extension MainViewController: MainDelegate {
     
     func goCertificateViewAction(todo: TodoEntity) {
         guard let coordinator else { return }
-        let certificateImageViewController = coordinator.appFactory.makeCertificateImageViewController()
         let certificateViewDatas = CertificateViewDatas(todo: todo)
-        coordinator.pushViewController(certificateImageViewController, datas: certificateViewDatas)
+        coordinator.pushCertificateImage(datas: certificateViewDatas)
     }
     
     func goCertificationViewAction(index: Int) {
         guard let coordinator else { return }
-        let certificationViewController = coordinator.appFactory.makeCertificationViewController()
         let certificationViewDatas = CertificationViewDatas(
             title: "내 인증 정보",
             todos: viewModel.sheetViewDatas.value.todoList.filter {
@@ -254,6 +244,6 @@ extension MainViewController: MainDelegate {
             },
             index: index
         )
-        coordinator.pushViewController(certificationViewController, datas: certificationViewDatas)
+        coordinator.pushCertification(datas: certificationViewDatas)
     }
 }

@@ -40,7 +40,7 @@ extension SettingViewController: SettingDelegate {
             guard let self else { return }
             viewModel.logout()
             guard let coordinator else { return }
-            coordinator.setNavigationController(coordinator.appFactory.makeOnboardingViewController())
+            coordinator.setOnboarding()
         }
     }
     
@@ -52,7 +52,7 @@ extension SettingViewController: SettingDelegate {
                 try await viewModel.withdraw()
                 viewModel.logout()
                 guard let coordinator else { return }
-                coordinator.setNavigationController(coordinator.appFactory.makeOnboardingViewController())
+                coordinator.setOnboarding()
             }
         }
     }

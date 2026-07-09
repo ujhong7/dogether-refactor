@@ -47,9 +47,8 @@ protocol CertificateImageDelegate {
 extension CertificateImageViewController: CertificateImageDelegate {
     func goCertificateContentViewAction() {
         guard let coordinator else { return }
-        let certificateContentViewController = coordinator.appFactory.makeCertificateContentViewController()
         let certificateViewDatas = viewModel.certificateViewDatas.value
-        coordinator.pushViewController(certificateContentViewController, datas: certificateViewDatas)
+        coordinator.pushCertificateContent(datas: certificateViewDatas)
     }
     
     func showPopupAction(type: AlertTypes) {

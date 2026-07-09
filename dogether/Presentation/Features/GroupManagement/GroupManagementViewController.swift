@@ -31,7 +31,7 @@ final class GroupManagementViewController: BaseViewController {
         
         loadGroups()
         
-        coordinator?.updateViewController = loadGroups
+        coordinator?.setRefreshAction(loadGroups)
     }
 
     override func setViewDatas() {
@@ -69,6 +69,6 @@ extension GroupManagementViewController: GroupManagementDelegate {
     
     func addGroupAction() {
         guard let coordinator else { return }
-        coordinator.pushViewController(coordinator.appFactory.makeGroupCreateViewController())
+        coordinator.pushGroupCreate()
     }
 }

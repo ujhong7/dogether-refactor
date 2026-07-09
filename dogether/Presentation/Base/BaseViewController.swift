@@ -11,7 +11,7 @@ import RxSwift
 import RxCocoa
 
 class BaseViewController: UIViewController, CoordinatorDelegate {
-    weak var coordinator: NavigationCoordinator?
+    weak var coordinator: (any NavigationCoordinating)?
     var datas: (any BaseEntity)?
     var pages: Array<BasePage>?
     
@@ -152,7 +152,7 @@ extension BaseViewController {
             guard let self else { return }
             UserDefaultsManager.logout()
             guard let coordinator else { return }
-            coordinator.setNavigationController(coordinator.appFactory.makeOnboardingViewController())
+            coordinator.setOnboarding()
         }
     }
 

@@ -31,7 +31,7 @@ final class StatsViewController: BaseViewController {
         
         loadStatsView()
         
-        coordinator?.updateViewController = loadStatsView
+        coordinator?.setRefreshAction(loadStatsView)
     }
 
     override func setViewDatas() {
@@ -83,6 +83,6 @@ extension StatsViewController: StatsDelegate {
     
     func addGroupAction() {
         guard let coordinator else { return }
-        coordinator.pushViewController(coordinator.appFactory.makeGroupCreateViewController())
+        coordinator.pushGroupCreate()
     }
 }

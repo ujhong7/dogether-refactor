@@ -72,7 +72,6 @@ extension GroupCreateViewController: GroupCreateDelegate {
             guard let self else { return }
             let joinCode = try await viewModel.createGroup()
             guard let coordinator else { return }
-            let completeViewController = coordinator.appFactory.makeCompleteViewController()
             let completeViewDatas = CompleteViewDatas(
                 groupType: .create,
                 joinCode: joinCode,
@@ -80,7 +79,7 @@ extension GroupCreateViewController: GroupCreateDelegate {
                     name: viewModel.groupCreateViewDatas.value.groupName
                 )
             )
-            coordinator.setNavigationController(completeViewController, datas: completeViewDatas)
+            coordinator.setComplete(datas: completeViewDatas)
         }
     }
 }

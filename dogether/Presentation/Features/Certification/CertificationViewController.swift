@@ -108,8 +108,7 @@ extension CertificationViewController: CertificationDelegate {
 
     func goCertificateViewAction(todo: TodoEntity) {
         guard let coordinator else { return }
-        let certificateImageViewController = coordinator.appFactory.makeCertificateImageViewController()
         let certificateViewDatas = CertificateViewDatas(todo: todo)
-        coordinator.pushViewController(certificateImageViewController, datas: certificateViewDatas)
+        coordinator.pushCertificateImage(datas: certificateViewDatas)
     }
 }

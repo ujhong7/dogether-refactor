@@ -32,9 +32,8 @@ extension StartViewController {
     private func onAppear() {
         if let code = DeepLinkManager.shared.consumeInviteCode() {
             guard let coordinator else { return }
-            let groupJoinViewController = coordinator.appFactory.makeGroupJoinViewController()
             let groupJoinViewDatas = GroupJoinViewDatas(code: code)
-            coordinator.pushViewController(groupJoinViewController, datas: groupJoinViewDatas)
+            coordinator.pushGroupJoin(datas: groupJoinViewDatas)
         }
     }
 }
@@ -51,9 +50,9 @@ extension StartViewController: StartDelegate {
 
         switch groupType {
         case .create:
-            coordinator.pushViewController(coordinator.appFactory.makeGroupCreateViewController())
+            coordinator.pushGroupCreate()
         case .join:
-            coordinator.pushViewController(coordinator.appFactory.makeGroupJoinViewController())
+            coordinator.pushGroupJoin()
         }
     }
 }
