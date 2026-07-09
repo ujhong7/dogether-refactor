@@ -31,8 +31,8 @@ final class CertificationListViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // FIXME: 추후에 API 세분화 되면 Stats API만 updateViewController 지정, 호출 필요 x
-//        coordinator?.updateViewController = loadSummaryView
+        // FIXME: 추후에 API 세분화 되면 Stats API만 refreshAction 지정, 호출 필요 x
+//        coordinator?.setRefreshAction(loadSummaryView)
     }
     
     override func setViewDatas() {
@@ -82,9 +82,8 @@ extension CertificationListViewController: CertificationListPageDelegate {
     
     func selectCertificationAction(title: String, todos: [TodoEntity], index: Int) {
         guard let coordinator else { return }
-        let certificationViewController = coordinator.appFactory.makeCertificationViewController()
         let certificationViewDatas = CertificationViewDatas(title: title, todos: todos, index: index)
-        coordinator.pushViewController(certificationViewController, datas: certificationViewDatas)
+        coordinator.pushCertification(datas: certificationViewDatas)
     }
     
     func didScrollToBottom() {

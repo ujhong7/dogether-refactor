@@ -32,7 +32,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         Task { @MainActor in
             await resolveDeepLink(userActivity: connectionOptions.userActivities.first)
             
-            coordinator?.setNavigationController(appFactory.makeSplashViewController())
+            coordinator?.setSplash()
         }
     }
     
@@ -48,9 +48,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             
             if let code = DeepLinkManager.shared.consumeInviteCode() {
                 guard let coordinator else { return }
-                let groupJoinViewController = coordinator.appFactory.makeGroupJoinViewController()
                 let groupJoinViewDatas = GroupJoinViewDatas(code: code)
-                coordinator.pushViewController(groupJoinViewController, datas: groupJoinViewDatas)
+                coordinator.pushGroupJoin(datas: groupJoinViewDatas)
             }
         }
     }

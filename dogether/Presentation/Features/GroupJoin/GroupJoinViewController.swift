@@ -73,8 +73,7 @@ extension GroupJoinViewController: GroupJoinDelegate {
             guard let self else { return }
             let groupInfo = try await viewModel.joinGroup()
             guard let coordinator else { return }
-            coordinator.setNavigationController(
-                coordinator.appFactory.makeCompleteViewController(),
+            coordinator.setComplete(
                 datas: CompleteViewDatas(
                     groupType: .join,
                     groupEntity: groupInfo

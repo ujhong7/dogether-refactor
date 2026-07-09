@@ -41,12 +41,12 @@ extension OnboardingViewController: OnboardingDelegate {
 
             if try await viewModel.checkParticipating() {
                 guard let coordinator else { return }
-                coordinator.setNavigationController(coordinator.appFactory.makeStartViewController())
+                coordinator.setStart()
                 return
             }
 
             guard let coordinator else { return }
-            coordinator.setNavigationController(coordinator.appFactory.makeMainViewController())
+            coordinator.setMain()
         }
     }
 }

@@ -31,7 +31,7 @@ final class RankingViewController: BaseViewController {
         
         loadRankingView()
         
-        coordinator?.updateViewController = loadRankingView
+        coordinator?.setRefreshAction(loadRankingView)
     }
     
     override func setViewDatas() {
@@ -64,7 +64,6 @@ extension RankingViewController: RankingDelegate {
             let (index, todos) = try await viewModel.getMemberTodos(memberId: rankingEntity.memberId)
 
             guard let coordinator else { return }
-            let certificationViewController = coordinator.appFactory.makeCertificationViewController()
             let certificationViewDatas = CertificationViewDatas(
                 title: "\(rankingEntity.name)님의 인증 정보",
                 todos: todos,
@@ -72,7 +71,7 @@ extension RankingViewController: RankingDelegate {
                 groupId: viewModel.rankingViewDatas.value.groupId,
                 rankingEntity: rankingEntity
             )
-            coordinator.pushViewController(certificationViewController, datas: certificationViewDatas)
+            coordinator.pushCertification(datas: certificationViewDatas)
         }
     }
 }

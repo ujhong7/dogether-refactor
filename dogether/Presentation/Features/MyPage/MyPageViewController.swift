@@ -54,18 +54,18 @@ protocol MyPageDelegate: AnyObject {
 extension MyPageViewController: MyPageDelegate {
     func goStatsViewAction() {
         guard let coordinator else { return }
-        coordinator.pushViewController(coordinator.appFactory.makeStatsViewController())
+        coordinator.pushStats()
     }
     func goMyTodoListAction() {
         guard let coordinator else { return }
-        coordinator.pushViewController(coordinator.appFactory.makeCertificationListViewController())
+        coordinator.pushCertificationList()
     }
     func goGroupManagementAction() {
         guard let coordinator else { return }
-        coordinator.pushViewController(coordinator.appFactory.makeGroupManagementViewController())
+        coordinator.pushGroupManagement()
     }
     func goSettingViewAction() {
         guard let coordinator else { return }
-        coordinator.pushViewController(coordinator.appFactory.makeSettingViewController())
+        coordinator.pushSetting()
     }
 }

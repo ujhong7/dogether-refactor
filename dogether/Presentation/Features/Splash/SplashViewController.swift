@@ -35,22 +35,22 @@ extension SplashViewController {
 
             if try await viewModel.checkUpdate() {
                 guard let coordinator else { return }
-                coordinator.setNavigationController(coordinator.appFactory.makeUpdateViewController())
+                coordinator.setUpdate()
                 return
             }
 
             if viewModel.checkLogin() {
                 guard let coordinator else { return }
-                coordinator.setNavigationController(coordinator.appFactory.makeOnboardingViewController())
+                coordinator.setOnboarding()
                 return
             }
 
             if try await viewModel.checkParticipating() {
                 guard let coordinator else { return }
-                coordinator.setNavigationController(coordinator.appFactory.makeStartViewController())
+                coordinator.setStart()
             } else {
                 guard let coordinator else { return }
-                coordinator.setNavigationController(coordinator.appFactory.makeMainViewController())
+                coordinator.setMain()
             }
         }
     }

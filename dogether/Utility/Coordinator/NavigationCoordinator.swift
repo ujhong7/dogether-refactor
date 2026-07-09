@@ -10,30 +10,166 @@ import UIKit
 // MARK: AnyObject를 채택해 '클래스 전용' 프로토콜로 만들어 줌
 @MainActor
 protocol CoordinatorDelegate: AnyObject {
-    var coordinator: NavigationCoordinator? { get set }
+    var coordinator: (any NavigationCoordinating)? { get set }
 }
 
 @MainActor
-final class NavigationCoordinator: NSObject {
-    private let navigationController: UINavigationController
-    private let todoCertificationsUseCase: TodoCertificationsUseCase
-    private var modalityWindow: UIWindow? = nil
-    let appFactory: AppFactory
-    
-    private var lastViewController: UIViewController? {
+protocol NavigationCoordinating: AnyObject {
+    func setRefreshAction(_ action: (() -> Void)?)
+    func checkCurrentViewController(_ types: UIViewController.Type...) -> Bool
+
+    func popViewController(animated: Bool)
+    func popViewControllers(num: Int, animated: Bool)
+
+    func setSplash(animated: Bool)
+    func setOnboarding(animated: Bool)
+    func setStart(animated: Bool)
+    func setMain(animated: Bool)
+    func setUpdate(animated: Bool)
+    func setComplete(datas: CompleteViewDatas?, animated: Bool)
+
+    func pushGroupJoin(datas: GroupJoinViewDatas?, animated: Bool)
+    func pushGroupCreate(animated: Bool)
+    func pushMyPage(animated: Bool)
+    func pushStats(animated: Bool)
+    func pushCertificationList(animated: Bool)
+    func pushGroupManagement(animated: Bool)
+    func pushSetting(animated: Bool)
+    func pushRanking(datas: RankingViewDatas?, animated: Bool)
+    func pushStart(datas: StartViewDatas?, animated: Bool)
+    func pushTodoWrite(datas: TodoWriteViewDatas?, animated: Bool)
+    func pushCertificateImage(datas: CertificateViewDatas?, animated: Bool)
+    func pushCertificateContent(datas: CertificateViewDatas?, animated: Bool)
+    func pushCertification(datas: CertificationViewDatas?, animated: Bool)
+
+    func showPopup(
+        type: PopupTypes,
+        alertType: AlertTypes?,
+        animated: Bool,
+        completion: ((Any) -> Void)?
+    )
+    func hidePopup(animated: Bool)
+
+    func showModal(reviews: [ReviewEntity])
+    func hideModal()
+
+    func showErrorView(completion: @escaping () -> Void)
+    func dismissErrorView(completion: @escaping () -> Void)
+}
+
+extension NavigationCoordinating {
+    func popViewController() {
+        popViewController(animated: true)
+    }
+
+    func popViewControllers(num: Int) {
+        popViewControllers(num: num, animated: true)
+    }
+
+    func setSplash() {
+        setSplash(animated: true)
+    }
+
+    func setOnboarding() {
+        setOnboarding(animated: true)
+    }
+
+    func setStart() {
+        setStart(animated: true)
+    }
+
+    func setMain() {
+        setMain(animated: true)
+    }
+
+    func setUpdate() {
+        setUpdate(animated: true)
+    }
+
+    func setComplete(datas: CompleteViewDatas?) {
+        setComplete(datas: datas, animated: true)
+    }
+
+    func pushGroupJoin(datas: GroupJoinViewDatas? = nil) {
+        pushGroupJoin(datas: datas, animated: true)
+    }
+
+    func pushGroupCreate() {
+        pushGroupCreate(animated: true)
+    }
+
+    func pushMyPage() {
+        pushMyPage(animated: true)
+    }
+
+    func pushStats() {
+        pushStats(animated: true)
+    }
+
+    func pushCertificationList() {
+        pushCertificationList(animated: true)
+    }
+
+    func pushGroupManagement() {
+        pushGroupManagement(animated: true)
+    }
+
+    func pushSetting() {
+        pushSetting(animated: true)
+    }
+
+    func pushRanking(datas: RankingViewDatas?) {
+        pushRanking(datas: datas, animated: true)
+    }
+
+    func pushStart(datas: StartViewDatas?) {
+        pushStart(datas: datas, animated: true)
+    }
+
+    func pushTodoWrite(datas: TodoWriteViewDatas?) {
+        pushTodoWrite(datas: datas, animated: true)
+    }
+
+    func pushCertificateImage(datas: CertificateViewDatas?) {
+        pushCertificateImage(datas: datas, animated: true)
+    }
+
+    func pushCertificateContent(datas: CertificateViewDatas?) {
+        pushCertificateContent(datas: datas, animated: true)
+    }
+
+    func pushCertification(datas: CertificationViewDatas?) {
+        pushCertification(datas: datas, animated: true)
+    }
+
+    func showPopup(
+        type: PopupTypes,
+        alertType: AlertTypes? = nil,
+        completion: ((Any) -> Void)? = nil
+    ) {
+        showPopup(type: type, alertType: alertType, animated: true, completion: completion)
+    }
+
+    func hidePopup() {
+        hidePopup(animated: true)
+    }
+}
+
+@MainActor
+final class NavigationCoordinator: NSObject, NavigationCoordinating {
+    let navigationController: UINavigationController
+    let todoCertificationsUseCase: TodoCertificationsUseCase
+
+    private let appFactory: AppFactory
+
+    var modalityWindow: UIWindow?
+    var refreshAction: (() -> Void)?
+
+    var lastViewController: UIViewController? {
         if let modalityWindow { return modalityWindow.rootViewController }
-        else { return navigationController.viewControllers.last }
+        return navigationController.viewControllers.last
     }
-    
-    // MARK: 날짜 이동, pushNotice에 반응하여 viewController 자체를 update하는 임시 함수
-    var updateViewController: (() -> Void)? = nil
-    
-    func checkCurrentViewController(_ types: UIViewController.Type...) -> Bool {
-        guard let currentViewController = navigationController.viewControllers.last else { return false }
-        
-        return types.contains { currentViewController.isKind(of: $0) }
-    }
-    
+
     init(
         navigationController: UINavigationController,
         appFactory: AppFactory,
@@ -43,230 +179,101 @@ final class NavigationCoordinator: NSObject {
         self.appFactory = appFactory
         self.todoCertificationsUseCase = todoCertificationsUseCase
         super.init()
-        
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(updateLastAccessDate),
             name: .NSCalendarDayChanged, object: nil
         )
     }
-    
+
     deinit {
         NotificationCenter.default.removeObserver(self, name: .NSCalendarDayChanged, object: nil)
     }
 }
 
-// MARK: view
 extension NavigationCoordinator {
-    func setNavigationController(
-        _ viewControllers: BaseViewController...,
-        datas: (any BaseEntity)? = nil,
-        animated: Bool = true
-    ) {
-        // MARK: 하나 이상의 viewController 확인
-        if viewControllers.isEmpty { return }
-        
-        // MARK: 마지막 viewController에만 datas 연동
-        viewControllers.forEach { $0.coordinator = self }
-        viewControllers.last?.datas = datas
-        updateViewController = nil
-        
-        navigationController.setViewControllers(viewControllers, animated: animated)
-        navigationController.interactivePopGestureRecognizer?.delegate = self
-    }
-    
-    func pushViewController(_ viewController: BaseViewController, datas: (any BaseEntity)? = nil, animated: Bool = true) {
-        // MARK: 새로 넣으려는 viewController와 현재 viewController가 같을 때는 page update
-        if let currentViewController = navigationController.viewControllers.last as? BaseViewController,
-           let datas, type(of: viewController) == type(of: currentViewController) {
-            currentViewController.pages?.forEach { $0.updateView(datas) }
-            return
-        }
-        
-        viewController.coordinator = self
-        viewController.datas = datas
-        updateViewController = nil
-        
-        navigationController.pushViewController(viewController, animated: animated)
+    func makeSplashViewController() -> SplashViewController {
+        appFactory.makeSplashViewController()
     }
 
-    func popViewController(animated: Bool = true) {
-        updateViewController = nil
-        
-        navigationController.popViewController(animated: animated)
-    }
-    
-    func popViewControllers(num: Int = 1, animated: Bool = true) {
-        let currentIndex = navigationController.viewControllers.count - 1
-        if currentIndex - num < 0 { return }    // MARK: index가 마이너스로 넘어가는 잘못된 상황 필터링
-        
-        let targetViewController = navigationController.viewControllers[currentIndex - num]
-        
-        updateViewController = nil
-        
-        navigationController.popToViewController(targetViewController, animated: animated)
-    }
-}
-
-// MARK: popup
-extension NavigationCoordinator {
-    func showPopup(
-        type: PopupTypes,
-        alertType: AlertTypes? = nil,
-        animated: Bool = true,
-        completion: ((Any) -> Void)? = nil
-    ) {
-        let popupViewController = appFactory.makePopupViewController()
-
-        switch type {
-        case .alert:
-            let alertPopupViewDatas = AlertPopupViewDatas(type: alertType)
-            popupViewController.datas = alertPopupViewDatas
-
-        case .examinate:
-            let examinatePopupViewDatas = ExaminatePopupViewDatas()
-            popupViewController.datas = examinatePopupViewDatas
-        }
-
-        popupViewController.coordinator = self
-        popupViewController.completion = completion
-        popupViewController.modalPresentationStyle = .overFullScreen
-        popupViewController.modalTransitionStyle = .crossDissolve
-
-        lastViewController?.present(popupViewController, animated: animated)
-    }
-    
-    func hidePopup(animated: Bool = true) {
-        lastViewController?.dismiss(animated: animated)
-    }
-}
-
-// MARK: modality
-extension NavigationCoordinator {
-    func showModal(reviews: [ReviewEntity]) {
-        if let modalityWindow {
-            if let viewController = modalityWindow.rootViewController as? ModalityViewController {
-                viewController.updateReviewsAction(reviews: reviews)
-            }
-        } else {
-            let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
-            let window = UIWindow(windowScene: windowScene!)
-            let modalityViewController = appFactory.makeModalityViewController()
-            
-            modalityViewController.coordinator = self
-            modalityViewController.datas = ExaminateViewDatas(reviews: reviews)
-            window.frame = UIScreen.main.bounds
-            window.rootViewController = modalityViewController
-            window.windowLevel = .alert + 1
-            window.makeKeyAndVisible()
-            
-            modalityWindow = window
-        }
-    }
-    
-    func hideModal() {
-        modalityWindow?.isHidden = true
-        modalityWindow = nil
-    }
-}
-
-// MARK: error
-extension NavigationCoordinator {
-    func showErrorView(completion: @escaping () -> Void) {
-        if let errorViewController = navigationController.presentedViewController as? ErrorViewController {
-            errorViewController.completions.append(completion)
-        } else {
-            let errorViewController = appFactory.makeErrorViewController()
-
-            errorViewController.coordinator = self
-            errorViewController.completions.append(completion)
-            errorViewController.modalPresentationStyle = .overFullScreen
-            errorViewController.modalTransitionStyle = .crossDissolve
-
-            navigationController.present(errorViewController, animated: true)
-        }
-    }
-    
-    func dismissErrorView(completion: @escaping () -> Void) {
-        updateViewController = nil
-
-        navigationController.presentedViewController?.dismiss(animated: true) { completion() }
-    }
-}
-
-// MARK: about push notice
-extension NavigationCoordinator: NotificationHandler {
-    func handleNotification(userInfo: [AnyHashable: Any]) {
-        guard let notificationTypeString = userInfo["type"] as? String,
-              let notificationType = PushNoticeTypes(rawValue: notificationTypeString) else { return }
-        
-        switch notificationType {
-        case .certification:
-            Task { [weak self] in
-                guard let self else { return }
-                do {
-                    let reviews = try await todoCertificationsUseCase.getReviews()
-
-                    if reviews.isEmpty { return }
-                    await MainActor.run { self.showModal(reviews: reviews) }
-                } catch {
-                    await handleNotificationError(error, userInfo: userInfo)
-                }
-            }
-            
-        case .review:
-            if checkCurrentViewController(
-                MainViewController.self,
-                RankingViewController.self,
-                StatsViewController.self
-            ) {
-                updateViewController?()
-            }
-            
-        case .join:
-            if checkCurrentViewController(
-                MainViewController.self,
-                RankingViewController.self,
-                StatsViewController.self,
-                GroupManagementViewController.self
-            ) {
-                updateViewController?()
-            }
-        }
-    }
-    
-    @objc func updateLastAccessDate() {
-        if UserDefaultsManager.shared.lastAccessDate != Date().toString() {
-            UserDefaultsManager.shared.lastAccessDate = Date().toString()
-            
-            updateViewController?()
-        }
+    func makeOnboardingViewController() -> OnboardingViewController {
+        appFactory.makeOnboardingViewController()
     }
 
-    private func handleNotificationError(_ error: Error, userInfo: [AnyHashable: Any]) async {
-        switch AppErrorAction.resolve(for: error) {
-        case .retry:
-            showErrorView { [weak self] in
-                self?.handleNotification(userInfo: userInfo)
-            }
-        case .logout:
-            showLogoutPopup()
-        case .alert, .passThrough:
-            return
-        }
+    func makeStartViewController() -> StartViewController {
+        appFactory.makeStartViewController()
     }
 
-    private func showLogoutPopup() {
-        showPopup(type: .alert, alertType: .needLogout) { [weak self] _ in
-            guard let self else { return }
-            UserDefaultsManager.logout()
-            setNavigationController(appFactory.makeOnboardingViewController())
-        }
+    func makeMainViewController() -> MainViewController {
+        appFactory.makeMainViewController()
     }
-}
 
-extension NavigationCoordinator: UIGestureRecognizerDelegate {
-    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        return navigationController.viewControllers.count > 1
+    func makeUpdateViewController() -> UpdateViewController {
+        appFactory.makeUpdateViewController()
+    }
+
+    func makeCompleteViewController() -> CompleteViewController {
+        appFactory.makeCompleteViewController()
+    }
+
+    func makeGroupJoinViewController() -> GroupJoinViewController {
+        appFactory.makeGroupJoinViewController()
+    }
+
+    func makeGroupCreateViewController() -> GroupCreateViewController {
+        appFactory.makeGroupCreateViewController()
+    }
+
+    func makeMyPageViewController() -> MyPageViewController {
+        appFactory.makeMyPageViewController()
+    }
+
+    func makeStatsViewController() -> StatsViewController {
+        appFactory.makeStatsViewController()
+    }
+
+    func makeCertificationListViewController() -> CertificationListViewController {
+        appFactory.makeCertificationListViewController()
+    }
+
+    func makeGroupManagementViewController() -> GroupManagementViewController {
+        appFactory.makeGroupManagementViewController()
+    }
+
+    func makeSettingViewController() -> SettingViewController {
+        appFactory.makeSettingViewController()
+    }
+
+    func makeRankingViewController() -> RankingViewController {
+        appFactory.makeRankingViewController()
+    }
+
+    func makeCertificationViewController() -> CertificationViewController {
+        appFactory.makeCertificationViewController()
+    }
+
+    func makeCertificateImageViewController() -> CertificateImageViewController {
+        appFactory.makeCertificateImageViewController()
+    }
+
+    func makeCertificateContentViewController() -> CertificateContentViewController {
+        appFactory.makeCertificateContentViewController()
+    }
+
+    func makeTodoWriteViewController() -> TodoWriteViewController {
+        appFactory.makeTodoWriteViewController()
+    }
+
+    func makePopupViewController() -> PopupViewController {
+        appFactory.makePopupViewController()
+    }
+
+    func makeModalityViewController() -> ModalityViewController {
+        appFactory.makeModalityViewController()
+    }
+
+    func makeErrorViewController() -> ErrorViewController {
+        appFactory.makeErrorViewController()
     }
 }
