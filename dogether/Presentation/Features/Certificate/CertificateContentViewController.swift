@@ -7,9 +7,13 @@
 
 import UIKit
 
+import RxCocoa
+import RxSwift
+
 final class CertificateContentViewController: BaseViewController {
     private let certificateContentPage = CertificateContentPage()
     private let viewModel: CertificateViewModel
+    private let disposeBag = DisposeBag()
 
     init(viewModel: CertificateViewModel) {
         self.viewModel = viewModel
@@ -19,46 +23,60 @@ final class CertificateContentViewController: BaseViewController {
     required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
-        certificateContentPage.delegate = self
-        
         pages = [certificateContentPage]
 
         super.viewDidLoad()
+
+        bindActions()
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         viewModel.updateIsFirstResponder(isFirstResponder: true)
     }
     
     override func setViewDatas() {
         if let datas = datas as? CertificateViewDatas {
-            viewModel.certificateViewDatas.accept(datas)
+            viewModel.setDatas(datas)
         }
         
-        bind(viewModel.certificateViewDatas)
-        bind(viewModel.certificateTextViewDatas)
-        bind(viewModel.certificateButtonViewDatas)
+        let output = viewModel.output
+        bind(output.certificateViewDatas)
+        bind(output.certificateTextViewDatas)
+        bind(output.certificateButtonViewDatas)
     }
 }
 
-@MainActor
-protocol CertificateContentDelegate {
-    func updateKeyboardHeightAction(height: CGFloat)
-    func updateContentAction(content: String)
-    func certifyTodoAction()
-}
+extension CertificateContentViewController {
+    private func bindActions() {
+        certificateContentPage.keyboardHeightChanged
+            .asSignal()
+            .emit(onNext: { [weak self] height in
+                self?.updateKeyboardHeight(height)
+            })
+            .disposed(by: disposeBag)
 
-extension CertificateContentViewController: CertificateContentDelegate {
-    func updateKeyboardHeightAction(height: CGFloat) {
+        certificateContentPage.contentChanged
+            .asSignal()
+            .emit(onNext: { [weak self] content in
+                self?.viewModel.updateContent(content: content)
+            })
+            .disposed(by: disposeBag)
+
+        certificateContentPage.certifyTapped
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.certifyTodo()
+            })
+            .disposed(by: disposeBag)
+    }
+
+    private func updateKeyboardHeight(_ height: CGFloat) {
         viewModel.updateKeyboardHeight(height: height)
         viewModel.updateIsFirstResponder(isFirstResponder: height > 0)
     }
-    
-    func updateContentAction(content: String) {
-        viewModel.updateContent(content: content)
-    }
-    
-    func certifyTodoAction() {
+
+    private func certifyTodo() {
         runTask { [weak self] in
             guard let self else { return }
             try await viewModel.certifyTodo()

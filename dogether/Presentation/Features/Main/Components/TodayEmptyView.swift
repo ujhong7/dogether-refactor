@@ -7,17 +7,10 @@
 
 import UIKit
 
+import RxRelay
+
 final class TodayEmptyView: BaseView {
-    var delegate: MainDelegate? {
-        didSet {
-            todoButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.goWriteTodoViewAction(todos: [])
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let writeTodoTapped = PublishRelay<Void>()
     
     private let emptyImageView = UIImageView(image: .todo)
     private let titleLabel = UILabel()
@@ -42,7 +35,13 @@ final class TodayEmptyView: BaseView {
         emptyStackView.setCustomSpacing(4, after: titleLabel)
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        todoButton.addAction(
+            UIAction { [weak self] _ in
+                self?.writeTodoTapped.accept(())
+            }, for: .touchUpInside
+        )
+    }
     
     override func configureHierarchy() {
         [emptyStackView, todoButton].forEach { addSubview($0) }

@@ -7,30 +7,10 @@
 
 import UIKit
 
+import RxRelay
+
 final class GroupEmptyView: BaseView {
-    var statsDelegate: StatsDelegate? {
-        didSet {
-            createGroupButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    statsDelegate?.addGroupAction()
-                },
-                for: .touchUpInside
-            )
-        }
-    }
-    
-    var groupManagementDelegate: GroupManagementDelegate? {
-        didSet {
-            createGroupButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    groupManagementDelegate?.addGroupAction()
-                },
-                for: .touchUpInside
-            )
-        }
-    }
+    let createGroupTapped = PublishRelay<Void>()
     
     private let emptyStateView = EmptyStateView(
         title: "소속된 그룹이 없어요",
@@ -44,7 +24,14 @@ final class GroupEmptyView: BaseView {
         createGroupButton.updateView(dogetherButtonViewDatas)
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        createGroupButton.addAction(
+            UIAction { [weak self] _ in
+                self?.createGroupTapped.accept(())
+            },
+            for: .touchUpInside
+        )
+    }
     
     override func configureHierarchy() {
         addSubview(emptyStateView)

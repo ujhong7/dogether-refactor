@@ -7,17 +7,20 @@
 
 import UIKit
 
+import RxRelay
+import RxSwift
+
 final class CertificationListContentView: BaseView {
-    var delegate: CertificationListPageDelegate? {
-        didSet {
-            filterView.delegate = delegate
-        }
-    }
+    let sortTapped = PublishRelay<Void>()
+    let filterSelected = PublishRelay<FilterTypes>()
+    let certificationSelected = PublishRelay<(title: String, todos: [TodoEntity], index: Int)>()
+    let reachedBottom = PublishRelay<Void>()
     
     private let headerLabel = UILabel()
     private let summaryView = CertificationSummaryView()
     private let filterView = CertificationFilterView()
     private let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+    private let disposeBag = DisposeBag()
     
     private(set) var currentStatsViewDatas: StatsViewDatas?
     private(set) var currentSection: [SectionEntity]?
@@ -54,6 +57,16 @@ final class CertificationListContentView: BaseView {
         collectionView.delegate = self
         collectionView.backgroundColor = .clear
         collectionView.showsVerticalScrollIndicator = false
+    }
+
+    override func configureAction() {
+        filterView.sortTapped
+            .bind(to: sortTapped)
+            .disposed(by: disposeBag)
+
+        filterView.filterSelected
+            .bind(to: filterSelected)
+            .disposed(by: disposeBag)
     }
     
     override func configureHierarchy() {
@@ -211,7 +224,7 @@ extension CertificationListContentView: UICollectionViewDelegate {
             title = groupName
         }
         
-        delegate?.selectCertificationAction(title: title, todos: section.todos, index: indexPath.item)
+        certificationSelected.accept((title, section.todos, indexPath.item))
     }
 }
 
@@ -229,7 +242,7 @@ extension CertificationListContentView: UIScrollViewDelegate {
         if offsetY > contentHeight - frameHeight - 100 {
             if !isPagingRequestInProgress {
                 isPagingRequestInProgress = true
-                delegate?.didScrollToBottom()
+                reachedBottom.accept(())
             }
         } else {
             isPagingRequestInProgress = false

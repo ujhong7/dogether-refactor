@@ -7,24 +7,51 @@
 
 import UIKit
 
+import RxRelay
+import RxSwift
+
 final class CertificationListPage: BasePage {
-    var delegate: CertificationListPageDelegate? {
-        didSet {
-            contentView.delegate = delegate
-            
-            bottomSheetView.certificationDelegate = delegate
-        }
-    }
+    let bottomSheetVisibleChanged = PublishRelay<Bool>()
+    let sortSelected = PublishRelay<Int>()
+    let filterSelected = PublishRelay<FilterTypes>()
+    let certificationSelected = PublishRelay<(title: String, todos: [TodoEntity], index: Int)>()
+    let reachedBottom = PublishRelay<Void>()
     
     private let navigationHeader = NavigationHeader(title: "인증 목록")
     private let emptyView = CertificationListEmptyView()
     private let contentView = CertificationListContentView()
     private let bottomSheetView = BottomSheetView(hasAddButton: false)
+    private let disposeBag = DisposeBag()
     
     override func configureView() { }
     
     override func configureAction() {
         navigationHeader.delegate = coordinatorDelegate
+
+        contentView.sortTapped
+            .map { true }
+            .bind(to: bottomSheetVisibleChanged)
+            .disposed(by: disposeBag)
+
+        contentView.filterSelected
+            .bind(to: filterSelected)
+            .disposed(by: disposeBag)
+
+        contentView.certificationSelected
+            .bind(to: certificationSelected)
+            .disposed(by: disposeBag)
+
+        contentView.reachedBottom
+            .bind(to: reachedBottom)
+            .disposed(by: disposeBag)
+
+        bottomSheetView.isVisibleChanged
+            .bind(to: bottomSheetVisibleChanged)
+            .disposed(by: disposeBag)
+
+        bottomSheetView.itemSelected
+            .bind(to: sortSelected)
+            .disposed(by: disposeBag)
     }
     
     override func configureHierarchy() {

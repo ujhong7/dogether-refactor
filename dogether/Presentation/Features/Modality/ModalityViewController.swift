@@ -6,11 +6,15 @@
 //
 
 import UIKit
+
+import RxCocoa
+import RxSwift
 import SnapKit
 
 final class ModalityViewController: BaseViewController {
     private let examinatePage = ExaminatePage()
     private let viewModel: ModalityViewModel
+    private let disposeBag = DisposeBag()
 
     init(viewModel: ModalityViewModel) {
         self.viewModel = viewModel
@@ -20,36 +24,46 @@ final class ModalityViewController: BaseViewController {
     required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
-        examinatePage.delegate = self
-        
         pages = [examinatePage]
 
         super.viewDidLoad()
+
+        bindActions()
     }
     
     override func setViewDatas() {
         if let datas = datas as? ExaminateViewDatas {
-            viewModel.examinateViewDatas.accept(datas)
+            viewModel.setDatas(datas)
         }
         
-        bind(viewModel.examinateViewDatas)
-        bind(viewModel.examinateButtonViewDatas)
+        let output = viewModel.output
+        bind(output.examinateViewDatas)
+        bind(output.examinateButtonViewDatas)
     }
-}
 
-@MainActor
-protocol ExaminateDelegate {
-    func updateReviewsAction(reviews: [ReviewEntity])
-    func examinateAction(type: FilterTypes)
-    func sendAction()
-}
-
-extension ModalityViewController: ExaminateDelegate {
-    func updateReviewsAction(reviews: [ReviewEntity]) {
+    func updateReviews(_ reviews: [ReviewEntity]) {
         viewModel.setReviews(reviews: reviews)
     }
-    
-    func examinateAction(type: FilterTypes) {
+}
+
+extension ModalityViewController {
+    private func bindActions() {
+        examinatePage.examinateSelected
+            .asSignal()
+            .emit(onNext: { [weak self] type in
+                self?.examinate(type: type)
+            })
+            .disposed(by: disposeBag)
+
+        examinatePage.sendTapped
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.send()
+            })
+            .disposed(by: disposeBag)
+    }
+
+    private func examinate(type: FilterTypes) {
         viewModel.setResult(result: type.reviewResult)
         viewModel.setFeedback()
         viewModel.setButtonStatus(status: type == .approve ? .enabled : .disabled)
@@ -60,12 +74,12 @@ extension ModalityViewController: ExaminateDelegate {
             viewModel.setButtonStatus(status: .enabled)
         }
     }
-    
-    func sendAction() {
+
+    private func send() {
         runTask { [weak self] in
             guard let self else { return }
             try await viewModel.reviewTodo()
-            if viewModel.examinateViewDatas.value.reviews.count == viewModel.examinateViewDatas.value.index + 1 {
+            if viewModel.isLastReview {
                 coordinator?.hideModal()
             } else {
                 viewModel.setIndex(direction: .next)

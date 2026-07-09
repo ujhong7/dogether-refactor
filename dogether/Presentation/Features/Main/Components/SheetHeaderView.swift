@@ -7,24 +7,11 @@
 
 import UIKit
 
+import RxRelay
+
 final class SheetHeaderView: BaseView {
-    var delegate: MainDelegate? {
-        didSet {
-            prevButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.goPastAction()
-                }, for: .touchUpInside
-            )
-            
-            nextButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.goFutureAction()
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let pastTapped = PublishRelay<Void>()
+    let futureTapped = PublishRelay<Void>()
     
     private let dateLabel = UILabel()
     private let dateSkeletonView = SkeletonView()
@@ -52,7 +39,19 @@ final class SheetHeaderView: BaseView {
         nextButton.isEnabled = false
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        prevButton.addAction(
+            UIAction { [weak self] _ in
+                self?.pastTapped.accept(())
+            }, for: .touchUpInside
+        )
+
+        nextButton.addAction(
+            UIAction { [weak self] _ in
+                self?.futureTapped.accept(())
+            }, for: .touchUpInside
+        )
+    }
     
     override func configureHierarchy() {
         [dateLabel, prevButton, nextButton].forEach { addSubview($0) }

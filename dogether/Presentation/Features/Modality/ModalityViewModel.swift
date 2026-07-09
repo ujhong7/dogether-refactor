@@ -7,22 +7,40 @@
 
 import Foundation
 
+import RxCocoa
 import RxRelay
 
 @MainActor
 final class ModalityViewModel {
+    struct Output {
+        let examinateViewDatas: Driver<ExaminateViewDatas>
+        let examinateButtonViewDatas: Driver<DogetherButtonViewDatas>
+    }
+
     private let todoCertificationsUseCase: TodoCertificationsUseCase
     
-    private(set) var examinateViewDatas = BehaviorRelay<ExaminateViewDatas>(value: ExaminateViewDatas())
-    private(set) var examinateButtonViewDatas = BehaviorRelay<DogetherButtonViewDatas>(
+    private let examinateViewDatas = BehaviorRelay<ExaminateViewDatas>(value: ExaminateViewDatas())
+    private let examinateButtonViewDatas = BehaviorRelay<DogetherButtonViewDatas>(
         value: DogetherButtonViewDatas(status: .disabled)
     )
     
     // MARK: - Computed
     var currentReview: ReviewEntity { examinateViewDatas.value.reviews[examinateViewDatas.value.index] }
+    var isLastReview: Bool { examinateViewDatas.value.reviews.count == examinateViewDatas.value.index + 1 }
     
     init(todoCertificationsUseCase: TodoCertificationsUseCase) {
         self.todoCertificationsUseCase = todoCertificationsUseCase
+    }
+
+    var output: Output {
+        Output(
+            examinateViewDatas: examinateViewDatas.asDriver(),
+            examinateButtonViewDatas: examinateButtonViewDatas.asDriver()
+        )
+    }
+
+    func setDatas(_ datas: ExaminateViewDatas) {
+        examinateViewDatas.accept(datas)
     }
     
     func setIndex(direction: Directions) {

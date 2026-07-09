@@ -7,9 +7,13 @@
 
 import UIKit
 
+import RxCocoa
+import RxSwift
+
 final class CertificateImageViewController: BaseViewController {
     private let certificateImagePage = CertificateImagePage()
     private let viewModel: CertificateViewModel
+    private let disposeBag = DisposeBag()
 
     init(viewModel: CertificateViewModel) {
         self.viewModel = viewModel
@@ -19,49 +23,67 @@ final class CertificateImageViewController: BaseViewController {
     required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
-        certificateImagePage.delegate = self
-        
         pages = [certificateImagePage]
 
         super.viewDidLoad()
+
+        bindActions()
     }
     
     override func setViewDatas() {
         if let datas = datas as? CertificateViewDatas {
-            viewModel.certificateViewDatas.accept(datas)
+            viewModel.setDatas(datas)
         }
         
-        bind(viewModel.certificateViewDatas)
-        bind(viewModel.certificateButtonViewDatas)
+        let output = viewModel.output
+        bind(output.certificateViewDatas)
+        bind(output.certificateButtonViewDatas)
     }
 }
 
-@MainActor
-protocol CertificateImageDelegate {
-    func goCertificateContentViewAction()
-    func showPopupAction(type: AlertTypes)
-    func presentPickerControllerAction(pickerController: UIViewController)
-    func uploadImageAction(image: UIImage)
-}
+extension CertificateImageViewController {
+    private func bindActions() {
+        certificateImagePage.nextTapped
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.goCertificateContentView()
+            })
+            .disposed(by: disposeBag)
 
-extension CertificateImageViewController: CertificateImageDelegate {
-    func goCertificateContentViewAction() {
+        certificateImagePage.permissionDenied
+            .asSignal()
+            .emit(onNext: { [weak self] type in
+                self?.showPermissionPopup(type: type)
+            })
+            .disposed(by: disposeBag)
+
+        certificateImagePage.pickerRequested
+            .asSignal()
+            .emit(onNext: { [weak self] pickerController in
+                self?.present(pickerController, animated: true)
+            })
+            .disposed(by: disposeBag)
+
+        certificateImagePage.imageSelected
+            .asSignal()
+            .emit(onNext: { [weak self] image in
+                self?.uploadImage(image)
+            })
+            .disposed(by: disposeBag)
+    }
+
+    private func goCertificateContentView() {
         guard let coordinator else { return }
-        let certificateViewDatas = viewModel.certificateViewDatas.value
-        coordinator.pushCertificateContent(datas: certificateViewDatas)
+        coordinator.pushCertificateContent(datas: viewModel.currentDatas)
     }
     
-    func showPopupAction(type: AlertTypes) {
+    private func showPermissionPopup(type: AlertTypes) {
         coordinator?.showPopup(type: .alert, alertType: type) { _ in
             SystemManager().openSettingApp()
         }
     }
-    
-    func presentPickerControllerAction(pickerController: UIViewController) {
-        present(pickerController, animated: true)
-    }
-    
-    func uploadImageAction(image: UIImage) {
+
+    private func uploadImage(_ image: UIImage) {
         runTask { [weak self] in
             guard let self else { return }
             viewModel.updateButtonStatus(status: .disabled)

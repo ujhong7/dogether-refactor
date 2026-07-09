@@ -7,9 +7,13 @@
 
 import UIKit
 
+import RxCocoa
+import RxSwift
+
 final class CertificationListViewController: BaseViewController {
     private let certificationListPage = CertificationListPage()
     private let viewModel: CertificationListViewModel
+    private let disposeBag = DisposeBag()
 
     init(viewModel: CertificationListViewModel) {
         self.viewModel = viewModel
@@ -19,13 +23,12 @@ final class CertificationListViewController: BaseViewController {
     required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
-        certificationListPage.delegate = self
-        
         pages = [certificationListPage]
         
         super.viewDidLoad()
         
         onAppear()
+        bindActions()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -36,10 +39,11 @@ final class CertificationListViewController: BaseViewController {
     }
     
     override func setViewDatas() {
-        bind(viewModel.bottomSheetViewDatas)
-        bind(viewModel.sortViewDatas)
-        bind(viewModel.statsViewDatas)
-        bind(viewModel.certificationListViewDatas)
+        let output = viewModel.output
+        bind(output.bottomSheetViewDatas)
+        bind(output.sortViewDatas)
+        bind(output.statsViewDatas)
+        bind(output.certificationListViewDatas)
     }
 }
 
@@ -54,39 +58,53 @@ extension CertificationListViewController {
             try await viewModel.loadCertificationList(page: page)
         }
     }
-}
 
-@MainActor
-protocol CertificationListPageDelegate {
-    func updateBottomSheetVisibleAction(isShowSheet: Bool)
-    func selectSortAction(index: Int)
-    func selectFilterAction(filterType: FilterTypes)
-    func selectCertificationAction(title: String, todos: [TodoEntity], index: Int)
-    func didScrollToBottom()
-}
+    private func bindActions() {
+        certificationListPage.bottomSheetVisibleChanged
+            .asSignal()
+            .emit(onNext: { [weak self] isShowSheet in
+                self?.viewModel.updateBottomSheetVisible(isShowSheet: isShowSheet)
+            })
+            .disposed(by: disposeBag)
 
-extension CertificationListViewController: CertificationListPageDelegate {
-    func updateBottomSheetVisibleAction(isShowSheet: Bool) {
-        viewModel.bottomSheetViewDatas.update { $0.isShowSheet = isShowSheet }
+        certificationListPage.sortSelected
+            .asSignal()
+            .emit(onNext: { [weak self] index in
+                self?.selectSort(index: index)
+            })
+            .disposed(by: disposeBag)
+
+        certificationListPage.filterSelected
+            .asSignal()
+            .emit(onNext: { [weak self] filterType in
+                self?.viewModel.updateFilter(filter: filterType)
+            })
+            .disposed(by: disposeBag)
+
+        certificationListPage.certificationSelected
+            .asSignal()
+            .emit(onNext: { [weak self] selected in
+                self?.selectCertification(title: selected.title, todos: selected.todos, index: selected.index)
+            })
+            .disposed(by: disposeBag)
+
+        certificationListPage.reachedBottom
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                guard let self else { return }
+                loadCertificationListView(page: viewModel.nextPage)
+            })
+            .disposed(by: disposeBag)
     }
-    
-    func selectSortAction(index: Int) {
+
+    private func selectSort(index: Int) {
         viewModel.updateSortIndex(index: index)
-        
         loadCertificationListView()
     }
-    
-    func selectFilterAction(filterType: FilterTypes) {
-        viewModel.updateFilter(filter: filterType)
-    }
-    
-    func selectCertificationAction(title: String, todos: [TodoEntity], index: Int) {
+
+    private func selectCertification(title: String, todos: [TodoEntity], index: Int) {
         guard let coordinator else { return }
         let certificationViewDatas = CertificationViewDatas(title: title, todos: todos, index: index)
         coordinator.pushCertification(datas: certificationViewDatas)
-    }
-    
-    func didScrollToBottom() {
-        loadCertificationListView(page: viewModel.certificationListViewDatas.value.currentPage + 1)
     }
 }

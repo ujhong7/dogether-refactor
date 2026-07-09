@@ -7,18 +7,15 @@
 
 import UIKit
 
+import RxRelay
+import RxSwift
+
 final class TodoListView: BaseView {
-    var delegate: MainDelegate? {
-        didSet {
-            filterStackView.mainDelegate = delegate
-            addTodoButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self, let currentTodoList else { return }
-                    delegate?.goWriteTodoViewAction(todos: currentTodoList)
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let filterSelected = PublishRelay<FilterTypes>()
+    let writeTodoRequested = PublishRelay<[TodoEntity]>()
+    let certificateImageRequested = PublishRelay<TodoEntity>()
+    let certificationRequested = PublishRelay<Int>()
+    let isScrollOnTopChanged = PublishRelay<Bool>()
     
     private(set) var currentFilter: FilterTypes?
     private(set) var currentTodoList: [TodoEntity]?
@@ -34,6 +31,8 @@ final class TodoListView: BaseView {
     private let emptyListStackView = UIStackView()
     
     private let addTodoButton = AdditionalAddTodoButton()
+    private let disposeBag = DisposeBag()
+    private var itemDisposeBag = DisposeBag()
     
     override func configureView() {
         todoScrollView.bounces = false
@@ -57,6 +56,17 @@ final class TodoListView: BaseView {
     
     override func configureAction() {
         todoScrollView.delegate = self
+
+        filterStackView.filterSelected
+            .bind(to: filterSelected)
+            .disposed(by: disposeBag)
+
+        addTodoButton.addAction(
+            UIAction { [weak self] _ in
+                guard let self, let currentTodoList else { return }
+                writeTodoRequested.accept(currentTodoList)
+            }, for: .touchUpInside
+        )
     }
     
     override func configureHierarchy() {
@@ -125,11 +135,17 @@ final class TodoListView: BaseView {
             todoListStackView.isHidden = currentTodoList.isEmpty
             emptyListStackView.isHidden = !currentTodoList.isEmpty
             
+            itemDisposeBag = DisposeBag()
             todoListStackView.subviews.forEach { todoListStackView.removeArrangedSubview($0) }
             currentTodoList
                 .enumerated().map {
                     let todoListItemButton = TodoListItemButton(index: $0, todo: $1, isToday: isToday)
-                    todoListItemButton.delegate = delegate
+                    todoListItemButton.certificateImageRequested
+                        .bind(to: certificateImageRequested)
+                        .disposed(by: itemDisposeBag)
+                    todoListItemButton.certificationRequested
+                        .bind(to: certificationRequested)
+                        .disposed(by: itemDisposeBag)
                     return todoListItemButton
                 }
                 .forEach { todoListStackView.addArrangedSubview($0) }
@@ -146,6 +162,6 @@ final class TodoListView: BaseView {
 
 extension TodoListView: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        delegate?.updateIsScrollOnTop(isScrollOnTop: scrollView.contentOffset.y <= 0)
+        isScrollOnTopChanged.accept(scrollView.contentOffset.y <= 0)
     }
 }

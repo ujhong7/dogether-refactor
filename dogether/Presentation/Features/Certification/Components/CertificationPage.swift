@@ -7,19 +7,11 @@
 
 import UIKit
 
+import RxRelay
+import RxSwift
+
 final class CertificationPage: BasePage {
-    var delegate: CertificationDelegate? {
-        didSet {
-            thumbnailListView.delegate = delegate
-            certificationListView.delegate = delegate
-//            certificateButton.addAction(
-//                UIAction { [weak self] _ in
-//                    guard let self, let currentTodo else { return }
-//                    delegate?.goCertificateViewAction(todo: currentTodo)
-//                }, for: .touchUpInside
-//            )
-        }
-    }
+    let indexSelected = PublishRelay<Int>()
     
     private let navigationHeader = NavigationHeader(title: "인증 정보")
     private let thumbnailListView = ThumbnailListView()
@@ -30,6 +22,7 @@ final class CertificationPage: BasePage {
     private let contentLabel = UILabel()
     private let reviewFeedbackView = ReviewFeedbackView()
 //    private let certificateButton = DogetherButton("인증하기")
+    private let disposeBag = DisposeBag()
     
     private var currentTodo: TodoEntity?
     
@@ -51,6 +44,14 @@ final class CertificationPage: BasePage {
     
     override func configureAction() {
         navigationHeader.delegate = coordinatorDelegate
+
+        thumbnailListView.indexSelected
+            .bind(to: indexSelected)
+            .disposed(by: disposeBag)
+
+        certificationListView.indexSelected
+            .bind(to: indexSelected)
+            .disposed(by: disposeBag)
     }
     
     override func configureHierarchy() {

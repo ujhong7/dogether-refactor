@@ -191,7 +191,7 @@ extension NavigationCoordinator {
     func showModal(reviews: [ReviewEntity]) {
         if let modalityWindow {
             if let viewController = modalityWindow.rootViewController as? ModalityViewController {
-                viewController.updateReviewsAction(reviews: reviews)
+                viewController.updateReviews(reviews)
             }
         } else {
             guard let windowScene = presentationWindowScene else { return }

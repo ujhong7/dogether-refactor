@@ -5,25 +5,48 @@
 //  Created by yujaehong on 4/23/25.
 //
 
+import RxCocoa
 import RxRelay
 
 @MainActor
 final class CertificationListViewModel {
+    struct Output {
+        let bottomSheetViewDatas: Driver<BottomSheetViewDatas>
+        let statsViewDatas: Driver<StatsViewDatas>
+        let sortViewDatas: Driver<SortViewDatas>
+        let certificationListViewDatas: Driver<CertificationListViewDatas>
+    }
+
     private let userUseCase: UserUseCase
     
-    private(set) var bottomSheetViewDatas = BehaviorRelay<BottomSheetViewDatas>(value: BottomSheetViewDatas())
-    private(set) var statsViewDatas = BehaviorRelay<StatsViewDatas>(value: StatsViewDatas())
-    private(set) var sortViewDatas = BehaviorRelay<SortViewDatas>(value: SortViewDatas())
-    private(set) var certificationListViewDatas = BehaviorRelay<CertificationListViewDatas>(
+    private let bottomSheetViewDatas = BehaviorRelay<BottomSheetViewDatas>(value: BottomSheetViewDatas())
+    private let statsViewDatas = BehaviorRelay<StatsViewDatas>(value: StatsViewDatas())
+    private let sortViewDatas = BehaviorRelay<SortViewDatas>(value: SortViewDatas())
+    private let certificationListViewDatas = BehaviorRelay<CertificationListViewDatas>(
         value: CertificationListViewDatas()
     )
+
+    var nextPage: Int { certificationListViewDatas.value.currentPage + 1 }
     
     init(userUseCase: UserUseCase) {
         self.userUseCase = userUseCase
     }
+
+    var output: Output {
+        Output(
+            bottomSheetViewDatas: bottomSheetViewDatas.asDriver(),
+            statsViewDatas: statsViewDatas.asDriver(),
+            sortViewDatas: sortViewDatas.asDriver(),
+            certificationListViewDatas: certificationListViewDatas.asDriver()
+        )
+    }
 }
 
 extension CertificationListViewModel {
+    func updateBottomSheetVisible(isShowSheet: Bool) {
+        bottomSheetViewDatas.update { $0.isShowSheet = isShowSheet }
+    }
+
     func updateSortIndex(index: Int) {
         sortViewDatas.update { $0.index = index }
     }

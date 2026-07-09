@@ -7,17 +7,12 @@
 
 import UIKit
 
+import RxRelay
+
 final class CertificateContentPage: BasePage {
-    var delegate: CertificateContentDelegate? {
-        didSet {
-            certificateButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.certifyTodoAction()
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let keyboardHeightChanged = PublishRelay<CGFloat>()
+    let contentChanged = PublishRelay<String>()
+    let certifyTapped = PublishRelay<Void>()
     
     private let navigationHeader = NavigationHeader(title: "인증 하기")
     private let descriptionLabel = UILabel()
@@ -74,6 +69,12 @@ final class CertificateContentPage: BasePage {
         
         certificationTextView.delegate = self
         observeKeyboardNotifications()
+
+        certificateButton.addAction(
+            UIAction { [weak self] _ in
+                self?.certifyTapped.accept(())
+            }, for: .touchUpInside
+        )
     }
     
     override func configureHierarchy() {
@@ -172,11 +173,11 @@ extension CertificateContentPage {
     
     @objc func keyboardWillShow(_ notification: Notification) {
         guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
-        delegate?.updateKeyboardHeightAction(height: frame.height - UIApplication.safeAreaOffset.bottom)
+        keyboardHeightChanged.accept(frame.height - UIApplication.safeAreaOffset.bottom)
     }
 
     @objc func keyboardWillHide(_ notification: Notification) {
-        delegate?.updateKeyboardHeightAction(height: 0)
+        keyboardHeightChanged.accept(0)
     }
 }
 
@@ -199,7 +200,7 @@ extension CertificateContentPage: UITextViewDelegate {
     
     func textViewDidChange(_ textView: UITextView) {
         guard let textView = textView as? DogetherTextView else { return }
-        delegate?.updateContentAction(content: textView.text)
+        contentChanged.accept(textView.text)
     }
     
     func textViewShouldReturn(_ textView: UITextView) -> Bool {

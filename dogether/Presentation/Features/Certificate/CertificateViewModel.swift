@@ -7,20 +7,41 @@
 
 import UIKit
 
+import RxCocoa
 import RxRelay
 
 @MainActor
 final class CertificateViewModel {
+    struct Output {
+        let certificateViewDatas: Driver<CertificateViewDatas>
+        let certificateTextViewDatas: Driver<DogetherTextViewDatas>
+        let certificateButtonViewDatas: Driver<DogetherButtonViewDatas>
+    }
+
     private let challengeGroupUseCase: ChallengeGroupUseCase
     
-    private(set) var certificateViewDatas = BehaviorRelay<CertificateViewDatas>(value: CertificateViewDatas())
-    private(set) var certificateTextViewDatas = BehaviorRelay<DogetherTextViewDatas>(value: DogetherTextViewDatas())
-    private(set) var certificateButtonViewDatas = BehaviorRelay<DogetherButtonViewDatas>(
+    private let certificateViewDatas = BehaviorRelay<CertificateViewDatas>(value: CertificateViewDatas())
+    private let certificateTextViewDatas = BehaviorRelay<DogetherTextViewDatas>(value: DogetherTextViewDatas())
+    private let certificateButtonViewDatas = BehaviorRelay<DogetherButtonViewDatas>(
         value: DogetherButtonViewDatas(status: .disabled)
     )
 
+    var currentDatas: CertificateViewDatas { certificateViewDatas.value }
+
     init(challengeGroupUseCase: ChallengeGroupUseCase) {
         self.challengeGroupUseCase = challengeGroupUseCase
+    }
+
+    var output: Output {
+        Output(
+            certificateViewDatas: certificateViewDatas.asDriver(),
+            certificateTextViewDatas: certificateTextViewDatas.asDriver(),
+            certificateButtonViewDatas: certificateButtonViewDatas.asDriver()
+        )
+    }
+
+    func setDatas(_ datas: CertificateViewDatas) {
+        certificateViewDatas.accept(datas)
     }
 }
 

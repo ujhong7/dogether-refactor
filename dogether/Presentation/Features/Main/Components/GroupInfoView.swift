@@ -7,6 +7,8 @@
 
 import UIKit
 
+import RxRelay
+
 enum GroupInfoTypes {
     case main
     case stats
@@ -22,28 +24,8 @@ enum GroupInfoTypes {
 }
 
 final class GroupInfoView: BaseView {
-    var mainDelegate: MainDelegate? {
-        didSet {
-            groupNameStackView.addTapAction { [weak self] _ in
-                guard let self else { return }
-                mainDelegate?.updateBottomSheetVisibleAction(isShowSheet: true)
-            }
-            
-            joinCodeStackView.addTapAction { [weak self] _ in
-                guard let self else { return }
-                mainDelegate?.inviteAction()
-            }
-        }
-    }
-    
-    var statsDelegate: StatsDelegate? {
-        didSet {
-            groupNameStackView.addTapAction { [weak self] _ in
-                guard let self else { return }
-                statsDelegate?.updateBottomSheetVisibleAction(isShowSheet: true)
-            }
-        }
-    }
+    let groupSelectionTapped = PublishRelay<Void>()
+    let inviteTapped = PublishRelay<Void>()
     
     private let type: GroupInfoTypes
     
@@ -144,9 +126,19 @@ final class GroupInfoView: BaseView {
         
         durationProgressView.transform = CGAffineTransform(translationX: 0, y: 1)   // MARK: 디자인 디테일 반영
     }
-    
-    override func configureAction() { }
-    
+
+    override func configureAction() {
+        groupNameStackView.addTapAction { [weak self] _ in
+            guard let self else { return }
+
+            groupSelectionTapped.accept(())
+        }
+
+        joinCodeStackView.addTapAction { [weak self] _ in
+            self?.inviteTapped.accept(())
+        }
+    }
+
     override func configureHierarchy() {
         memberStackView.addArrangedSubview(memberInfoLabel)
         

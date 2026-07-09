@@ -7,22 +7,18 @@
 
 import UIKit
 
+import RxRelay
+import RxSwift
+
 final class CertificationFilterView: BaseView {
-    var delegate: CertificationListPageDelegate? {
-        didSet {
-            sortButton.addTapAction { [weak self] _ in
-                guard let self else { return }
-                delegate?.updateBottomSheetVisibleAction(isShowSheet: true)
-            }
-            
-            filterStackView.certificationListDelegate = delegate
-        }
-    }
+    let sortTapped = PublishRelay<Void>()
+    let filterSelected = PublishRelay<FilterTypes>()
     
     private let scrollView = UIScrollView()
     private let stackView = UIStackView()
     private let sortButton = CertificationSortButton()
     private let filterStackView = FilterStackView()
+    private let disposeBag = DisposeBag()
     
     override func configureView() {
         scrollView.showsHorizontalScrollIndicator = false
@@ -31,7 +27,15 @@ final class CertificationFilterView: BaseView {
         stackView.spacing = 8
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        sortButton.addTapAction { [weak self] _ in
+            self?.sortTapped.accept(())
+        }
+
+        filterStackView.filterSelected
+            .bind(to: filterSelected)
+            .disposed(by: disposeBag)
+    }
     
     override func configureHierarchy() {
         addSubview(scrollView)

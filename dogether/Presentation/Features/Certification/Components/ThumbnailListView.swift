@@ -7,15 +7,10 @@
 
 import UIKit
 
+import RxRelay
+
 final class ThumbnailListView: BaseView {
-    var delegate: CertificationDelegate? {
-        didSet {
-            stackView.addTapAction { [weak self] gesture in
-                guard let self else { return }
-                delegate?.thumbnailTapAction(stackView, gesture)
-            }
-        }
-    }
+    let indexSelected = PublishRelay<Int>()
     
     private let scrollView = UIScrollView()
     private let stackView = UIStackView()
@@ -32,7 +27,17 @@ final class ThumbnailListView: BaseView {
         stackView.distribution = .fillEqually
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        stackView.addTapAction { [weak self] gesture in
+            guard let self else { return }
+            let location = gesture.location(in: stackView)
+
+            for (index, view) in stackView.arrangedSubviews.enumerated() where view.frame.contains(location) {
+                indexSelected.accept(index)
+                return
+            }
+        }
+    }
     
     override func configureHierarchy() {
         [scrollView].forEach { addSubview($0) }
