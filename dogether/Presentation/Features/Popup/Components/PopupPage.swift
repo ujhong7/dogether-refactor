@@ -7,23 +7,51 @@
 
 import Foundation
 
+import RxRelay
+import RxSwift
+
 final class PopupPage: BasePage {
-    var delegate: PopupDelegate? {
-        didSet {
-            alertStackView.delegate = delegate
-            examinateStackView.delegate = delegate
-        }
-    }
+    let hideTapped = PublishRelay<Void>()
+    let completeTapped = PublishRelay<Void>()
+    let keyboardHeightChanged = PublishRelay<CGFloat>()
+    let feedbackChanged = PublishRelay<String>()
     
     private let alertStackView = AlertStackView()
     private let examinateStackView = ExaminateStackView()
+    private let disposeBag = DisposeBag()
     
     override func configureView() {
         backgroundColor = .grey700
         layer.cornerRadius = 12
     }
     
-    override func configureAction() { addTapAction { _ in return } }
+    override func configureAction() {
+        addTapAction { _ in return }
+
+        alertStackView.hideTapped
+            .bind(to: hideTapped)
+            .disposed(by: disposeBag)
+
+        alertStackView.completeTapped
+            .bind(to: completeTapped)
+            .disposed(by: disposeBag)
+
+        examinateStackView.hideTapped
+            .bind(to: hideTapped)
+            .disposed(by: disposeBag)
+
+        examinateStackView.completeTapped
+            .bind(to: completeTapped)
+            .disposed(by: disposeBag)
+
+        examinateStackView.keyboardHeightChanged
+            .bind(to: keyboardHeightChanged)
+            .disposed(by: disposeBag)
+
+        examinateStackView.feedbackChanged
+            .bind(to: feedbackChanged)
+            .disposed(by: disposeBag)
+    }
     
     override func configureHierarchy() {
         [alertStackView, examinateStackView].forEach { addSubview($0) }

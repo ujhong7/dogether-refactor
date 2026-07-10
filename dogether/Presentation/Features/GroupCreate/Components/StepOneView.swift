@@ -7,21 +7,12 @@
 
 import UIKit
 
+import RxRelay
+import RxSwift
+
 final class StepOneView: BaseView {
-    var delegate: GroupCreateDelegate? {
-        didSet {
-            groupNameTextField.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    let groupName = String((groupNameTextField.text ?? "").prefix(groupNameMaxLength))
-                    groupNameTextField.text = groupName
-                    delegate?.updateGroupNameAction(groupName: groupName)
-                }, for: .editingChanged
-            )
-            
-            memberCountView.delegate = delegate
-        }
-    }
+    let groupNameChanged = PublishRelay<String>()
+    let memberCountChanged = PublishRelay<(count: Int, min: Int, max: Int)>()
     
     private let groupNameTitleLabel = UILabel()
     private let groupNameTextField = UITextField()
@@ -33,6 +24,7 @@ final class StepOneView: BaseView {
     private let memberCountView = CounterView()
     
     private let groupNameMaxLength: Int = 10
+    private let disposeBag = DisposeBag()
     
     private var currentGroupName: String?
     private var currentIsFirstResponder: Bool?
@@ -76,6 +68,19 @@ final class StepOneView: BaseView {
     
     override func configureAction() {
         groupNameTextField.delegate = self
+
+        groupNameTextField.addAction(
+            UIAction { [weak self] _ in
+                guard let self else { return }
+                let groupName = String((groupNameTextField.text ?? "").prefix(groupNameMaxLength))
+                groupNameTextField.text = groupName
+                groupNameChanged.accept(groupName)
+            }, for: .editingChanged
+        )
+
+        memberCountView.memberCountChanged
+            .bind(to: memberCountChanged)
+            .disposed(by: disposeBag)
     }
     
     override func configureHierarchy() {

@@ -7,9 +7,15 @@
 
 import UIKit
 
+import RxCocoa
+import RxRelay
+import RxSwift
+
 final class GroupJoinViewController: BaseViewController {
     private let groupJoinPage = GroupJoinPage()
     private let viewModel: GroupJoinViewModel
+    private let viewDidAppearRelay = PublishRelay<Void>()
+    private let disposeBag = DisposeBag()
 
     init(viewModel: GroupJoinViewModel) {
         self.viewModel = viewModel
@@ -19,49 +25,41 @@ final class GroupJoinViewController: BaseViewController {
     required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
-        groupJoinPage.delegate = self
-        
         pages = [groupJoinPage]
         
         super.viewDidLoad()
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        viewModel.updateIsFirstResponder(isFirstResponder: true)
+        super.viewDidAppear(animated)
+        viewDidAppearRelay.accept(())
     }
     
     override func setViewDatas() {
         if let datas = datas as? GroupJoinViewDatas {
-            viewModel.groupJoinViewDatas.accept(datas)
+            viewModel.setDatas(datas)
         }
         
-        bind(viewModel.groupJoinViewDatas)
-        bind(viewModel.joinButtonViewDatas)
+        let input = GroupJoinViewModel.Input(
+            viewDidAppear: viewDidAppearRelay.asSignal(),
+            codeChanged: groupJoinPage.codeChanged.asSignal(),
+            keyboardHeightChanged: groupJoinPage.keyboardHeightChanged.asSignal()
+        )
+        let output = viewModel.transform(input: input)
+        bind(output.groupJoinViewDatas)
+        bind(output.joinButtonViewDatas)
+
+        groupJoinPage.joinTapped
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.joinGroup()
+            })
+            .disposed(by: disposeBag)
     }
 }
 
-@MainActor
-protocol GroupJoinDelegate {
-    func updateCodeAction(code: String)
-    func updateButtonStatusAction(status: ButtonStatus)
-    func updateKeyboardHeightAction(height: CGFloat)
-    func joinGroupAction()
-}
-
-extension GroupJoinViewController: GroupJoinDelegate {
-    func updateCodeAction(code: String) {
-        viewModel.updateCode(code: code)
-    }
-    
-    func updateButtonStatusAction(status: ButtonStatus) {
-        viewModel.updateButtonStatus(status: status)
-    }
-    
-    func updateKeyboardHeightAction(height: CGFloat) {
-        viewModel.updateKeyboardHeight(height: height)
-    }
-    
-    func joinGroupAction() {
+extension GroupJoinViewController {
+    private func joinGroup() {
         runTask(onAlertComplete: { [weak self] alertType in
             switch alertType {
             case .alreadyParticipated, .fullGroup, .unableToParticipate:

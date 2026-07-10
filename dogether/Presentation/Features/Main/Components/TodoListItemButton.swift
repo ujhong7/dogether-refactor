@@ -6,25 +6,13 @@
 //
 
 import UIKit
+
+import RxRelay
 import SnapKit
 
 final class TodoListItemButton: BaseButton {
-    var delegate: MainDelegate? {
-        didSet {
-            addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    if isUncertified {
-                        if isToday {
-                            delegate?.goCertificateViewAction(todo: todo)
-                        } else { return }
-                    } else {
-                        delegate?.goCertificationViewAction(index: index)
-                    }
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let certificateImageRequested = PublishRelay<TodoEntity>()
+    let certificationRequested = PublishRelay<Int>()
     
     private(set) var index: Int
     private(set) var todo: TodoEntity
@@ -72,7 +60,20 @@ final class TodoListItemButton: BaseButton {
         checkImageView.tintColor = .grey200
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        addAction(
+            UIAction { [weak self] _ in
+                guard let self else { return }
+                if isUncertified {
+                    if isToday {
+                        certificateImageRequested.accept(todo)
+                    }
+                } else {
+                    certificationRequested.accept(index)
+                }
+            }, for: .touchUpInside
+        )
+    }
     
     override func configureHierarchy() {
         let rightView = isUncertified ? certificationLabel : checkImageView

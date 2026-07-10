@@ -6,22 +6,29 @@
 //
 
 import UIKit
+
+import RxRelay
+import RxSwift
 import SnapKit
 
 final class MainPage: BasePage {
-    var delegate: MainDelegate? {
-        didSet {
-            bottomSheetView.mainDelegate = delegate
-            
-            groupInfoView.mainDelegate = delegate
-            rankingButton.delegate = delegate
-            
-            sheetHeaderView.delegate = delegate
-            
-            todayEmptyView.delegate = delegate
-            todoListView.delegate = delegate
-        }
-    }
+    let sheetAlphaChanged = PublishRelay<CGFloat>()
+    let sheetStatusChanged = PublishRelay<SheetStatus>()
+    let sheetYOffsetChanged = PublishRelay<CGFloat>()
+    let isScrollOnTopChanged = PublishRelay<Bool>()
+    let rankingTapped = PublishRelay<Void>()
+    let bottomSheetVisibleChanged = PublishRelay<Bool>()
+    let groupSelected = PublishRelay<Int>()
+    let addGroupTapped = PublishRelay<Void>()
+    let inviteTapped = PublishRelay<Void>()
+    let pastTapped = PublishRelay<Void>()
+    let futureTapped = PublishRelay<Void>()
+    let timerShouldStart = PublishRelay<Void>()
+    let timerShouldStop = PublishRelay<Void>()
+    let writeTodoRequested = PublishRelay<[TodoEntity]>()
+    let filterSelected = PublishRelay<FilterTypes>()
+    let certificateImageRequested = PublishRelay<TodoEntity>()
+    let certificationRequested = PublishRelay<Int>()
     
     private let dogetherHeader = DogetherHeader()
     
@@ -40,6 +47,7 @@ final class MainPage: BasePage {
     private let todayEmptyView = TodayEmptyView()
     private let pastEmptyView = PastEmptyView()
     private let doneView = DoneView()
+    private let disposeBag = DisposeBag()
     
     private(set) var currentSheetStatus: SheetStatus?
     private(set) var currentYOffset: CGFloat?
@@ -56,6 +64,64 @@ final class MainPage: BasePage {
     
     override func configureAction() {
         dogetherHeader.delegate = coordinatorDelegate
+
+        bottomSheetView.isVisibleChanged
+            .bind(to: bottomSheetVisibleChanged)
+            .disposed(by: disposeBag)
+
+        bottomSheetView.itemSelected
+            .bind(to: groupSelected)
+            .disposed(by: disposeBag)
+
+        bottomSheetView.addGroupTapped
+            .bind(to: addGroupTapped)
+            .disposed(by: disposeBag)
+
+        groupInfoView.groupSelectionTapped
+            .map { true }
+            .bind(to: bottomSheetVisibleChanged)
+            .disposed(by: disposeBag)
+
+        groupInfoView.inviteTapped
+            .bind(to: inviteTapped)
+            .disposed(by: disposeBag)
+
+        rankingButton.rankingTapped
+            .bind(to: rankingTapped)
+            .disposed(by: disposeBag)
+
+        sheetHeaderView.pastTapped
+            .bind(to: pastTapped)
+            .disposed(by: disposeBag)
+
+        sheetHeaderView.futureTapped
+            .bind(to: futureTapped)
+            .disposed(by: disposeBag)
+
+        todayEmptyView.writeTodoTapped
+            .map { [] }
+            .bind(to: writeTodoRequested)
+            .disposed(by: disposeBag)
+
+        todoListView.filterSelected
+            .bind(to: filterSelected)
+            .disposed(by: disposeBag)
+
+        todoListView.writeTodoRequested
+            .bind(to: writeTodoRequested)
+            .disposed(by: disposeBag)
+
+        todoListView.certificateImageRequested
+            .bind(to: certificateImageRequested)
+            .disposed(by: disposeBag)
+
+        todoListView.certificationRequested
+            .bind(to: certificationRequested)
+            .disposed(by: disposeBag)
+
+        todoListView.isScrollOnTopChanged
+            .bind(to: isScrollOnTopChanged)
+            .disposed(by: disposeBag)
         
         let dogetherPanGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
         dogetherPanGesture.delegate = self
@@ -146,9 +212,9 @@ final class MainPage: BasePage {
             doneView.isHidden = !(datas.status == .done)
             
             if datas.status == .timer {
-                delegate?.startTimerAction()
+                timerShouldStart.accept(())
             } else {
-                delegate?.stopTimerAction()
+                timerShouldStop.accept(())
             }
             
             if datas.status == .certificateTodo || datas.status == .todoList {
@@ -182,9 +248,9 @@ extension MainPage: UIGestureRecognizerDelegate {
         switch gesture.state {
         case .changed:
             guard let newOffset = getNewOffset(from: currentYOffset, with: translation.y) else { return }
-            delegate?.updateYOffsetOfSheet(yOffset: newOffset)
-            delegate?.updateAlphaBySheet(
-                alpha: 1 - (SheetStatus.normal.offset - newOffset) / (SheetStatus.normal.offset - SheetStatus.expand.offset)
+            sheetYOffsetChanged.accept(newOffset)
+            sheetAlphaChanged.accept(
+                1 - (SheetStatus.normal.offset - newOffset) / (SheetStatus.normal.offset - SheetStatus.expand.offset)
             )
             layoutIfNeeded()
 
@@ -192,9 +258,9 @@ extension MainPage: UIGestureRecognizerDelegate {
             guard let status = getNewStatus(with: translation.y) else { return }
             UIView.animate(withDuration: 0.3) { [weak self] in
                 guard let self else { return }
-                delegate?.updateAlphaBySheet(alpha: status == .normal ? 1 : 0)
-                delegate?.updateSheetStatus(sheetStatus: status)
-                delegate?.updateYOffsetOfSheet(yOffset: status.offset)
+                sheetAlphaChanged.accept(status == .normal ? 1 : 0)
+                sheetStatusChanged.accept(status)
+                sheetYOffsetChanged.accept(status.offset)
                 layoutIfNeeded()
             }
 

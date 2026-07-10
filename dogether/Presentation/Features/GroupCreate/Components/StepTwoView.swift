@@ -7,13 +7,12 @@
 
 import UIKit
 
+import RxRelay
+import RxSwift
+
 final class StepTwoView: BaseView {
-    var delegate: GroupCreateDelegate? {
-        didSet {
-            [threeDaysButton, oneWeekButton, twoWeeksButton, fourWeeksButton].forEach { $0.delegate = delegate }
-            [todayButton, tomorrowButton].forEach { $0.delegate = delegate }
-        }
-    }
+    let durationSelected = PublishRelay<GroupChallengeDurations>()
+    let startAtSelected = PublishRelay<GroupStartAts>()
     
     private let duration = UILabel()
     private let startAt = UILabel()
@@ -36,6 +35,7 @@ final class StepTwoView: BaseView {
     private var durationRow1 = UIStackView()
     private var durationRow2 = UIStackView()
     private var startAtStack = UIStackView()
+    private let disposeBag = DisposeBag()
     
     private func verticalStackView(stacks: [UIStackView]) -> UIStackView {
         let stackView = UIStackView(arrangedSubviews: stacks)
@@ -62,7 +62,19 @@ final class StepTwoView: BaseView {
         startAtStack = horizontalStackView(buttons: [todayButton, tomorrowButton])
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        [threeDaysButton, oneWeekButton, twoWeeksButton, fourWeeksButton].forEach { button in
+            button.durationSelected
+                .bind(to: durationSelected)
+                .disposed(by: disposeBag)
+        }
+
+        [todayButton, tomorrowButton].forEach { button in
+            button.startAtSelected
+                .bind(to: startAtSelected)
+                .disposed(by: disposeBag)
+        }
+    }
     
     override func configureHierarchy() {
         [duration, durationStack, startAt, startAtStack].forEach { addSubview($0) }

@@ -7,25 +7,11 @@
 
 import UIKit
 
+import RxRelay
+
 final class AlertStackView: BaseStackView {
-    var delegate: PopupDelegate? {
-        didSet {
-            cancelButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.hidePopup()
-                }, for: .touchUpInside
-            )
-            
-            confirmButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.hidePopup()
-                    delegate?.completeAction()
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let hideTapped = PublishRelay<Void>()
+    let completeTapped = PublishRelay<Void>()
     
     private let imageContainerView = UIView()
     private let imageView = UIImageView()
@@ -62,7 +48,19 @@ final class AlertStackView: BaseStackView {
         buttonStackView.distribution = .fillEqually
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        cancelButton.addAction(
+            UIAction { [weak self] _ in
+                self?.hideTapped.accept(())
+            }, for: .touchUpInside
+        )
+
+        confirmButton.addAction(
+            UIAction { [weak self] _ in
+                self?.completeTapped.accept(())
+            }, for: .touchUpInside
+        )
+    }
     
     override func configureHierarchy() {
         [imageView].forEach { imageContainerView.addSubview($0) }

@@ -7,16 +7,43 @@
 
 import UIKit
 
+import RxCocoa
 import RxRelay
 
 @MainActor
 final class PopupViewModel {
-    private(set) var alertPopupViewDatas = BehaviorRelay<AlertPopupViewDatas?>(value: nil)
-    private(set) var examinatePopupViewDatas = BehaviorRelay<ExaminatePopupViewDatas?>(value: nil)
-    private(set) var examinateTextViewDatas = BehaviorRelay<DogetherTextViewDatas>(value: DogetherTextViewDatas())
-    private(set) var registerButtonViewDatas = BehaviorRelay<DogetherButtonViewDatas>(
+    struct Output {
+        let alertPopupViewDatas: Driver<AlertPopupViewDatas?>
+        let examinatePopupViewDatas: Driver<ExaminatePopupViewDatas?>
+        let examinateTextViewDatas: Driver<DogetherTextViewDatas>
+        let registerButtonViewDatas: Driver<DogetherButtonViewDatas>
+    }
+
+    private let alertPopupViewDatas = BehaviorRelay<AlertPopupViewDatas?>(value: nil)
+    private let examinatePopupViewDatas = BehaviorRelay<ExaminatePopupViewDatas?>(value: nil)
+    private let examinateTextViewDatas = BehaviorRelay<DogetherTextViewDatas>(value: DogetherTextViewDatas())
+    private let registerButtonViewDatas = BehaviorRelay<DogetherButtonViewDatas>(
         value: DogetherButtonViewDatas(status: .disabled)
     )
+
+    var feedback: String? { examinatePopupViewDatas.value?.feedback }
+
+    var output: Output {
+        Output(
+            alertPopupViewDatas: alertPopupViewDatas.asDriver(),
+            examinatePopupViewDatas: examinatePopupViewDatas.asDriver(),
+            examinateTextViewDatas: examinateTextViewDatas.asDriver(),
+            registerButtonViewDatas: registerButtonViewDatas.asDriver()
+        )
+    }
+
+    func setDatas(_ datas: AlertPopupViewDatas) {
+        alertPopupViewDatas.accept(datas)
+    }
+
+    func setDatas(_ datas: ExaminatePopupViewDatas) {
+        examinatePopupViewDatas.accept(datas)
+    }
 }
 
 extension PopupViewModel {

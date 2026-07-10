@@ -21,10 +21,11 @@ final class LoadingViewController: BaseViewController {
     
     override func setViewDatas() {
         if let datas = datas as? LoadingViewDatas {
-            viewModel.loadingViewDatas.accept(datas)
+            viewModel.setDatas(datas)
         }
-        
-        bind(viewModel.loadingViewDatas)
+
+        let output = viewModel.output
+        bind(output.loadingViewDatas)
     }
 }
 

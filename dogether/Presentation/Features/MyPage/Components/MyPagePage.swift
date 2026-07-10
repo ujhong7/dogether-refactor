@@ -7,42 +7,13 @@
 
 import UIKit
 
+import RxRelay
+
 final class MyPagePage: BasePage {
-    var delegate: MyPageDelegate? {
-        didSet {
-            statsButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.goStatsViewAction()
-                },
-                for: .touchUpInside
-            )
-            
-            myTodosListButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.goMyTodoListAction()
-                },
-                for: .touchUpInside
-            )
-            
-            groupManagementButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.goGroupManagementAction()
-                },
-                for: .touchUpInside
-            )
-            
-            settingButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.goSettingViewAction()
-                },
-                for: .touchUpInside
-            )
-        }
-    }
+    let statsTapped = PublishRelay<Void>()
+    let certificationListTapped = PublishRelay<Void>()
+    let groupManagementTapped = PublishRelay<Void>()
+    let settingTapped = PublishRelay<Void>()
     
     private let navigationHeader = NavigationHeader(title: "마이페이지")
     private let profileView = ProfileView()
@@ -74,6 +45,34 @@ final class MyPagePage: BasePage {
     
     override func configureAction() {
         navigationHeader.delegate = coordinatorDelegate
+
+        statsButton.addAction(
+            UIAction { [weak self] _ in
+                self?.statsTapped.accept(())
+            },
+            for: .touchUpInside
+        )
+
+        myTodosListButton.addAction(
+            UIAction { [weak self] _ in
+                self?.certificationListTapped.accept(())
+            },
+            for: .touchUpInside
+        )
+
+        groupManagementButton.addAction(
+            UIAction { [weak self] _ in
+                self?.groupManagementTapped.accept(())
+            },
+            for: .touchUpInside
+        )
+
+        settingButton.addAction(
+            UIAction { [weak self] _ in
+                self?.settingTapped.accept(())
+            },
+            for: .touchUpInside
+        )
     }
     
     override func configureHierarchy() {

@@ -7,8 +7,10 @@
 
 import UIKit
 
+import RxRelay
+
 final class StartPage: BasePage {
-    var delegate: StartDelegate?
+    let groupTypeSelected = PublishRelay<GroupTypes>()
     
     private let dogetherHeader = DogetherHeader()
     private let navigationHeader = NavigationHeader(title: "새 그룹 추가")
@@ -103,7 +105,7 @@ extension StartPage {
         button.addAction(
             UIAction { [weak self, weak button] _ in
                 guard let self, let button, let groupType = GroupTypes(rawValue: button.tag) else { return }
-                delegate?.startAction(groupType)
+                groupTypeSelected.accept(groupType)
             }, for: .touchUpInside
         )
         

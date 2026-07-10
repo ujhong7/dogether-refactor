@@ -7,26 +7,11 @@
 
 import UIKit
 
+import RxRelay
+
 final class CompletePage: BasePage {
-    weak var delegate: CompleteDelegate? {
-        didSet {
-            completeButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.goHomeAction()
-                },
-                for: .touchUpInside
-            )
-            
-            joinCodeShareButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.shareJoinCodeAction()
-                },
-                for: .touchUpInside
-            )
-        }
-    }
+    let homeTapped = PublishRelay<Void>()
+    let shareJoinCodeTapped = PublishRelay<Void>()
 
     private let firecrackerImageView = UIImageView(image: .firecracker)
     private let titleLabel = UILabel()
@@ -59,6 +44,19 @@ final class CompletePage: BasePage {
     }
 
     override func configureAction() {
+        completeButton.addAction(
+            UIAction { [weak self] _ in
+                self?.homeTapped.accept(())
+            },
+            for: .touchUpInside
+        )
+
+        joinCodeShareButton.addAction(
+            UIAction { [weak self] _ in
+                self?.shareJoinCodeTapped.accept(())
+            },
+            for: .touchUpInside
+        )
     }
 
     override func configureHierarchy() {

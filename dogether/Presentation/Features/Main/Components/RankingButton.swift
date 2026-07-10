@@ -7,17 +7,10 @@
 
 import UIKit
 
+import RxRelay
+
 final class RankingButton: BaseButton {
-    var delegate: MainDelegate? {
-        didSet {
-            addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.goRankingViewAction()
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let rankingTapped = PublishRelay<Void>()
     
     private let chartImageView = UIImageView(image: .chart)
     private let label = UILabel()
@@ -41,7 +34,13 @@ final class RankingButton: BaseButton {
         chevronImageView.isUserInteractionEnabled = false
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        addAction(
+            UIAction { [weak self] _ in
+                self?.rankingTapped.accept(())
+            }, for: .touchUpInside
+        )
+    }
     
     override func configureHierarchy() {
         [chartImageView, label, chevronImageView].forEach { addSubview($0) }

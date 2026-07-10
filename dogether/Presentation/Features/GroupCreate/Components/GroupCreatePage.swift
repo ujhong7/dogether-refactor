@@ -6,16 +6,18 @@
 //
 
 import UIKit
+
+import RxRelay
+import RxSwift
 import SnapKit
 
 final class GroupCreatePage: BasePage {
-    var delegate: GroupCreateDelegate? {
-        didSet {
-            stepButtonStackView.delegate = delegate
-            stepOneView.delegate = delegate
-            stepTwoView.delegate = delegate
-        }
-    }
+    let stepChanged = PublishRelay<CreateGroupSteps?>()
+    let groupNameChanged = PublishRelay<String>()
+    let memberCountChanged = PublishRelay<(count: Int, min: Int, max: Int)>()
+    let durationSelected = PublishRelay<GroupChallengeDurations>()
+    let startAtSelected = PublishRelay<GroupStartAts>()
+    let createTapped = PublishRelay<Void>()
     
     private let navigationHeader = NavigationHeader(title: "그룹 만들기")
     private let stepInfoStackView = StepInfoStackView()
@@ -24,6 +26,7 @@ final class GroupCreatePage: BasePage {
     private var stepOneView = StepOneView()
     private var stepTwoView = StepTwoView()
     private var stepThreeView = StepThreeView()
+    private let disposeBag = DisposeBag()
     
     override func configureView() { }
     
@@ -34,6 +37,30 @@ final class GroupCreatePage: BasePage {
         }
 
         navigationHeader.delegate = coordinatorDelegate
+
+        stepButtonStackView.stepChanged
+            .bind(to: stepChanged)
+            .disposed(by: disposeBag)
+
+        stepButtonStackView.createTapped
+            .bind(to: createTapped)
+            .disposed(by: disposeBag)
+
+        stepOneView.groupNameChanged
+            .bind(to: groupNameChanged)
+            .disposed(by: disposeBag)
+
+        stepOneView.memberCountChanged
+            .bind(to: memberCountChanged)
+            .disposed(by: disposeBag)
+
+        stepTwoView.durationSelected
+            .bind(to: durationSelected)
+            .disposed(by: disposeBag)
+
+        stepTwoView.startAtSelected
+            .bind(to: startAtSelected)
+            .disposed(by: disposeBag)
     }
     
     override func configureHierarchy() {

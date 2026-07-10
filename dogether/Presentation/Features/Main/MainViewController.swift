@@ -7,9 +7,13 @@
 
 import UIKit
 
+import RxCocoa
+import RxSwift
+
 final class MainViewController: BaseViewController {
     private let mainPage = MainPage()
     private let viewModel: MainViewModel
+    private let disposeBag = DisposeBag()
 
     init(viewModel: MainViewModel) {
         self.viewModel = viewModel
@@ -19,13 +23,12 @@ final class MainViewController: BaseViewController {
     required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
-        mainPage.delegate = self
-        
         pages = [mainPage]
 
         super.viewDidLoad()
         
         onAppear()
+        bindActions()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -37,10 +40,11 @@ final class MainViewController: BaseViewController {
     }
     
     override func setViewDatas() {
-        bind(viewModel.bottomSheetViewDatas)
-        bind(viewModel.groupViewDatas)
-        bind(viewModel.sheetViewDatas)
-        bind(viewModel.timerViewDatas)
+        let output = viewModel.output
+        bind(output.bottomSheetViewDatas)
+        bind(output.groupViewDatas)
+        bind(output.sheetViewDatas)
+        bind(output.timerViewDatas)
     }
 }
 
@@ -85,10 +89,9 @@ extension MainViewController {
     private func loadMainView() {
         runTask { [weak self] in
             guard let self else { return }
-            let groupViewDatas = try await viewModel.getGroups()
-            viewModel.groupViewDatas.accept(groupViewDatas)
+            let isEmptyGroups = try await viewModel.loadGroups()
             
-            if groupViewDatas.groups.isEmpty {
+            if isEmptyGroups {
                 guard let coordinator else { return }
                 coordinator.setStart()
                 return
@@ -97,61 +100,136 @@ extension MainViewController {
             try await viewModel.setSheetViewDatasForCurrentGroup()
         }
     }
-}
 
-// MARK: - delegate
-@MainActor
-protocol MainDelegate {
-    func updateAlphaBySheet(alpha: CGFloat)
-    func updateSheetStatus(sheetStatus: SheetStatus)
-    func updateYOffsetOfSheet(yOffset: CGFloat)
-    func updateIsScrollOnTop(isScrollOnTop: Bool)
-    func goRankingViewAction()
-    func updateBottomSheetVisibleAction(isShowSheet: Bool)
-    func selectGroupAction(index: Int)
-    func addGroupAction()
-    func inviteAction()
-    func goPastAction()
-    func goFutureAction()
-    func startTimerAction()
-    func stopTimerAction()
-    func goWriteTodoViewAction(todos: [TodoEntity])
-    func selectFilterAction(filterType: FilterTypes)
-    func goCertificateViewAction(todo: TodoEntity)
-    func goCertificationViewAction(index: Int)
-}
+    private func bindActions() {
+        mainPage.sheetAlphaChanged
+            .asSignal()
+            .emit(onNext: { [weak self] alpha in
+                self?.viewModel.updateSheetAlpha(alpha)
+            })
+            .disposed(by: disposeBag)
 
-extension MainViewController: MainDelegate {
-    func updateAlphaBySheet(alpha: CGFloat) {
-        viewModel.sheetViewDatas.update { $0.alpha = alpha }
+        mainPage.sheetStatusChanged
+            .asSignal()
+            .emit(onNext: { [weak self] sheetStatus in
+                self?.viewModel.updateSheetStatus(sheetStatus)
+            })
+            .disposed(by: disposeBag)
+
+        mainPage.sheetYOffsetChanged
+            .asSignal()
+            .emit(onNext: { [weak self] yOffset in
+                self?.viewModel.updateSheetYOffset(yOffset)
+            })
+            .disposed(by: disposeBag)
+
+        mainPage.isScrollOnTopChanged
+            .asSignal()
+            .emit(onNext: { [weak self] isScrollOnTop in
+                self?.viewModel.updateIsScrollOnTop(isScrollOnTop)
+            })
+            .disposed(by: disposeBag)
+
+        mainPage.rankingTapped
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.goRankingView()
+            })
+            .disposed(by: disposeBag)
+
+        mainPage.bottomSheetVisibleChanged
+            .asSignal()
+            .emit(onNext: { [weak self] isShowSheet in
+                self?.viewModel.updateBottomSheetVisible(isShowSheet)
+            })
+            .disposed(by: disposeBag)
+
+        mainPage.groupSelected
+            .asSignal()
+            .emit(onNext: { [weak self] index in
+                self?.selectGroup(index: index)
+            })
+            .disposed(by: disposeBag)
+
+        mainPage.addGroupTapped
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.addGroup()
+            })
+            .disposed(by: disposeBag)
+
+        mainPage.inviteTapped
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.invite()
+            })
+            .disposed(by: disposeBag)
+
+        mainPage.pastTapped
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.goPast()
+            })
+            .disposed(by: disposeBag)
+
+        mainPage.futureTapped
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.goFuture()
+            })
+            .disposed(by: disposeBag)
+
+        mainPage.timerShouldStart
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.viewModel.startTimer()
+            })
+            .disposed(by: disposeBag)
+
+        mainPage.timerShouldStop
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.viewModel.stopTimer()
+            })
+            .disposed(by: disposeBag)
+
+        mainPage.writeTodoRequested
+            .asSignal()
+            .emit(onNext: { [weak self] todos in
+                self?.goWriteTodoView(todos: todos)
+            })
+            .disposed(by: disposeBag)
+
+        mainPage.filterSelected
+            .asSignal()
+            .emit(onNext: { [weak self] filterType in
+                self?.viewModel.toggleFilter(filterType)
+            })
+            .disposed(by: disposeBag)
+
+        mainPage.certificateImageRequested
+            .asSignal()
+            .emit(onNext: { [weak self] todo in
+                self?.goCertificateView(todo: todo)
+            })
+            .disposed(by: disposeBag)
+
+        mainPage.certificationRequested
+            .asSignal()
+            .emit(onNext: { [weak self] index in
+                self?.goCertificationView(index: index)
+            })
+            .disposed(by: disposeBag)
     }
-    
-    func updateSheetStatus(sheetStatus: SheetStatus) {
-        viewModel.sheetViewDatas.update { $0.sheetStatus = sheetStatus }
-    }
-    
-    func updateYOffsetOfSheet(yOffset: CGFloat) {
-        viewModel.sheetViewDatas.update { $0.yOffset = yOffset }
-    }
-    
-    func updateIsScrollOnTop(isScrollOnTop: Bool) {
-        viewModel.sheetViewDatas.update { $0.isScrollOnTop = isScrollOnTop }
-    }
-    
-    func goRankingViewAction() {
+
+    private func goRankingView() {
         guard let coordinator else { return }
         let rankingViewDatas = RankingViewDatas(groupId: viewModel.currentGroup.id)
         coordinator.pushRanking(datas: rankingViewDatas)
     }
-    
-    func updateBottomSheetVisibleAction(isShowSheet: Bool) {
-        viewModel.bottomSheetViewDatas.update { $0.isShowSheet = isShowSheet }
-    }
-    
-    func selectGroupAction(index: Int) {
-        viewModel.groupViewDatas.update { $0.index = index }
-        
-        viewModel.sheetViewDatas.update { $0.dateOffset = 0 }
+
+    private func selectGroup(index: Int) {
+        viewModel.selectGroup(index: index)
 
         runTask { [weak self] in
             guard let self else { return }
@@ -159,14 +237,14 @@ extension MainViewController: MainDelegate {
             try await viewModel.setSheetViewDatasForCurrentGroup()
         }
     }
-    
-    func addGroupAction() {
+
+    private func addGroup() {
         guard let coordinator else { return }
         let startViewDatas = StartViewDatas(isFirstGroup: false)
         coordinator.pushStart(datas: startViewDatas)
     }
-    
-    func inviteAction() {
+
+    private func invite() {
         let group = viewModel.currentGroup
 
         runTask {
@@ -182,68 +260,38 @@ extension MainViewController: MainDelegate {
             self?.present(activityVC, animated: true)
         }
     }
-    
-    func goPastAction() {
-        viewModel.sheetViewDatas.update {
-            $0.dateOffset -= 1
-            $0.filter = .all
-        }
+
+    private func goPast() {
+        viewModel.moveDateOffset(by: -1)
 
         runTask { [weak self] in
             guard let self else { return }
             try await viewModel.setSheetViewDatasForCurrentGroup()
         }
     }
-    
-    func goFutureAction() {
-        viewModel.sheetViewDatas.update {
-            $0.dateOffset += 1
-            $0.filter = .all
-        }
+
+    private func goFuture() {
+        viewModel.moveDateOffset(by: 1)
 
         runTask { [weak self] in
             guard let self else { return }
             try await viewModel.setSheetViewDatasForCurrentGroup()
         }
     }
-    
-    func startTimerAction() {
-        viewModel.startTimer()
-    }
-    
-    func stopTimerAction() {
-        viewModel.stopTimer()
-    }
-    
-    func goWriteTodoViewAction(todos: [TodoEntity]) {
+
+    private func goWriteTodoView(todos: [TodoEntity]) {
         guard let coordinator else { return }
-        let todoWriteViewDatas = TodoWriteViewDatas(
-            groupId: viewModel.currentGroup.id,
-            todos: todos.map { WriteTodoEntity(content: $0.content, enabled: false) }
-        )
-        coordinator.pushTodoWrite(datas: todoWriteViewDatas)
+        coordinator.pushTodoWrite(datas: viewModel.makeTodoWriteViewDatas(todos: todos))
     }
-    
-    func selectFilterAction(filterType: FilterTypes) {
-        let filter = filterType == viewModel.sheetViewDatas.value.filter ? .all : filterType
-        viewModel.sheetViewDatas.update { $0.filter = filter }
-    }
-    
-    func goCertificateViewAction(todo: TodoEntity) {
+
+    private func goCertificateView(todo: TodoEntity) {
         guard let coordinator else { return }
         let certificateViewDatas = CertificateViewDatas(todo: todo)
         coordinator.pushCertificateImage(datas: certificateViewDatas)
     }
-    
-    func goCertificationViewAction(index: Int) {
+
+    private func goCertificationView(index: Int) {
         guard let coordinator else { return }
-        let certificationViewDatas = CertificationViewDatas(
-            title: "내 인증 정보",
-            todos: viewModel.sheetViewDatas.value.todoList.filter {
-                viewModel.sheetViewDatas.value.filter == .all || viewModel.sheetViewDatas.value.filter == FilterTypes(status: $0.status.rawValue)
-            },
-            index: index
-        )
-        coordinator.pushCertification(datas: certificationViewDatas)
+        coordinator.pushCertification(datas: viewModel.makeCertificationViewDatas(index: index))
     }
 }

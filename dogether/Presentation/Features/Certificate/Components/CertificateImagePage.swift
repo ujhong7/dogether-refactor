@@ -8,18 +8,13 @@
 import UIKit
 
 import PhotosUI
+import RxRelay
 
 final class CertificateImagePage: BasePage {
-    var delegate: CertificateImageDelegate? {
-        didSet {
-            certificateButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.goCertificateContentViewAction()
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let nextTapped = PublishRelay<Void>()
+    let permissionDenied = PublishRelay<AlertTypes>()
+    let pickerRequested = PublishRelay<UIViewController>()
+    let imageSelected = PublishRelay<UIImage>()
     
     private let navigationHeader = NavigationHeader(title: "인증 하기")
     private let imageView = CertificationImageView(type: .camera)
@@ -40,6 +35,12 @@ final class CertificateImagePage: BasePage {
     
     override func configureAction() {
         navigationHeader.delegate = coordinatorDelegate
+
+        certificateButton.addAction(
+            UIAction { [weak self] _ in
+                self?.nextTapped.accept(())
+            }, for: .touchUpInside
+        )
         
         [galleryButton, cameraButton].forEach { button in
             button.addAction(
@@ -123,12 +124,12 @@ extension CertificateImagePage: PHPickerViewControllerDelegate {
             PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
                 Task { @MainActor in
                     if status == .authorized || status == .limited { self.openGallery() }
-                    else { self.delegate?.showPopupAction(type: .gallery) }
+                    else { self.permissionDenied.accept(.gallery) }
                 }
             }
             
         case .denied, .restricted:
-            delegate?.showPopupAction(type: .gallery)
+            permissionDenied.accept(.gallery)
             
         @unknown default:
             break
@@ -142,7 +143,7 @@ extension CertificateImagePage: PHPickerViewControllerDelegate {
 
         let picker = PHPickerViewController(configuration: configuration)
         picker.delegate = self
-        delegate?.presentPickerControllerAction(pickerController: picker)
+        pickerRequested.accept(picker)
     }
     
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
@@ -175,12 +176,12 @@ extension CertificateImagePage: UIImagePickerControllerDelegate, UINavigationCon
             AVCaptureDevice.requestAccess(for: .video) { granted in
                 Task { @MainActor in
                     if granted { self.openCamera() }
-                    else { self.delegate?.showPopupAction(type: .camera) }
+                    else { self.permissionDenied.accept(.camera) }
                 }
             }
             
         case .denied, .restricted:
-            delegate?.showPopupAction(type: .camera)
+            permissionDenied.accept(.camera)
             
         @unknown default:
             break
@@ -194,7 +195,7 @@ extension CertificateImagePage: UIImagePickerControllerDelegate, UINavigationCon
         picker.sourceType = .camera
         picker.delegate = self
         picker.allowsEditing = false
-        delegate?.presentPickerControllerAction(pickerController: picker)
+        pickerRequested.accept(picker)
     }
     
     func imagePickerController(
@@ -220,6 +221,6 @@ extension CertificateImagePage {
         let certificationImageViewDatas = CertificationImageViewDatas(image: image, content: "")
         imageView.updateView(certificationImageViewDatas)
         
-        delegate?.uploadImageAction(image: image)
+        imageSelected.accept(image)
     }
 }

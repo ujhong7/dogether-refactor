@@ -6,26 +6,13 @@
 //
 
 import UIKit
+
+import RxRelay
 import SnapKit
 
 final class SettingPage: BasePage {
-    var delegate: SettingDelegate? {
-        didSet {
-            logoutButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.logoutAction()
-                }, for: .touchUpInside
-            )
-            
-            withdrawButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.withdrawAction()
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let logoutTapped = PublishRelay<Void>()
+    let withdrawTapped = PublishRelay<Void>()
     
     private let navigationHeader = NavigationHeader(title: "설정")
     private let logoutButton = SettingButton(title: "로그아웃")
@@ -40,6 +27,18 @@ final class SettingPage: BasePage {
     
     override func configureAction() {
         navigationHeader.delegate = coordinatorDelegate
+
+        logoutButton.addAction(
+            UIAction { [weak self] _ in
+                self?.logoutTapped.accept(())
+            }, for: .touchUpInside
+        )
+
+        withdrawButton.addAction(
+            UIAction { [weak self] _ in
+                self?.withdrawTapped.accept(())
+            }, for: .touchUpInside
+        )
     }
     
     override func configureHierarchy() {

@@ -7,17 +7,10 @@
 
 import UIKit
 
+import RxRelay
+
 final class ErrorPage: BasePage {
-    var delegate: ErrorDelegate? {
-        didSet {
-            retryButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.retryAction()
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let retryTapped = PublishRelay<Void>()
     
     private let imageView = UIImageView(image: .iceDosik)
     private let titleLabel = UILabel()
@@ -38,7 +31,14 @@ final class ErrorPage: BasePage {
         stackView.alignment = .center
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        retryButton.addAction(
+            UIAction { [weak self] _ in
+                self?.retryTapped.accept(())
+            },
+            for: .touchUpInside
+        )
+    }
     
     override func configureHierarchy() {
         [imageView, titleLabel, descriptionLabel, retryButton].forEach { stackView.addArrangedSubview($0) }

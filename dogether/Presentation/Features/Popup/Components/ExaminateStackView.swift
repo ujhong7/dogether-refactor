@@ -7,25 +7,13 @@
 
 import UIKit
 
+import RxRelay
+
 final class ExaminateStackView: BaseStackView {
-    var delegate: PopupDelegate? {
-        didSet {
-            closeButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.hidePopup()
-                }, for: .touchUpInside
-            )
-            
-            registerButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.hidePopup()
-                    delegate?.completeAction()
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let hideTapped = PublishRelay<Void>()
+    let completeTapped = PublishRelay<Void>()
+    let keyboardHeightChanged = PublishRelay<CGFloat>()
+    let feedbackChanged = PublishRelay<String>()
     
     private let closeContainerView = UIView()
     private let closeButton = UIButton()
@@ -80,6 +68,18 @@ final class ExaminateStackView: BaseStackView {
     override func configureAction() {
         examinateTextView.delegate = self
         observeKeyboardNotifications()
+
+        closeButton.addAction(
+            UIAction { [weak self] _ in
+                self?.hideTapped.accept(())
+            }, for: .touchUpInside
+        )
+
+        registerButton.addAction(
+            UIAction { [weak self] _ in
+                self?.completeTapped.accept(())
+            }, for: .touchUpInside
+        )
     }
      
     override func configureHierarchy() {
@@ -157,11 +157,11 @@ extension ExaminateStackView {
     
     @objc func keyboardWillShow(_ notification: Notification) {
         guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
-        delegate?.updateKeyboardHeightAction(height: frame.height)
+        keyboardHeightChanged.accept(frame.height)
     }
 
     @objc func keyboardWillHide(_ notification: Notification) {
-        delegate?.updateKeyboardHeightAction(height: 0)
+        keyboardHeightChanged.accept(0)
     }
 }
 
@@ -180,15 +180,11 @@ extension ExaminateStackView: UITextViewDelegate {
         let updatedText = currentText.replacingCharacters(in: textRange, with: text)
         
         return updatedText.count <= textView.type.maxLength
-        
-//        let feedback = String((textView.text ?? "").prefix(textView.type.maxLength))
-//        textView.text = feedback
-//        delegate?.updateFeedbackAction(feedback: feedback, maxLength: textView.type.maxLength)
     }
     
     func textViewDidChange(_ textView: UITextView) {
         guard let textView = textView as? DogetherTextView else { return }
-        delegate?.updateFeedbackAction(feedback: textView.text)
+        feedbackChanged.accept(textView.text)
     }
     
     func textViewShouldReturn(_ textView: UITextView) -> Bool {

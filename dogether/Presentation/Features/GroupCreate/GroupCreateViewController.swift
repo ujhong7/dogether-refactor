@@ -7,9 +7,15 @@
 
 import UIKit
 
+import RxCocoa
+import RxRelay
+import RxSwift
+
 final class GroupCreateViewController: BaseViewController {
     private let groupCreatePage = GroupCreatePage()
     private let viewModel: GroupCreateViewModel
+    private let viewDidAppearRelay = PublishRelay<Void>()
+    private let disposeBag = DisposeBag()
 
     init(viewModel: GroupCreateViewModel) {
         self.viewModel = viewModel
@@ -19,55 +25,39 @@ final class GroupCreateViewController: BaseViewController {
     required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
-        groupCreatePage.delegate = self
-        
         pages = [groupCreatePage]
 
         super.viewDidLoad()
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        viewModel.updateIsFirstResponder(isFirstResponder: true)
+        super.viewDidAppear(animated)
+        viewDidAppearRelay.accept(())
     }
     
     override func setViewDatas() {
-        bind(viewModel.groupCreateViewDatas)
+        let input = GroupCreateViewModel.Input(
+            viewDidAppear: viewDidAppearRelay.asSignal(),
+            stepChanged: groupCreatePage.stepChanged.asSignal(),
+            groupNameChanged: groupCreatePage.groupNameChanged.asSignal(),
+            memberCountChanged: groupCreatePage.memberCountChanged.asSignal(),
+            durationSelected: groupCreatePage.durationSelected.asSignal(),
+            startAtSelected: groupCreatePage.startAtSelected.asSignal()
+        )
+        let output = viewModel.transform(input: input)
+        bind(output.groupCreateViewDatas)
+
+        groupCreatePage.createTapped
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.createGroup()
+            })
+            .disposed(by: disposeBag)
     }
 }
 
-// MARK: - delegate
-@MainActor
-protocol GroupCreateDelegate {
-    func updateStep(step: CreateGroupSteps?)
-    func updateGroupNameAction(groupName: String)
-    func updateCountAction(currentCount: Int, min: Int, max: Int)
-    func updateDuration(duration: GroupChallengeDurations)
-    func updateStartAt(startAt: GroupStartAts)
-    func createGroup()
-}
-
-extension GroupCreateViewController: GroupCreateDelegate {
-    func updateStep(step: CreateGroupSteps?) {
-        viewModel.updateStep(step: step)
-    }
-    
-    func updateGroupNameAction(groupName: String) {
-        viewModel.updateGroupName(groupName: groupName)
-    }
-    
-    func updateCountAction(currentCount: Int, min: Int, max: Int) {
-        viewModel.updateMemberCount(count: currentCount, min: min, max: max)
-    }
-    
-    func updateDuration(duration: GroupChallengeDurations) {
-        viewModel.updateDuration(duration: duration)
-    }
-    
-    func updateStartAt(startAt: GroupStartAts) {
-        viewModel.updateStartAt(startAt: startAt)
-    }
-    
-    func createGroup() {
+extension GroupCreateViewController {
+    private func createGroup() {
         runTask { [weak self] in
             guard let self else { return }
             let joinCode = try await viewModel.createGroup()
@@ -76,7 +66,7 @@ extension GroupCreateViewController: GroupCreateDelegate {
                 groupType: .create,
                 joinCode: joinCode,
                 groupEntity: GroupEntity(
-                    name: viewModel.groupCreateViewDatas.value.groupName
+                    name: viewModel.groupName
                 )
             )
             coordinator.setComplete(datas: completeViewDatas)

@@ -7,20 +7,28 @@
 
 import UIKit
 
+import RxCocoa
 import RxRelay
 
 @MainActor
 final class MainViewModel {
+    struct Output {
+        let bottomSheetViewDatas: Driver<BottomSheetViewDatas>
+        let groupViewDatas: Driver<GroupViewDatas>
+        let sheetViewDatas: Driver<SheetViewDatas>
+        let timerViewDatas: Driver<TimerViewDatas>
+    }
+
     private let groupUseCase: GroupUseCase
     private let challengeGroupsUseCase: ChallengeGroupUseCase
     private let todoCertificationsUseCase: TodoCertificationsUseCase
     
-    private(set) var bottomSheetViewDatas = BehaviorRelay<BottomSheetViewDatas>(value: BottomSheetViewDatas())
-    private(set) var groupViewDatas = BehaviorRelay<GroupViewDatas>(value: GroupViewDatas())
-    private(set) var sheetViewDatas = BehaviorRelay<SheetViewDatas>(value: SheetViewDatas())
+    private let bottomSheetViewDatas = BehaviorRelay<BottomSheetViewDatas>(value: BottomSheetViewDatas())
+    private let groupViewDatas = BehaviorRelay<GroupViewDatas>(value: GroupViewDatas())
+    private let sheetViewDatas = BehaviorRelay<SheetViewDatas>(value: SheetViewDatas())
     
-    private(set) var timerViewDatas = BehaviorRelay<TimerViewDatas>(value: TimerViewDatas())
-    private(set) var timer: Timer?
+    private let timerViewDatas = BehaviorRelay<TimerViewDatas>(value: TimerViewDatas())
+    private var timer: Timer?
     
     // MARK: - Computed
     var currentGroup: GroupEntity { groupViewDatas.value.groups[groupViewDatas.value.index] }
@@ -34,12 +42,23 @@ final class MainViewModel {
         self.challengeGroupsUseCase = challengeGroupsUseCase
         self.todoCertificationsUseCase = todoCertificationsUseCase
     }
+
+    var output: Output {
+        Output(
+            bottomSheetViewDatas: bottomSheetViewDatas.asDriver(),
+            groupViewDatas: groupViewDatas.asDriver(),
+            sheetViewDatas: sheetViewDatas.asDriver(),
+            timerViewDatas: timerViewDatas.asDriver()
+        )
+    }
 }
 
 // MARK: - get
 extension MainViewModel {
-    func getGroups() async throws -> GroupViewDatas {
-        return try await groupUseCase.getGroups()
+    func loadGroups() async throws -> Bool {
+        let groupViewDatas: GroupViewDatas = try await groupUseCase.getGroups()
+        self.groupViewDatas.accept(groupViewDatas)
+        return groupViewDatas.groups.isEmpty
     }
     
     func getTodoList(dateOffset: Int, groupId: Int) async throws -> [TodoEntity] {
@@ -108,6 +127,61 @@ extension MainViewModel {
 }
 
 extension MainViewModel {
+    func updateSheetAlpha(_ alpha: CGFloat) {
+        sheetViewDatas.update { $0.alpha = alpha }
+    }
+
+    func updateSheetStatus(_ sheetStatus: SheetStatus) {
+        sheetViewDatas.update { $0.sheetStatus = sheetStatus }
+    }
+
+    func updateSheetYOffset(_ yOffset: CGFloat) {
+        sheetViewDatas.update { $0.yOffset = yOffset }
+    }
+
+    func updateIsScrollOnTop(_ isScrollOnTop: Bool) {
+        sheetViewDatas.update { $0.isScrollOnTop = isScrollOnTop }
+    }
+
+    func updateBottomSheetVisible(_ isShowSheet: Bool) {
+        bottomSheetViewDatas.update { $0.isShowSheet = isShowSheet }
+    }
+
+    func selectGroup(index: Int) {
+        groupViewDatas.update { $0.index = index }
+        sheetViewDatas.update { $0.dateOffset = 0 }
+    }
+
+    func moveDateOffset(by value: Int) {
+        sheetViewDatas.update {
+            $0.dateOffset += value
+            $0.filter = .all
+        }
+    }
+
+    func toggleFilter(_ filterType: FilterTypes) {
+        let filter = filterType == sheetViewDatas.value.filter ? .all : filterType
+        sheetViewDatas.update { $0.filter = filter }
+    }
+
+    func makeTodoWriteViewDatas(todos: [TodoEntity]) -> TodoWriteViewDatas {
+        TodoWriteViewDatas(
+            groupId: currentGroup.id,
+            todos: todos.map { WriteTodoEntity(content: $0.content, enabled: false) }
+        )
+    }
+
+    func makeCertificationViewDatas(index: Int) -> CertificationViewDatas {
+        let sheetViewDatas = sheetViewDatas.value
+        return CertificationViewDatas(
+            title: "내 인증 정보",
+            todos: sheetViewDatas.todoList.filter {
+                sheetViewDatas.filter == .all || sheetViewDatas.filter == FilterTypes(status: $0.status.rawValue)
+            },
+            index: index
+        )
+    }
+
     func saveLastSelectedGroupIndex(index: Int) async throws {
         try await groupUseCase.saveLastSelectedGroup(groupId: groupViewDatas.value.groups[index].id)
     }

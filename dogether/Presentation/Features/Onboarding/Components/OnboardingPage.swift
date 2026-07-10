@@ -7,18 +7,10 @@
 
 import AuthenticationServices
 import Lottie
+import RxRelay
 
 final class OnboardingPage: BasePage {
-    var delegate: OnboardingDelegate? {
-        didSet {
-            appleLoginButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.loginAction(loginType: .apple)
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let loginTapped = PublishRelay<LoginTypes>()
     
     private let scrollView = UIScrollView()
     private let onboardingStackView = UIStackView()
@@ -51,6 +43,12 @@ final class OnboardingPage: BasePage {
     
     override func configureAction() {
         scrollView.delegate = self
+
+        appleLoginButton.addAction(
+            UIAction { [weak self] _ in
+                self?.loginTapped.accept(.apple)
+            }, for: .touchUpInside
+        )
         
         pageControl.addAction(
             UIAction { [weak self] _ in

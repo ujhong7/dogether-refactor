@@ -6,36 +6,15 @@
 //
 
 import UIKit
+
+import RxRelay
 import SnapKit
 
 final class BottomSheetView: BaseView {
-    var mainDelegate: MainDelegate? {
-        didSet {
-            backgroundView.addTapAction { [weak self] _ in
-                guard let self else { return }
-                mainDelegate?.updateBottomSheetVisibleAction(isShowSheet: false)
-            }
-        }
-    }
-    
-    var statsDelegate: StatsDelegate? {
-        didSet {
-            backgroundView.addTapAction { [weak self] _ in
-                guard let self else { return }
-                statsDelegate?.updateBottomSheetVisibleAction(isShowSheet: false)
-            }
-        }
-    }
-    
-    var certificationDelegate: CertificationListPageDelegate? {
-        didSet {
-            backgroundView.addTapAction { [weak self] _ in
-                guard let self else { return }
-                certificationDelegate?.updateBottomSheetVisibleAction(isShowSheet: false)
-            }
-        }
-    }
-    
+    let isVisibleChanged = PublishRelay<Bool>()
+    let itemSelected = PublishRelay<Int>()
+    let addGroupTapped = PublishRelay<Void>()
+
     private let hasAddButton: Bool
     
     init(hasAddButton: Bool = true) {
@@ -68,7 +47,11 @@ final class BottomSheetView: BaseView {
         itemListStackView.axis = .vertical
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        backgroundView.addTapAction { [weak self] _ in
+            self?.isVisibleChanged.accept(false)
+        }
+    }
     
     override func configureHierarchy() {
         [backgroundView, sheetView].forEach { addSubview($0) }
@@ -155,18 +138,9 @@ extension BottomSheetView {
         button.addAction(
             UIAction { [weak self] _ in
                 guard let self else { return }
-                if let delegate = mainDelegate {
-                    delegate.updateBottomSheetVisibleAction(isShowSheet: false)
-                    delegate.selectGroupAction(index: index)
-                }
-                if let delegate = statsDelegate {
-                    delegate.updateBottomSheetVisibleAction(isShowSheet: false)
-                    delegate.selectGroupAction(index: index)
-                }
-                if let delegate = certificationDelegate {
-                    delegate.updateBottomSheetVisibleAction(isShowSheet: false)
-                    delegate.selectSortAction(index: index)
-                }
+                isVisibleChanged.accept(false)
+                itemSelected.accept(index)
+
             }, for: .touchUpInside
         )
         
@@ -205,10 +179,9 @@ extension BottomSheetView {
         button.addAction(
             UIAction { [weak self] _ in
                 guard let self else { return }
-                if let delegate = mainDelegate {
-                    delegate.updateBottomSheetVisibleAction(isShowSheet: false)
-                    delegate.addGroupAction()
-                }
+                isVisibleChanged.accept(false)
+                addGroupTapped.accept(())
+
             }, for: .touchUpInside
         )
         

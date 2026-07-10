@@ -6,18 +6,27 @@
 //
 
 import Foundation
+import RxCocoa
 import RxRelay
 
 @MainActor
 final class StatsViewModel {
+    struct Output {
+        let bottomSheetViewDatas: Driver<BottomSheetViewDatas>
+        let groupViewDatas: Driver<GroupViewDatas>
+        let achievementViewDatas: Driver<AchievementViewDatas>
+        let myRankViewDatas: Driver<StatsRankViewDatas>
+        let summaryViewDatas: Driver<StatsSummaryViewDatas>
+    }
+
     private let userUseCase: UserUseCase
     private let groupUseCase: GroupUseCase
     
-    private(set) var bottomSheetViewDatas = BehaviorRelay<BottomSheetViewDatas>(value: BottomSheetViewDatas())
-    private(set) var groupViewDatas = BehaviorRelay<GroupViewDatas>(value: GroupViewDatas())
-    private(set) var achievementViewDatas = BehaviorRelay<AchievementViewDatas>(value: AchievementViewDatas())
-    private(set) var myRankViewDatas = BehaviorRelay<StatsRankViewDatas>(value: StatsRankViewDatas())
-    private(set) var summaryViewDatas = BehaviorRelay<StatsSummaryViewDatas>(value: StatsSummaryViewDatas())
+    private let bottomSheetViewDatas = BehaviorRelay<BottomSheetViewDatas>(value: BottomSheetViewDatas())
+    private let groupViewDatas = BehaviorRelay<GroupViewDatas>(value: GroupViewDatas())
+    private let achievementViewDatas = BehaviorRelay<AchievementViewDatas>(value: AchievementViewDatas())
+    private let myRankViewDatas = BehaviorRelay<StatsRankViewDatas>(value: StatsRankViewDatas())
+    private let summaryViewDatas = BehaviorRelay<StatsSummaryViewDatas>(value: StatsSummaryViewDatas())
     
     // MARK: - Computed
     var currentGroup: GroupEntity { groupViewDatas.value.groups[groupViewDatas.value.index] }
@@ -25,6 +34,16 @@ final class StatsViewModel {
     init(userUseCase: UserUseCase, groupUseCase: GroupUseCase) {
         self.userUseCase = userUseCase
         self.groupUseCase = groupUseCase
+    }
+
+    var output: Output {
+        Output(
+            bottomSheetViewDatas: bottomSheetViewDatas.asDriver(),
+            groupViewDatas: groupViewDatas.asDriver(),
+            achievementViewDatas: achievementViewDatas.asDriver(),
+            myRankViewDatas: myRankViewDatas.asDriver(),
+            summaryViewDatas: summaryViewDatas.asDriver()
+        )
     }
 }
 
@@ -56,6 +75,14 @@ extension StatsViewModel {
 }
 
 extension StatsViewModel {
+    func updateBottomSheetVisible(isShowSheet: Bool) {
+        bottomSheetViewDatas.update { $0.isShowSheet = isShowSheet }
+    }
+
+    func selectGroup(index: Int) {
+        groupViewDatas.update { $0.index = index }
+    }
+
     func saveLastSelectedGroupIndex(index: Int) async throws {
         try await groupUseCase.saveLastSelectedGroup(groupId: groupViewDatas.value.groups[index].id)
     }

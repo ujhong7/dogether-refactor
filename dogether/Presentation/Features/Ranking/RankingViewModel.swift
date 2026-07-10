@@ -7,18 +7,33 @@
 
 import UIKit
 
+import RxCocoa
 import RxRelay
 
 @MainActor
 final class RankingViewModel {
+    struct Output {
+        let rankingViewDatas: Driver<RankingViewDatas>
+    }
+
     private let groupUseCase: GroupUseCase
     private let challengeGroupsUseCase: ChallengeGroupUseCase
     
-    private(set) var rankingViewDatas = BehaviorRelay<RankingViewDatas>(value: RankingViewDatas())
+    private let rankingViewDatas = BehaviorRelay<RankingViewDatas>(value: RankingViewDatas())
+
+    var groupId: Int { rankingViewDatas.value.groupId }
     
     init(groupUseCase: GroupUseCase, challengeGroupsUseCase: ChallengeGroupUseCase) {
         self.groupUseCase = groupUseCase
         self.challengeGroupsUseCase = challengeGroupsUseCase
+    }
+
+    var output: Output {
+        Output(rankingViewDatas: rankingViewDatas.asDriver())
+    }
+
+    func setDatas(_ datas: RankingViewDatas) {
+        rankingViewDatas.accept(datas)
     }
 }
 

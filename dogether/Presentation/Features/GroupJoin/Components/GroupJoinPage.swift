@@ -6,30 +6,14 @@
 //
 
 import UIKit
+
+import RxRelay
 import SnapKit
 
 final class GroupJoinPage: BasePage {
-    var delegate: GroupJoinDelegate? {
-        didSet {
-            codeTextField.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    let code = String((codeTextField.text ?? "").prefix(codeMaxLength))
-                    codeTextField.text = code
-                    delegate?.updateCodeAction(code: code)
-                    delegate?.updateButtonStatusAction(status: code.count < codeMaxLength ? .disabled : .enabled)
-                },
-                for: .editingChanged
-            )
-            
-            joinButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.joinGroupAction()
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let codeChanged = PublishRelay<String>()
+    let keyboardHeightChanged = PublishRelay<CGFloat>()
+    let joinTapped = PublishRelay<Void>()
     
     private let navigationHeader = NavigationHeader(title: "그룹 가입하기")
     private let titleLabel = UILabel()
@@ -78,6 +62,23 @@ final class GroupJoinPage: BasePage {
         
         navigationHeader.delegate = coordinatorDelegate
         
+        codeTextField.addAction(
+            UIAction { [weak self] _ in
+                guard let self else { return }
+                let code = String((codeTextField.text ?? "").prefix(codeMaxLength))
+                codeTextField.text = code
+                codeChanged.accept(code)
+            },
+            for: .editingChanged
+        )
+
+        joinButton.addAction(
+            UIAction { [weak self] _ in
+                self?.joinTapped.accept(())
+            },
+            for: .touchUpInside
+        )
+
         codeTextField.delegate = self
         observeKeyboardNotifications()
     }
@@ -121,9 +122,6 @@ final class GroupJoinPage: BasePage {
         if let datas = data as? GroupJoinViewDatas {
             if codeTextField.text != datas.code {
                 codeTextField.text = datas.code
-                
-                delegate?.updateCodeAction(code: datas.code)
-                delegate?.updateButtonStatusAction(status: datas.code.count < codeMaxLength ? .disabled : .enabled)
             }
             
             // MARK: subTitleLabel 등 일반 UI의 구성을 최초 진행, 이후 joinButton 애니메이션을 위해 위치 조정
@@ -178,11 +176,11 @@ extension GroupJoinPage {
     
     @objc func keyboardWillShow(_ notification: Notification) {
         guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
-        delegate?.updateKeyboardHeightAction(height: frame.height - UIApplication.safeAreaOffset.bottom)
+        keyboardHeightChanged.accept(frame.height - UIApplication.safeAreaOffset.bottom)
     }
 
     @objc func keyboardWillHide(_ notification: Notification) {
-        delegate?.updateKeyboardHeightAction(height: 0)
+        keyboardHeightChanged.accept(0)
     }
 }
 

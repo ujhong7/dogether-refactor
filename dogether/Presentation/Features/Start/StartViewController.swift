@@ -5,13 +5,15 @@
 //  Created by seungyooooong on 2/9/25.
 //
 
+import RxCocoa
+import RxSwift
+
 final class StartViewController: BaseViewController {
     private let startPage = StartPage()
     private let viewModel = StartViewModel()
+    private let disposeBag = DisposeBag()
 
     override func viewDidLoad() {
-        startPage.delegate = self
-        
         pages = [startPage]
         
         super.viewDidLoad()
@@ -21,10 +23,18 @@ final class StartViewController: BaseViewController {
     
     override func setViewDatas() {
         if let datas = datas as? StartViewDatas {
-            viewModel.startViewDatas.accept(datas)
+            viewModel.setDatas(datas)
         }
-        
-        bind(viewModel.startViewDatas)
+
+        let output = viewModel.output
+        bind(output.startViewDatas)
+
+        startPage.groupTypeSelected
+            .asSignal()
+            .emit(onNext: { [weak self] groupType in
+                self?.start(groupType)
+            })
+            .disposed(by: disposeBag)
     }
 }
 
@@ -38,14 +48,8 @@ extension StartViewController {
     }
 }
 
-// MARK: - delegate
-@MainActor
-protocol StartDelegate {
-    func startAction(_ groupType: GroupTypes)
-}
-
-extension StartViewController: StartDelegate {
-    func startAction(_ groupType: GroupTypes) {
+extension StartViewController {
+    private func start(_ groupType: GroupTypes) {
         guard let coordinator else { return }
 
         switch groupType {

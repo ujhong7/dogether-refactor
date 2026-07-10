@@ -7,12 +7,15 @@
 
 import UIKit
 
-import RxSwift
 import RxCocoa
+import RxRelay
+import RxSwift
 
 final class TodoWriteViewController: BaseViewController {
     private let todoWritePage = TodoWritePage()
     private let viewModel: TodoWriteViewModel
+    private let viewDidAppearRelay = PublishRelay<Void>()
+    private let disposeBag = DisposeBag()
 
     init(viewModel: TodoWriteViewModel) {
         self.viewModel = viewModel
@@ -22,54 +25,42 @@ final class TodoWriteViewController: BaseViewController {
     required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
-        todoWritePage.delegate = self
-        
         pages = [todoWritePage]
         
         super.viewDidLoad()
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        viewModel.updateIsFirstResponder(isFirstResponder: true)
+        super.viewDidAppear(animated)
+        viewDidAppearRelay.accept(())
     }
     
     override func setViewDatas() {
         if let datas = datas as? TodoWriteViewDatas {
-            viewModel.todoWriteViewDatas.accept(datas)
+            viewModel.setDatas(datas)
         }
         
-        bind(viewModel.todoWriteViewDatas)
+        let input = TodoWriteViewModel.Input(
+            viewDidAppear: viewDidAppearRelay.asSignal(),
+            todoChanged: todoWritePage.todoChanged.asSignal(),
+            addTapped: todoWritePage.addTapped.asSignal(),
+            removeTapped: todoWritePage.removeTapped.asSignal(),
+            keyboardVisibleChanged: todoWritePage.keyboardVisibleChanged.asSignal()
+        )
+        let output = viewModel.transform(input: input)
+        bind(output.todoWriteViewDatas)
+
+        todoWritePage.saveTapped
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.saveTodo()
+            })
+            .disposed(by: disposeBag)
     }
 }
 
-// MARK: - delegate
-@MainActor
-protocol TodoWriteDelegate {
-    func updateIsShowKeyboardAction(isShowKeyboard: Bool)
-    func updateTodoAction(todo: String)
-    func addTodoAction(todoMaxCount: Int)
-    func removeTodoAction(index: Int)
-    func saveTodoAction()
-}
-
-extension TodoWriteViewController: TodoWriteDelegate {
-    func updateIsShowKeyboardAction(isShowKeyboard: Bool) {
-        viewModel.updateIsShowKeyboard(isShowKeyboard: isShowKeyboard)
-    }
-    
-    func updateTodoAction(todo: String) {
-        viewModel.updateTodo(todo: todo)
-    }
-    
-    func addTodoAction(todoMaxCount: Int) {
-        viewModel.addTodo(todoMaxCount: todoMaxCount)
-    }
-    
-    func removeTodoAction(index: Int) {
-        viewModel.removeTodo(index: index)
-    }
-    
-    func saveTodoAction() {
+extension TodoWriteViewController {
+    private func saveTodo() {
         coordinator?.showPopup(type: .alert, alertType: .saveTodo) { [weak self] _ in
             guard let self else { return }
             runTask { [weak self] in

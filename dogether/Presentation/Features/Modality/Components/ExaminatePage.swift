@@ -7,27 +7,11 @@
 
 import UIKit
 
+import RxRelay
+
 final class ExaminatePage: BasePage {
-    var delegate: ExaminateDelegate? {
-        didSet {
-            [rejectButton, approveButton].forEach { button in
-                button.addAction(
-                    UIAction { [weak self, weak button] _ in
-                        guard let self, let button,
-                              let type = FilterTypes.allCases.first(where: { $0.tag == button.tag }) else { return }
-                        delegate?.examinateAction(type: type)
-                    }, for: .touchUpInside
-                )
-            }
-            
-            sendButton.addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.sendAction()
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let examinateSelected = PublishRelay<FilterTypes>()
+    let sendTapped = PublishRelay<Void>()
     
     private let scrollView = UIScrollView()
     private let sendButton = DogetherButton("보내기")
@@ -62,7 +46,23 @@ final class ExaminatePage: BasePage {
         examinationStackView.distribution = .fillEqually
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        [rejectButton, approveButton].forEach { button in
+            button.addAction(
+                UIAction { [weak self, weak button] _ in
+                    guard let self, let button,
+                          let type = FilterTypes.allCases.first(where: { $0.tag == button.tag }) else { return }
+                    examinateSelected.accept(type)
+                }, for: .touchUpInside
+            )
+        }
+
+        sendButton.addAction(
+            UIAction { [weak self] _ in
+                self?.sendTapped.accept(())
+            }, for: .touchUpInside
+        )
+    }
     
     override func configureHierarchy() {
         [rejectButton, approveButton].forEach { examinationStackView.addArrangedSubview($0) }

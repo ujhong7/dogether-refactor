@@ -7,9 +7,13 @@
 
 import UIKit
 
+import RxCocoa
+import RxSwift
+
 final class CertificationViewController: BaseViewController {
     private let certificationPage = CertificationPage()
     private let viewModel: CertificationViewModel
+    private let disposeBag = DisposeBag()
 
     init(viewModel: CertificationViewModel) {
         self.viewModel = viewModel
@@ -19,21 +23,21 @@ final class CertificationViewController: BaseViewController {
     required init?(coder: NSCoder) { fatalError() }
     
     override func viewDidLoad() {
-        certificationPage.delegate = self
-        
         pages = [certificationPage]
 
         super.viewDidLoad()
         
         onAppear()
+        bindActions()
     }
     
     override func setViewDatas() {
         if let datas = datas as? CertificationViewDatas {
-            viewModel.certificationViewDatas.accept(datas)
+            viewModel.setDatas(datas)
         }
         
-        bind(viewModel.certificationViewDatas)
+        let output = viewModel.output
+        bind(output.certificationViewDatas)
     }
 }
 
@@ -44,71 +48,20 @@ extension CertificationViewController {
             try await viewModel.readTodo()
         }
     }
-}
 
-// MARK: - delegate
-@MainActor
-protocol CertificationDelegate {
-    func thumbnailTapAction(_ stackView: UIStackView, _ gesture: UITapGestureRecognizer)
-    func certificationTapAction(_ scrollView: UIScrollView, _ stackView: UIStackView, _ gesture: UITapGestureRecognizer)
-    func certificationListScrollEndAction(index: Int)
-    func goCertificateViewAction(todo: TodoEntity)
-}
-
-extension CertificationViewController: CertificationDelegate {
-    func thumbnailTapAction(_ stackView: UIStackView, _ gesture: UITapGestureRecognizer) {
-        let location = gesture.location(in: stackView)
-
-        for (index, view) in stackView.arrangedSubviews.enumerated() {
-            if view.frame.contains(location) {
-                runTask { [weak self] in
-                    guard let self else { return }
-                    try await viewModel.setIndex(index: index)
-                }
-                return
-            }
-        }
+    private func bindActions() {
+        certificationPage.indexSelected
+            .asSignal()
+            .emit(onNext: { [weak self] index in
+                self?.updateIndex(index)
+            })
+            .disposed(by: disposeBag)
     }
-    
-    func certificationTapAction(
-        _ scrollView: UIScrollView,
-        _ stackView: UIStackView,
-        _ gesture: UITapGestureRecognizer
-    ) {
-        let location = gesture.location(in: scrollView)
-        let scrollViewWidth = scrollView.bounds.width
-        
-        // MARK: view 중앙을 기준으로 direction 결정
-        let direction: Directions = location.x - scrollView.contentOffset.x < scrollViewWidth / 2 ? .prev : .next
-        let index = Int(round(scrollView.contentOffset.x / scrollViewWidth))
-        let nextIndex = index + direction.tag
-        
-        if nextIndex < 0 || stackView.arrangedSubviews.count <= nextIndex { return }
-        
-        let newOffset = CGPoint(x: scrollViewWidth * CGFloat(nextIndex), y: 0)
-        UIView.animate(withDuration: 0.3, animations: {
-            scrollView.setContentOffset(newOffset, animated: false)
-        }, completion: { [weak self] finished in
-            guard let self else { return }
-            if finished {
-                runTask { [weak self] in
-                    guard let self else { return }
-                    try await viewModel.setIndex(index: nextIndex)
-                }
-            }
-        })
-    }
-    
-    func certificationListScrollEndAction(index: Int) {
+
+    private func updateIndex(_ index: Int) {
         runTask { [weak self] in
             guard let self else { return }
             try await viewModel.setIndex(index: index)
         }
-    }
-
-    func goCertificateViewAction(todo: TodoEntity) {
-        guard let coordinator else { return }
-        let certificateViewDatas = CertificateViewDatas(todo: todo)
-        coordinator.pushCertificateImage(datas: certificateViewDatas)
     }
 }

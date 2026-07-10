@@ -7,9 +7,13 @@
 
 import UIKit
 
+import RxCocoa
+import RxSwift
+
 final class StatsViewController: BaseViewController {
     private let statsPage = StatsPage()
     private let viewModel: StatsViewModel
+    private let disposeBag = DisposeBag()
 
     init(viewModel: StatsViewModel) {
         self.viewModel = viewModel
@@ -19,11 +23,11 @@ final class StatsViewController: BaseViewController {
     required init?(coder: NSCoder) { fatalError() }
 
     override func viewDidLoad() {
-        statsPage.delegate = self
-        
         pages = [statsPage]
         
         super.viewDidLoad()
+
+        bindActions()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -35,11 +39,12 @@ final class StatsViewController: BaseViewController {
     }
 
     override func setViewDatas() {
-        bind(viewModel.bottomSheetViewDatas)
-        bind(viewModel.groupViewDatas)
-        bind(viewModel.achievementViewDatas)
-        bind(viewModel.myRankViewDatas)
-        bind(viewModel.summaryViewDatas)
+        let output = viewModel.output
+        bind(output.bottomSheetViewDatas)
+        bind(output.groupViewDatas)
+        bind(output.achievementViewDatas)
+        bind(output.myRankViewDatas)
+        bind(output.summaryViewDatas)
     }
 }
 
@@ -57,22 +62,32 @@ extension StatsViewController {
             try await viewModel.fetchStatsViewDatas()
         }
     }
-}
 
-@MainActor
-protocol StatsDelegate {
-    func updateBottomSheetVisibleAction(isShowSheet: Bool)
-    func selectGroupAction(index: Int)
-    func addGroupAction()
-}
+    private func bindActions() {
+        statsPage.bottomSheetVisibleChanged
+            .asSignal()
+            .emit(onNext: { [weak self] isShowSheet in
+                self?.viewModel.updateBottomSheetVisible(isShowSheet: isShowSheet)
+            })
+            .disposed(by: disposeBag)
 
-extension StatsViewController: StatsDelegate {
-    func updateBottomSheetVisibleAction(isShowSheet: Bool) {
-        viewModel.bottomSheetViewDatas.update { $0.isShowSheet = isShowSheet }
+        statsPage.groupSelected
+            .asSignal()
+            .emit(onNext: { [weak self] index in
+                self?.selectGroup(index: index)
+            })
+            .disposed(by: disposeBag)
+
+        statsPage.createGroupTapped
+            .asSignal()
+            .emit(onNext: { [weak self] in
+                self?.addGroup()
+            })
+            .disposed(by: disposeBag)
     }
-    
-    func selectGroupAction(index: Int) {
-        viewModel.groupViewDatas.update { $0.index = index }
+
+    private func selectGroup(index: Int) {
+        viewModel.selectGroup(index: index)
         
         runTask { [weak self] in
             guard let self else { return }
@@ -80,8 +95,8 @@ extension StatsViewController: StatsDelegate {
             try await viewModel.fetchStatsViewDatas()
         }
     }
-    
-    func addGroupAction() {
+
+    private func addGroup() {
         guard let coordinator else { return }
         coordinator.pushGroupCreate()
     }

@@ -7,15 +7,10 @@
 
 import UIKit
 
+import RxRelay
+
 final class CertificationListView: BaseView {
-    var delegate: CertificationDelegate? {
-        didSet {
-            stackView.addTapAction { [weak self] gesture in
-                guard let self else { return }
-                delegate?.certificationTapAction(scrollView, stackView, gesture)
-            }
-        }
-    }
+    let indexSelected = PublishRelay<Int>()
     
     private let scrollView = UIScrollView()
     private let stackView = UIStackView()
@@ -35,6 +30,26 @@ final class CertificationListView: BaseView {
     
     override func configureAction() {
         scrollView.delegate = self
+
+        stackView.addTapAction { [weak self] gesture in
+            guard let self else { return }
+            let location = gesture.location(in: scrollView)
+            let scrollViewWidth = scrollView.bounds.width
+            let direction: Directions = location.x - scrollView.contentOffset.x < scrollViewWidth / 2 ? .prev : .next
+            let index = Int(round(scrollView.contentOffset.x / scrollViewWidth))
+            let nextIndex = index + direction.tag
+
+            if nextIndex < 0 || stackView.arrangedSubviews.count <= nextIndex { return }
+
+            let newOffset = CGPoint(x: scrollViewWidth * CGFloat(nextIndex), y: 0)
+            UIView.animate(withDuration: 0.3, animations: {
+                self.scrollView.setContentOffset(newOffset, animated: false)
+            }, completion: { [weak self] finished in
+                if finished {
+                    self?.indexSelected.accept(nextIndex)
+                }
+            })
+        }
     }
     
     override func configureHierarchy() {
@@ -99,6 +114,6 @@ final class CertificationListView: BaseView {
 extension CertificationListView: UIScrollViewDelegate {
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         let index = Int(round(scrollView.contentOffset.x / frame.width))
-        delegate?.certificationListScrollEndAction(index: index)
+        indexSelected.accept(index)
     }
 }

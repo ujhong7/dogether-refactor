@@ -7,17 +7,10 @@
 
 import UIKit
 
+import RxRelay
+
 final class StartAtButton: BaseButton {
-    var delegate: GroupCreateDelegate? {
-        didSet {
-            addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.updateStartAt(startAt: startAt)
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let startAtSelected = PublishRelay<GroupStartAts>()
     
     private let startAt: GroupStartAts
     
@@ -51,7 +44,14 @@ final class StartAtButton: BaseButton {
         descriptionLabel.numberOfLines = 0
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        addAction(
+            UIAction { [weak self] _ in
+                guard let self else { return }
+                startAtSelected.accept(startAt)
+            }, for: .touchUpInside
+        )
+    }
         
     override func configureHierarchy() {
         [icon, label, descriptionLabel].forEach { addSubview($0) }
@@ -92,4 +92,3 @@ final class StartAtButton: BaseButton {
         }
     }
 }
-

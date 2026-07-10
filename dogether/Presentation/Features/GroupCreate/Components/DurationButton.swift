@@ -7,17 +7,10 @@
 
 import UIKit
 
+import RxRelay
+
 final class DurationButton: BaseButton {
-    var delegate: GroupCreateDelegate? {
-        didSet {
-            addAction(
-                UIAction { [weak self] _ in
-                    guard let self else { return }
-                    delegate?.updateDuration(duration: duration)
-                }, for: .touchUpInside
-            )
-        }
-    }
+    let durationSelected = PublishRelay<GroupChallengeDurations>()
     
     private let duration: GroupChallengeDurations
     
@@ -40,7 +33,14 @@ final class DurationButton: BaseButton {
         label.text = duration.text
     }
     
-    override func configureAction() { }
+    override func configureAction() {
+        addAction(
+            UIAction { [weak self] _ in
+                guard let self else { return }
+                durationSelected.accept(duration)
+            }, for: .touchUpInside
+        )
+    }
     
     override func configureHierarchy() {
         [label].forEach { addSubview($0) }

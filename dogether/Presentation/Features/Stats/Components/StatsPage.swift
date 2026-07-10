@@ -7,15 +7,13 @@
 
 import UIKit
 
+import RxRelay
+import RxSwift
+
 final class StatsPage: BasePage {
-    var delegate: StatsDelegate? {
-        didSet {
-            bottomSheetView.statsDelegate = delegate
-            
-            groupInfoView.statsDelegate = delegate
-            emptyView.statsDelegate = delegate
-        }
-    }
+    let bottomSheetVisibleChanged = PublishRelay<Bool>()
+    let groupSelected = PublishRelay<Int>()
+    let createGroupTapped = PublishRelay<Void>()
     
     private let navigationHeader = NavigationHeader(title: "통계")
     
@@ -32,6 +30,7 @@ final class StatsPage: BasePage {
     private let dosikArmView = UIImageView(image: .dosikArm)
     
     private let bottomSheetView = BottomSheetView(hasAddButton: false)
+    private let disposeBag = DisposeBag()
     
     override func configureView() {
         dosikImageView.contentMode = .scaleAspectFit
@@ -40,6 +39,23 @@ final class StatsPage: BasePage {
     
     override func configureAction() {
         navigationHeader.delegate = coordinatorDelegate
+
+        groupInfoView.groupSelectionTapped
+            .map { true }
+            .bind(to: bottomSheetVisibleChanged)
+            .disposed(by: disposeBag)
+
+        bottomSheetView.isVisibleChanged
+            .bind(to: bottomSheetVisibleChanged)
+            .disposed(by: disposeBag)
+
+        bottomSheetView.itemSelected
+            .bind(to: groupSelected)
+            .disposed(by: disposeBag)
+
+        emptyView.createGroupTapped
+            .bind(to: createGroupTapped)
+            .disposed(by: disposeBag)
     }
     
     override func configureHierarchy() {
