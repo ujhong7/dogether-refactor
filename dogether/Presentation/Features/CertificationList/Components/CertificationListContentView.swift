@@ -112,6 +112,8 @@ final class CertificationListContentView: BaseView {
         }
         
         if let datas = data as? CertificationListViewDatas {
+            let shouldResetContentOffset = datas.currentPage == 0 || currentFilter != datas.filter
+
             if currentSection != datas.sections || currentFilter != datas.filter {
                 currentSection = datas.sections
                 
@@ -134,7 +136,10 @@ final class CertificationListContentView: BaseView {
             }
             
             collectionView.reloadData()
-            collectionView.contentOffset = .zero
+
+            if shouldResetContentOffset {
+                collectionView.setContentOffset(.zero, animated: false)
+            }
         }
     }
 }

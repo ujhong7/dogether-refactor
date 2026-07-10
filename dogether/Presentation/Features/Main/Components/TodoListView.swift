@@ -136,7 +136,10 @@ final class TodoListView: BaseView {
             emptyListStackView.isHidden = !currentTodoList.isEmpty
             
             itemDisposeBag = DisposeBag()
-            todoListStackView.subviews.forEach { todoListStackView.removeArrangedSubview($0) }
+            todoListStackView.arrangedSubviews.forEach {
+                todoListStackView.removeArrangedSubview($0)
+                $0.removeFromSuperview()
+            }
             currentTodoList
                 .enumerated().map {
                     let todoListItemButton = TodoListItemButton(index: $0, todo: $1, isToday: isToday)
