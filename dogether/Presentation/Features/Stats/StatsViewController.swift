@@ -40,11 +40,11 @@ final class StatsViewController: BaseViewController {
 
     override func setViewDatas() {
         let output = viewModel.output
-        bind(output.bottomSheetViewDatas)
-        bind(output.groupViewDatas)
-        bind(output.achievementViewDatas)
-        bind(output.myRankViewDatas)
-        bind(output.summaryViewDatas)
+        bind(output.bottomSheetViewDatas, update: statsPage.updateView)
+        bind(output.groupViewDatas, update: statsPage.updateView)
+        bind(output.achievementViewDatas, update: statsPage.updateView)
+        bind(output.myRankViewDatas, update: statsPage.updateView)
+        bind(output.summaryViewDatas, update: statsPage.updateView)
     }
 }
 

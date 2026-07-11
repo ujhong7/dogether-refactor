@@ -40,10 +40,10 @@ final class CertificationListViewController: BaseViewController {
     
     override func setViewDatas() {
         let output = viewModel.output
-        bind(output.bottomSheetViewDatas)
-        bind(output.sortViewDatas)
-        bind(output.statsViewDatas)
-        bind(output.certificationListViewDatas)
+        bind(output.bottomSheetViewDatas, update: certificationListPage.updateView)
+        bind(output.sortViewDatas, update: certificationListPage.updateView)
+        bind(output.statsViewDatas, update: certificationListPage.updateView)
+        bind(output.certificationListViewDatas, update: certificationListPage.updateView)
     }
 }
 

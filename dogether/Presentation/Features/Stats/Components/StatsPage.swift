@@ -141,34 +141,54 @@ final class StatsPage: BasePage {
     }
     
     // MARK: - updateView
+    func updateView(_ datas: BottomSheetViewDatas) {
+        bottomSheetView.updateView(datas)
+    }
+
+    func updateView(_ datas: GroupViewDatas) {
+        if datas.groups.isEmpty {
+            emptyView.isHidden = false
+            scrollView.isHidden = true
+        } else {
+            emptyView.isHidden = true
+            scrollView.isHidden = false
+
+            bottomSheetView.updateView(datas)
+            groupInfoView.updateView(datas.groups[datas.index])
+        }
+    }
+
+    func updateView(_ datas: AchievementViewDatas) {
+        achievementView.updateView(datas)
+    }
+
+    func updateView(_ datas: StatsRankViewDatas) {
+        statsRankView.updateView(datas)
+    }
+
+    func updateView(_ datas: StatsSummaryViewDatas) {
+        statsSummaryView.updateView(datas)
+    }
+
     override func updateView(_ data: (any BaseEntity)?) {
         if let datas = data as? BottomSheetViewDatas {
-            bottomSheetView.updateView(datas)
+            updateView(datas)
         }
         
         if let datas = data as? GroupViewDatas {
-            if datas.groups.isEmpty {
-                emptyView.isHidden = false
-                scrollView.isHidden = true
-            } else {
-                emptyView.isHidden = true
-                scrollView.isHidden = false
-                
-                bottomSheetView.updateView(datas)
-                groupInfoView.updateView(datas.groups[datas.index])
-            }
+            updateView(datas)
         }
         
         if let datas = data as? AchievementViewDatas {
-            achievementView.updateView(datas)
+            updateView(datas)
         }
         
         if let datas = data as? StatsRankViewDatas {
-            statsRankView.updateView(datas)
+            updateView(datas)
         }
         
         if let datas = data as? StatsSummaryViewDatas {
-            statsSummaryView.updateView(datas)
+            updateView(datas)
         }
     }
 }
