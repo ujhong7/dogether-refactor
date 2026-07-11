@@ -124,13 +124,21 @@ final class MyPagePage: BasePage {
     }
     
     // MARK: - updateView
+    func updateProfile(_ datas: ProfileViewDatas) {
+        profileView.updateView(datas)
+    }
+
+    func updateStatsButton(_ datas: DogetherButtonViewDatas) {
+        statsButton.updateView(datas)
+    }
+
     override func updateView(_ data: (any BaseEntity)?) {
         if let datas = data as? ProfileViewDatas {
-            profileView.updateView(datas)
+            updateProfile(datas)
         }
         
         if let datas = data as? DogetherButtonViewDatas {
-            statsButton.updateView(datas)
+            updateStatsButton(datas)
         }
     }
 }

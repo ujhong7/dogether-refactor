@@ -184,58 +184,77 @@ final class MainPage: BasePage {
     }
     
     // MARK: - updateView
+    func updateBottomSheet(_ datas: BottomSheetViewDatas) {
+        bottomSheetView.updateView(datas)
+    }
+
+    func updateGroup(_ datas: GroupViewDatas) {
+        guard datas.groups.indices.contains(datas.index) else { return }
+        let selectedGroup = datas.groups[datas.index]
+
+        bottomSheetView.updateView(datas)
+        groupInfoView.updateView(selectedGroup)
+        dosikCommentButton.updateView(selectedGroup)
+        sheetHeaderView.updateView(datas)
+    }
+
+    func updateSheet(_ datas: SheetViewDatas) {
+        if currentIsScrollOnTop != datas.isScrollOnTop {
+            currentIsScrollOnTop = datas.isScrollOnTop
+        }
+
+        groupInfoView.updateView(datas)
+        rankingButton.updateView(datas)
+        sheetHeaderView.updateView(datas)
+
+        timerView.isHidden = !(datas.status == .timer)
+        todoListView.isHidden = !(datas.status == .certificateTodo || datas.status == .todoList)
+        todayEmptyView.isHidden = !(datas.status == .createTodo)
+        pastEmptyView.isHidden = !(datas.status == .emptyList)
+        doneView.isHidden = !(datas.status == .done)
+
+        if datas.status == .timer {
+            timerShouldStart.accept(())
+        } else {
+            timerShouldStop.accept(())
+        }
+
+        if datas.status == .certificateTodo || datas.status == .todoList {
+            todoListView.updateView(datas)
+        }
+
+        if datas.status == .createTodo {
+            todayEmptyView.updateView(datas)
+        }
+
+        if currentYOffset == datas.yOffset && currentSheetStatus == datas.sheetStatus { return }
+        currentYOffset = datas.yOffset
+        currentSheetStatus = datas.sheetStatus
+
+        dogetherSheet.snp.updateConstraints {
+            $0.top.equalToSuperview().offset(datas.yOffset)
+        }
+    }
+
+    func updateTimer(_ datas: TimerViewDatas) {
+        timerView.updateView(datas)
+    }
+
     override func updateView(_ data: (any BaseEntity)?) {
         if let datas = data as? BottomSheetViewDatas {
-            bottomSheetView.updateView(datas)
+            updateBottomSheet(datas)
         }
         
-        if let datas = data as? GroupViewDatas, datas.groups.count > 0 {
-            bottomSheetView.updateView(datas)
-            groupInfoView.updateView(datas.groups[datas.index])
-            dosikCommentButton.updateView(datas.groups[datas.index])
-            sheetHeaderView.updateView(datas)
+        if let datas = data as? GroupViewDatas {
+            updateGroup(datas)
         }
         
         if let datas = data as? SheetViewDatas {
-            if currentIsScrollOnTop != datas.isScrollOnTop {
-                currentIsScrollOnTop = datas.isScrollOnTop
-            }
-            
-            groupInfoView.updateView(datas)
-            rankingButton.updateView(datas)
-            sheetHeaderView.updateView(datas)
-            
-            timerView.isHidden = !(datas.status == .timer)
-            todoListView.isHidden = !(datas.status == .certificateTodo || datas.status == .todoList)
-            todayEmptyView.isHidden = !(datas.status == .createTodo)
-            pastEmptyView.isHidden = !(datas.status == .emptyList)
-            doneView.isHidden = !(datas.status == .done)
-            
-            if datas.status == .timer {
-                timerShouldStart.accept(())
-            } else {
-                timerShouldStop.accept(())
-            }
-            
-            if datas.status == .certificateTodo || datas.status == .todoList {
-                todoListView.updateView(datas)
-            }
-            
-            if datas.status == .createTodo {
-                todayEmptyView.updateView(datas)
-            }
-            
-            if currentYOffset == datas.yOffset && currentSheetStatus == datas.sheetStatus { return }
-            currentYOffset = datas.yOffset
-            currentSheetStatus = datas.sheetStatus
-            
-            dogetherSheet.snp.updateConstraints {
-                $0.top.equalToSuperview().offset(datas.yOffset)
-            }
+            updateSheet(datas)
         }
         
         if let datas = data as? TimerViewDatas {
-            timerView.updateView(datas)
+            updateTimer(datas)
         }
     }
 }

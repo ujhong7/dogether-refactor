@@ -36,8 +36,8 @@ final class CertificateImageViewController: BaseViewController {
         }
         
         let output = viewModel.output
-        bind(output.certificateViewDatas)
-        bind(output.certificateButtonViewDatas)
+        bind(output.certificateViewDatas, update: certificateImagePage.updateCertificate)
+        bind(output.certificateButtonViewDatas, update: certificateImagePage.updateNextButton)
     }
 }
 

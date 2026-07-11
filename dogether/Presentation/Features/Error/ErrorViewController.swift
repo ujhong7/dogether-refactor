@@ -26,7 +26,7 @@ final class ErrorViewController: BaseViewController {
     
     override func setViewDatas() {
         let output = viewModel.output
-        bind(output.buttonViewDatas)
+        bind(output.buttonViewDatas, update: errorPage.updateRetryButton)
 
         errorPage.retryTapped
             .asSignal()

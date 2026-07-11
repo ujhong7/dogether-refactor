@@ -48,7 +48,7 @@ final class TodoWriteViewController: BaseViewController {
             keyboardVisibleChanged: todoWritePage.keyboardVisibleChanged.asSignal()
         )
         let output = viewModel.transform(input: input)
-        bind(output.todoWriteViewDatas)
+        bind(output.todoWriteViewDatas, update: todoWritePage.updateTodoWrite)
 
         todoWritePage.saveTapped
             .asSignal()

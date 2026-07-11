@@ -115,54 +115,65 @@ final class ExaminatePage: BasePage {
     }
     
     // MARK: - updateView
-    override func updateView(_ data: (any BaseEntity)?) {
-        if let datas = data as? ExaminateViewDatas {
-            if currentReview != datas.reviews[datas.index] {
-                currentReview = datas.reviews[datas.index]
-                
-                let certificationImageViewDatas = CertificationImageViewDatas(
-                    image: .logo,
-                    imageUrl: datas.reviews[datas.index].mediaUrl,
-                    content: datas.reviews[datas.index].content,
-                    certificator: datas.reviews[datas.index].doer
-                )
-                imageView.updateView(certificationImageViewDatas)
-                
-                contentLabel.attributedText = NSAttributedString(
-                    string: datas.reviews[datas.index].todoContent,
-                    attributes: Fonts.getAttributes(for: Fonts.head2B, textAlignment: .center)
-                )
-            }
-            
-            if currentFeedback != datas.feedback {
-                currentFeedback = datas.feedback
-                
-                reviewFeedbackView.updateView(datas.feedback)
-                if datas.feedback.isEmpty {
-                    contentStackView.removeArrangedSubview(reviewFeedbackView)
-                    
-                    reviewFeedbackView.snp.removeConstraints()
-                } else {
-                    contentStackView.addArrangedSubview(reviewFeedbackView)
-                    contentStackView.setCustomSpacing(16, after: examinationStackView)
-                    
-                    reviewFeedbackView.snp.makeConstraints {
-                        $0.horizontalEdges.equalToSuperview()
-                    }
+    func updateExaminate(_ datas: ExaminateViewDatas) {
+        guard datas.reviews.indices.contains(datas.index) else { return }
+        let selectedReview = datas.reviews[datas.index]
+
+        if currentReview != selectedReview {
+            currentReview = selectedReview
+
+            let certificationImageViewDatas = CertificationImageViewDatas(
+                image: .logo,
+                imageUrl: selectedReview.mediaUrl,
+                content: selectedReview.content,
+                certificator: selectedReview.doer
+            )
+            imageView.updateView(certificationImageViewDatas)
+
+            contentLabel.attributedText = NSAttributedString(
+                string: selectedReview.todoContent,
+                attributes: Fonts.getAttributes(for: Fonts.head2B, textAlignment: .center)
+            )
+        }
+
+        if currentFeedback != datas.feedback {
+            currentFeedback = datas.feedback
+
+            reviewFeedbackView.updateView(datas.feedback)
+            if datas.feedback.isEmpty {
+                contentStackView.removeArrangedSubview(reviewFeedbackView)
+
+                reviewFeedbackView.snp.removeConstraints()
+            } else {
+                contentStackView.addArrangedSubview(reviewFeedbackView)
+                contentStackView.setCustomSpacing(16, after: examinationStackView)
+
+                reviewFeedbackView.snp.makeConstraints {
+                    $0.horizontalEdges.equalToSuperview()
                 }
             }
-            
-            if currentResult != datas.result {
-                currentResult = datas.result
-                
-                rejectButton.updateView(datas.result == .reject ? .dogetherRed : .grey0)
-                approveButton.updateView(datas.result == .approve ? .blue300 : .grey0)
-            }
+        }
+
+        if currentResult != datas.result {
+            currentResult = datas.result
+
+            rejectButton.updateView(datas.result == .reject ? .dogetherRed : .grey0)
+            approveButton.updateView(datas.result == .approve ? .blue300 : .grey0)
+        }
+    }
+
+    func updateSendButton(_ datas: DogetherButtonViewDatas) {
+        sendButton.updateView(datas)
+    }
+
+    override func updateView(_ data: (any BaseEntity)?) {
+        if let datas = data as? ExaminateViewDatas {
+            updateExaminate(datas)
         }
             
             
         if let datas = data as? DogetherButtonViewDatas {
-            sendButton.updateView(datas)
+            updateSendButton(datas)
         }
     }
 }

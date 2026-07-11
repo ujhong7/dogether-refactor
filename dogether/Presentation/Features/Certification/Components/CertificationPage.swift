@@ -105,28 +105,32 @@ final class CertificationPage: BasePage {
     }
     
     // MARK: - updateView
-    override func updateView(_ data: (any BaseEntity)?) {
-        guard let datas = data as? CertificationViewDatas else { return }
+    func updateCertification(_ datas: CertificationViewDatas) {
         navigationHeader.updateView(datas)
         thumbnailListView.updateView(datas)
         certificationListView.updateView(datas)
-        
+
         if currentTodo != datas.todos[datas.index] {
             currentTodo = datas.todos[datas.index]
-            
+
             statusView.updateView(datas.todos[datas.index].status)
-            
+
             contentLabel.attributedText = NSAttributedString(
                 string:  datas.todos[datas.index].content,
                 attributes: Fonts.getAttributes(for: Fonts.head1B, textAlignment: .center)
             )
-            
+
             reviewFeedbackView.updateView(datas.todos[datas.index].reviewFeedback ?? "")
-            
+
             // FIXME: 추후 수정
 //            var dogetherButtonViewDatas = certificateButton.currentViewDatas ?? DogetherButtonViewDatas()
 //            dogetherButtonViewDatas.isHidden = datas.rankingEntity != nil || datas.todos[datas.index].status != .waitCertification
 //            certificateButton.updateView(dogetherButtonViewDatas)
         }
+    }
+
+    override func updateView(_ data: (any BaseEntity)?) {
+        guard let datas = data as? CertificationViewDatas else { return }
+        updateCertification(datas)
     }
 }

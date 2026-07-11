@@ -63,9 +63,12 @@ final class ErrorPage: BasePage {
     }
     
     // MARK: - updateView
+    func updateRetryButton(_ datas: DogetherButtonViewDatas) {
+        retryButton.updateView(datas)
+    }
+
     override func updateView(_ data: (any BaseEntity)?) {
-        if let datas = data as? DogetherButtonViewDatas {
-            retryButton.updateView(datas)
-        }
+        guard let datas = data as? DogetherButtonViewDatas else { return }
+        updateRetryButton(datas)
     }
 }

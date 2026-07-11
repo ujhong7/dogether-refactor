@@ -141,34 +141,54 @@ final class StatsPage: BasePage {
     }
     
     // MARK: - updateView
+    func updateBottomSheet(_ datas: BottomSheetViewDatas) {
+        bottomSheetView.updateView(datas)
+    }
+
+    func updateGroup(_ datas: GroupViewDatas) {
+        if datas.groups.isEmpty {
+            emptyView.isHidden = false
+            scrollView.isHidden = true
+        } else {
+            emptyView.isHidden = true
+            scrollView.isHidden = false
+
+            bottomSheetView.updateView(datas)
+            groupInfoView.updateView(datas.groups[datas.index])
+        }
+    }
+
+    func updateAchievement(_ datas: AchievementViewDatas) {
+        achievementView.updateView(datas)
+    }
+
+    func updateRank(_ datas: StatsRankViewDatas) {
+        statsRankView.updateView(datas)
+    }
+
+    func updateSummary(_ datas: StatsSummaryViewDatas) {
+        statsSummaryView.updateView(datas)
+    }
+
     override func updateView(_ data: (any BaseEntity)?) {
         if let datas = data as? BottomSheetViewDatas {
-            bottomSheetView.updateView(datas)
+            updateBottomSheet(datas)
         }
         
         if let datas = data as? GroupViewDatas {
-            if datas.groups.isEmpty {
-                emptyView.isHidden = false
-                scrollView.isHidden = true
-            } else {
-                emptyView.isHidden = true
-                scrollView.isHidden = false
-                
-                bottomSheetView.updateView(datas)
-                groupInfoView.updateView(datas.groups[datas.index])
-            }
+            updateGroup(datas)
         }
         
         if let datas = data as? AchievementViewDatas {
-            achievementView.updateView(datas)
+            updateAchievement(datas)
         }
         
         if let datas = data as? StatsRankViewDatas {
-            statsRankView.updateView(datas)
+            updateRank(datas)
         }
         
         if let datas = data as? StatsSummaryViewDatas {
-            statsSummaryView.updateView(datas)
+            updateSummary(datas)
         }
     }
 }

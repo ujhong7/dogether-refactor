@@ -77,21 +77,24 @@ final class StartPage: BasePage {
     }
     
     // MARK: - updateView
-    override func updateView(_ data: (any BaseEntity)?) {
-        guard let datas = data as? StartViewDatas else { return }
-        
+    func updateStart(_ datas: StartViewDatas) {
         dogetherHeader.isHidden = !datas.isFirstGroup
-        
+
         navigationHeader.isHidden = datas.isFirstGroup
-        
+
         titleLabel.isHidden = !datas.isFirstGroup
-        
+
         buttonStackView.snp.remakeConstraints {
             $0.top.equalTo(datas.isFirstGroup ? titleLabel.snp.bottom : navigationHeader.snp.bottom)
                 .offset(datas.isFirstGroup ? 41 : 16)
             $0.horizontalEdges.equalToSuperview().inset(16)
             $0.height.equalTo(buttonStackViewHeight)
         }
+    }
+
+    override func updateView(_ data: (any BaseEntity)?) {
+        guard let datas = data as? StartViewDatas else { return }
+        updateStart(datas)
     }
 }
 

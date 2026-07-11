@@ -79,25 +79,42 @@ final class CertificationListPage: BasePage {
         }
     }
     
+    // MARK: - updateView
+    func updateBottomSheet(_ datas: BottomSheetViewDatas) {
+        bottomSheetView.updateView(datas)
+    }
+
+    func updateSort(_ datas: SortViewDatas) {
+        contentView.updateView(datas)
+        bottomSheetView.updateView(datas)
+    }
+
+    func updateStats(_ datas: StatsViewDatas) {
+        contentView.updateView(datas)
+    }
+
+    func updateCertificationList(_ datas: CertificationListViewDatas) {
+        emptyView.isHidden = !datas.sections.isEmpty
+        contentView.isHidden = datas.sections.isEmpty
+
+        contentView.updateView(datas)
+    }
+
     override func updateView(_ data: any BaseEntity) {
         if let datas = data as? BottomSheetViewDatas {
-            bottomSheetView.updateView(datas)
+            updateBottomSheet(datas)
         }
         
         if let datas = data as? SortViewDatas {
-            contentView.updateView(datas)
-            bottomSheetView.updateView(datas)
+            updateSort(datas)
         }
         
         if let datas = data as? StatsViewDatas {
-            contentView.updateView(datas)
+            updateStats(datas)
         }
 
         if let datas = data as? CertificationListViewDatas {
-            emptyView.isHidden = !datas.sections.isEmpty
-            contentView.isHidden = datas.sections.isEmpty
-            
-            contentView.updateView(datas)
+            updateCertificationList(datas)
         }
     }
 }

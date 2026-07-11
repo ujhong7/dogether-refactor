@@ -46,16 +46,19 @@ final class LoadingPage: BasePage {
     }
     
     // MARK: - updateView
-    override func updateView(_ data: (any BaseEntity)?) {
-        if let datas = data as? LoadingViewDatas {
-            if currentIsShowLoading != datas.isShowLoading {
-                currentIsShowLoading = datas.isShowLoading
-                
-                isHidden = !datas.isShowLoading
-                
-                if datas.isShowLoading { animationView.play() }
-                else { animationView.stop() }
-            }
+    func updateLoading(_ datas: LoadingViewDatas) {
+        if currentIsShowLoading != datas.isShowLoading {
+            currentIsShowLoading = datas.isShowLoading
+
+            isHidden = !datas.isShowLoading
+
+            if datas.isShowLoading { animationView.play() }
+            else { animationView.stop() }
         }
+    }
+
+    override func updateView(_ data: (any BaseEntity)?) {
+        guard let datas = data as? LoadingViewDatas else { return }
+        updateLoading(datas)
     }
 }

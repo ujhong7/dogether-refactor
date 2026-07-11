@@ -26,7 +26,7 @@ final class CompleteViewController: BaseViewController {
         }
 
         let output = viewModel.output
-        bind(output.completeViewDatas)
+        bind(output.completeViewDatas, update: completePage.updateComplete)
 
         completePage.homeTapped
             .asSignal()

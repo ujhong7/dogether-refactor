@@ -118,40 +118,48 @@ final class GroupJoinPage: BasePage {
     }
     
     // MARK: - updateView
-    override func updateView(_ data: (any BaseEntity)?) {
-        if let datas = data as? GroupJoinViewDatas {
-            if codeTextField.text != datas.code {
-                codeTextField.text = datas.code
+    func updateGroupJoin(_ datas: GroupJoinViewDatas) {
+        if codeTextField.text != datas.code {
+            codeTextField.text = datas.code
+        }
+
+        // MARK: subTitleLabel 등 일반 UI의 구성을 최초 진행, 이후 joinButton 애니메이션을 위해 위치 조정
+        if isFirst {
+            isFirst = false
+
+            layoutIfNeeded()
+        }
+
+        if currentKeyboardHeight != datas.keyboardHeight {
+            currentKeyboardHeight = datas.keyboardHeight
+
+            joinButton.snp.updateConstraints {
+                $0.bottom.equalToSuperview().inset(datas.keyboardHeight + 16)
             }
-            
-            // MARK: subTitleLabel 등 일반 UI의 구성을 최초 진행, 이후 joinButton 애니메이션을 위해 위치 조정
-            if isFirst {
-                isFirst = false
-                
+            UIView.animate(withDuration: 0.35) { [weak self] in
+                guard let self else { return }
                 layoutIfNeeded()
             }
-            
-            if currentKeyboardHeight != datas.keyboardHeight {
-                currentKeyboardHeight = datas.keyboardHeight
-                
-                joinButton.snp.updateConstraints {
-                    $0.bottom.equalToSuperview().inset(datas.keyboardHeight + 16)
-                }
-                UIView.animate(withDuration: 0.35) { [weak self] in
-                    guard let self else { return }
-                    layoutIfNeeded()
-                }
-            }
-            
-            if currentIsFirstResponder != datas.isFirstResponder {
-                currentIsFirstResponder = datas.isFirstResponder
-                
-                if datas.isFirstResponder { codeTextField.becomeFirstResponder() }
-            }
+        }
+
+        if currentIsFirstResponder != datas.isFirstResponder {
+            currentIsFirstResponder = datas.isFirstResponder
+
+            if datas.isFirstResponder { codeTextField.becomeFirstResponder() }
+        }
+    }
+
+    func updateJoinButton(_ datas: DogetherButtonViewDatas) {
+        joinButton.updateView(datas)
+    }
+
+    override func updateView(_ data: (any BaseEntity)?) {
+        if let datas = data as? GroupJoinViewDatas {
+            updateGroupJoin(datas)
         }
         
         if let datas = data as? DogetherButtonViewDatas {
-            joinButton.updateView(datas)
+            updateJoinButton(datas)
         }
     }
 }

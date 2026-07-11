@@ -19,6 +19,7 @@ final class PopupPage: BasePage {
     private let alertStackView = AlertStackView()
     private let examinateStackView = ExaminateStackView()
     private let disposeBag = DisposeBag()
+    private var isKeyboardShown = false
     
     override func configureView() {
         backgroundColor = .grey700
@@ -26,7 +27,10 @@ final class PopupPage: BasePage {
     }
     
     override func configureAction() {
-        addTapAction { _ in return }
+        addTapAction { [weak self] _ in
+            guard let self, isKeyboardShown else { return }
+            examinateStackView.endEditing(true)
+        }
 
         alertStackView.hideTapped
             .bind(to: hideTapped)
@@ -67,36 +71,46 @@ final class PopupPage: BasePage {
     }
     
     // MARK: - updateView
+    func updateAlertPopup(_ datas: AlertPopupViewDatas) {
+        if subviews.contains(examinateStackView) {
+            examinateStackView.removeFromSuperview()
+        }
+
+        alertStackView.updateView(datas)
+    }
+
+    func updateExaminatePopup(_ datas: ExaminatePopupViewDatas) {
+        if subviews.contains(alertStackView) {
+            alertStackView.removeFromSuperview()
+        }
+
+        examinateStackView.updateView(datas)
+    }
+
+    func updateExaminateText(_ datas: DogetherTextViewDatas) {
+        examinateStackView.updateView(datas)
+        isKeyboardShown = datas.isShowKeyboard
+    }
+
+    func updateRegisterButton(_ datas: DogetherButtonViewDatas) {
+        examinateStackView.updateView(datas)
+    }
+
     override func updateView(_ data: (any BaseEntity)?) {
         if let datas = data as? AlertPopupViewDatas {
-            if subviews.contains(examinateStackView) {
-                examinateStackView.removeFromSuperview()
-            }
-            
-            alertStackView.updateView(datas)
+            updateAlertPopup(datas)
         }
         
         if let datas = data as? ExaminatePopupViewDatas {
-            if subviews.contains(alertStackView) {
-                alertStackView.removeFromSuperview()
-            }
-            
-            examinateStackView.updateView(datas)
+            updateExaminatePopup(datas)
         }
         
         if let datas = data as? DogetherTextViewDatas {
-            examinateStackView.updateView(datas)
-            
-            if datas.isShowKeyboard {
-                addTapAction { [weak self] _ in
-                    guard let self else { return }
-                    examinateStackView.endEditing(true)
-                }
-            } else { addTapAction { _ in return } }
+            updateExaminateText(datas)
         }
         
         if let datas = data as? DogetherButtonViewDatas {
-            examinateStackView.updateView(datas)
+            updateRegisterButton(datas)
         }
     }
 }
