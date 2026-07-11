@@ -116,19 +116,22 @@ final class ExaminatePage: BasePage {
     
     // MARK: - updateView
     func updateExaminate(_ datas: ExaminateViewDatas) {
-        if currentReview != datas.reviews[datas.index] {
-            currentReview = datas.reviews[datas.index]
+        guard datas.reviews.indices.contains(datas.index) else { return }
+        let selectedReview = datas.reviews[datas.index]
+
+        if currentReview != selectedReview {
+            currentReview = selectedReview
 
             let certificationImageViewDatas = CertificationImageViewDatas(
                 image: .logo,
-                imageUrl: datas.reviews[datas.index].mediaUrl,
-                content: datas.reviews[datas.index].content,
-                certificator: datas.reviews[datas.index].doer
+                imageUrl: selectedReview.mediaUrl,
+                content: selectedReview.content,
+                certificator: selectedReview.doer
             )
             imageView.updateView(certificationImageViewDatas)
 
             contentLabel.attributedText = NSAttributedString(
-                string: datas.reviews[datas.index].todoContent,
+                string: selectedReview.todoContent,
                 attributes: Fonts.getAttributes(for: Fonts.head2B, textAlignment: .center)
             )
         }

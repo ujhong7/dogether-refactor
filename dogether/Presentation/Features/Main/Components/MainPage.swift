@@ -189,10 +189,12 @@ final class MainPage: BasePage {
     }
 
     func updateGroup(_ datas: GroupViewDatas) {
-        guard datas.groups.count > 0 else { return }
+        guard datas.groups.indices.contains(datas.index) else { return }
+        let selectedGroup = datas.groups[datas.index]
+
         bottomSheetView.updateView(datas)
-        groupInfoView.updateView(datas.groups[datas.index])
-        dosikCommentButton.updateView(datas.groups[datas.index])
+        groupInfoView.updateView(selectedGroup)
+        dosikCommentButton.updateView(selectedGroup)
         sheetHeaderView.updateView(datas)
     }
 
@@ -243,7 +245,7 @@ final class MainPage: BasePage {
             updateBottomSheet(datas)
         }
         
-        if let datas = data as? GroupViewDatas, datas.groups.count > 0 {
+        if let datas = data as? GroupViewDatas {
             updateGroup(datas)
         }
         

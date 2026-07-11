@@ -19,6 +19,7 @@ final class PopupPage: BasePage {
     private let alertStackView = AlertStackView()
     private let examinateStackView = ExaminateStackView()
     private let disposeBag = DisposeBag()
+    private var isKeyboardShown = false
     
     override func configureView() {
         backgroundColor = .grey700
@@ -26,7 +27,10 @@ final class PopupPage: BasePage {
     }
     
     override func configureAction() {
-        addTapAction { _ in return }
+        addTapAction { [weak self] _ in
+            guard let self, isKeyboardShown else { return }
+            examinateStackView.endEditing(true)
+        }
 
         alertStackView.hideTapped
             .bind(to: hideTapped)
@@ -85,13 +89,7 @@ final class PopupPage: BasePage {
 
     func updateExaminateText(_ datas: DogetherTextViewDatas) {
         examinateStackView.updateView(datas)
-
-        if datas.isShowKeyboard {
-            addTapAction { [weak self] _ in
-                guard let self else { return }
-                examinateStackView.endEditing(true)
-            }
-        } else { addTapAction { _ in return } }
+        isKeyboardShown = datas.isShowKeyboard
     }
 
     func updateRegisterButton(_ datas: DogetherButtonViewDatas) {
