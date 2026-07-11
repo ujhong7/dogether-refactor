@@ -45,7 +45,7 @@ final class GroupCreateViewController: BaseViewController {
             startAtSelected: groupCreatePage.startAtSelected.asSignal()
         )
         let output = viewModel.transform(input: input)
-        bind(output.groupCreateViewDatas)
+        bind(output.groupCreateViewDatas, update: groupCreatePage.updateView)
 
         groupCreatePage.createTapped
             .asSignal()

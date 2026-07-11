@@ -41,9 +41,9 @@ final class CertificateContentViewController: BaseViewController {
         }
         
         let output = viewModel.output
-        bind(output.certificateViewDatas)
-        bind(output.certificateTextViewDatas)
-        bind(output.certificateButtonViewDatas)
+        bind(output.certificateViewDatas, update: certificateContentPage.updateView)
+        bind(output.certificateTextViewDatas, update: certificateContentPage.updateView)
+        bind(output.certificateButtonViewDatas, update: certificateContentPage.updateView)
     }
 }
 

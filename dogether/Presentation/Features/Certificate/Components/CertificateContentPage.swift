@@ -115,40 +115,52 @@ final class CertificateContentPage: BasePage {
     }
     
     // MARK: - updateView
-    override func updateView(_ data: (any BaseEntity)?) {
-        if let datas = data as? CertificateViewDatas {
-            if currentIsFirstResponder != datas.isFirstResponder {
-                currentIsFirstResponder = datas.isFirstResponder
-                
-                if datas.isFirstResponder { certificationTextView.becomeFirstResponder() }
+    func updateView(_ datas: CertificateViewDatas) {
+        if currentIsFirstResponder != datas.isFirstResponder {
+            currentIsFirstResponder = datas.isFirstResponder
+
+            if datas.isFirstResponder { certificationTextView.becomeFirstResponder() }
+        }
+
+        // MARK: subTitleLabel 등 일반 UI의 구성을 최초 진행, 이후 joinButton 애니메이션을 위해 위치 조정
+        if isFirst {
+            isFirst = false
+
+            layoutIfNeeded()
+        }
+
+        if currentKeyboardHeight != datas.keyboardHeight {
+            currentKeyboardHeight = datas.keyboardHeight
+
+            certificateButton.snp.updateConstraints {
+                $0.bottom.equalToSuperview().inset(datas.keyboardHeight + 16)
             }
-            
-            // MARK: subTitleLabel 등 일반 UI의 구성을 최초 진행, 이후 joinButton 애니메이션을 위해 위치 조정
-            if isFirst {
-                isFirst = false
-                
+            UIView.animate(withDuration: 0.35) { [weak self] in
+                guard let self else { return }
                 layoutIfNeeded()
             }
-            
-            if currentKeyboardHeight != datas.keyboardHeight {
-                currentKeyboardHeight = datas.keyboardHeight
-                
-                certificateButton.snp.updateConstraints {
-                    $0.bottom.equalToSuperview().inset(datas.keyboardHeight + 16)
-                }
-                UIView.animate(withDuration: 0.35) { [weak self] in
-                    guard let self else { return }
-                    layoutIfNeeded()
-                }
-            }
+        }
+    }
+
+    func updateView(_ datas: DogetherTextViewDatas) {
+        certificationTextView.updateView(datas)
+    }
+
+    func updateView(_ datas: DogetherButtonViewDatas) {
+        certificateButton.updateView(datas)
+    }
+
+    override func updateView(_ data: (any BaseEntity)?) {
+        if let datas = data as? CertificateViewDatas {
+            updateView(datas)
         }
         
         if let datas = data as? DogetherTextViewDatas {
-            certificationTextView.updateView(datas)
+            updateView(datas)
         }
         
         if let datas = data as? DogetherButtonViewDatas {
-            certificateButton.updateView(datas)
+            updateView(datas)
         }
     }
 }

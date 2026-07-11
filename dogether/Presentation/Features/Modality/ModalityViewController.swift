@@ -37,8 +37,8 @@ final class ModalityViewController: BaseViewController {
         }
         
         let output = viewModel.output
-        bind(output.examinateViewDatas)
-        bind(output.examinateButtonViewDatas)
+        bind(output.examinateViewDatas, update: examinatePage.updateView)
+        bind(output.examinateButtonViewDatas, update: examinatePage.updateView)
     }
 
     func updateReviews(_ reviews: [ReviewEntity]) {

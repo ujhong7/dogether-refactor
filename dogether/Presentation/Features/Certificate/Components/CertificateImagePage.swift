@@ -97,16 +97,24 @@ final class CertificateImagePage: BasePage {
     }
     
     // MARK: - updateView
+    func updateView(_ datas: CertificateViewDatas) {
+        todoContentLabel.attributedText = NSAttributedString(
+            string: datas.todo.content,
+            attributes: Fonts.getAttributes(for: Fonts.head1B, textAlignment: .center)
+        )
+    }
+
+    func updateView(_ datas: DogetherButtonViewDatas) {
+        certificateButton.updateView(datas)
+    }
+
     override func updateView(_ data: (any BaseEntity)?) {
         if let datas = data as? CertificateViewDatas {
-            todoContentLabel.attributedText = NSAttributedString(
-                string: datas.todo.content,
-                attributes: Fonts.getAttributes(for: Fonts.head1B, textAlignment: .center)
-            )
+            updateView(datas)
         }
         
         if let datas = data as? DogetherButtonViewDatas {
-            certificateButton.updateView(datas)
+            updateView(datas)
         }
     }
 }

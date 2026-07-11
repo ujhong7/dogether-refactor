@@ -67,36 +67,52 @@ final class PopupPage: BasePage {
     }
     
     // MARK: - updateView
+    func updateView(_ datas: AlertPopupViewDatas) {
+        if subviews.contains(examinateStackView) {
+            examinateStackView.removeFromSuperview()
+        }
+
+        alertStackView.updateView(datas)
+    }
+
+    func updateView(_ datas: ExaminatePopupViewDatas) {
+        if subviews.contains(alertStackView) {
+            alertStackView.removeFromSuperview()
+        }
+
+        examinateStackView.updateView(datas)
+    }
+
+    func updateView(_ datas: DogetherTextViewDatas) {
+        examinateStackView.updateView(datas)
+
+        if datas.isShowKeyboard {
+            addTapAction { [weak self] _ in
+                guard let self else { return }
+                examinateStackView.endEditing(true)
+            }
+        } else { addTapAction { _ in return } }
+    }
+
+    func updateView(_ datas: DogetherButtonViewDatas) {
+        examinateStackView.updateView(datas)
+    }
+
     override func updateView(_ data: (any BaseEntity)?) {
         if let datas = data as? AlertPopupViewDatas {
-            if subviews.contains(examinateStackView) {
-                examinateStackView.removeFromSuperview()
-            }
-            
-            alertStackView.updateView(datas)
+            updateView(datas)
         }
         
         if let datas = data as? ExaminatePopupViewDatas {
-            if subviews.contains(alertStackView) {
-                alertStackView.removeFromSuperview()
-            }
-            
-            examinateStackView.updateView(datas)
+            updateView(datas)
         }
         
         if let datas = data as? DogetherTextViewDatas {
-            examinateStackView.updateView(datas)
-            
-            if datas.isShowKeyboard {
-                addTapAction { [weak self] _ in
-                    guard let self else { return }
-                    examinateStackView.endEditing(true)
-                }
-            } else { addTapAction { _ in return } }
+            updateView(datas)
         }
         
         if let datas = data as? DogetherButtonViewDatas {
-            examinateStackView.updateView(datas)
+            updateView(datas)
         }
     }
 }

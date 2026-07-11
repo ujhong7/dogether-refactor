@@ -105,25 +105,29 @@ final class GroupCreatePage: BasePage {
     }
     
     // MARK: - updateView
+    func updateView(_ datas: GroupCreateViewDatas) {
+        stepInfoStackView.updateView(datas)
+
+        stepButtonStackView.updateView(datas)
+
+        stepOneView.isHidden = datas.step != .one
+        stepTwoView.isHidden = datas.step != .two
+        stepThreeView.isHidden = datas.step != .three
+
+        switch datas.step {
+        case .one:
+            stepOneView.updateView(datas)
+        case .two:
+            stepTwoView.updateView(datas)
+            endEditing(true)
+        case .three:
+            stepThreeView.updateView(datas)
+        }
+    }
+
     override func updateView(_ data: (any BaseEntity)?) {
         if let datas = data as? GroupCreateViewDatas {
-            stepInfoStackView.updateView(datas)
-            
-            stepButtonStackView.updateView(datas)
-            
-            stepOneView.isHidden = datas.step != .one
-            stepTwoView.isHidden = datas.step != .two
-            stepThreeView.isHidden = datas.step != .three
-            
-            switch datas.step {
-            case .one:
-                stepOneView.updateView(datas)
-            case .two:
-                stepTwoView.updateView(datas)
-                endEditing(true)
-            case .three:
-                stepThreeView.updateView(datas)
-            }
+            updateView(datas)
         }
     }
 }

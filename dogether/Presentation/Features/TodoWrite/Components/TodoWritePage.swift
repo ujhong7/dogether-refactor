@@ -220,41 +220,45 @@ final class TodoWritePage: BasePage {
     }
     
     // MARK: - updateView
+    func updateView(_ datas: TodoWriteViewDatas) {
+        if currentTodo != datas.todo {
+            currentTodo = datas.todo
+
+            updateTextField()
+            updateAddButtonStatus()
+        }
+
+        if currentTodos != datas.todos {
+            currentTodos = datas.todos
+
+            updateTodoLimitLabel()
+
+            emptyListView.isHidden = !datas.todos.isEmpty
+            todoTableView.isHidden = datas.todos.isEmpty
+            todoTableView.reloadData()
+
+            // FIXME: 추후 수정
+            var viewDatas = saveButton.currentViewDatas ?? DogetherButtonViewDatas(status: .disabled)
+            viewDatas.status = datas.todos.filter { $0.enabled }.isEmpty ? .disabled : .enabled
+            saveButton.updateView(viewDatas)
+        }
+
+        if currentIsShowKeyboard != datas.isShowKeyboard {
+            currentIsShowKeyboard = datas.isShowKeyboard
+
+            todoTextField.layer.borderWidth = datas.isShowKeyboard ? 1.5 : 0
+        }
+
+        if currentIsFirstResponder != datas.isFirstResponder {
+            currentIsFirstResponder = datas.isFirstResponder
+
+            if datas.isFirstResponder { todoTextField.becomeFirstResponder() }
+        }
+    }
+
     override func updateView(_ data: (any BaseEntity)?) {
         if let datas = data as? TodoWriteViewDatas {
-            if currentTodo != datas.todo {
-                currentTodo = datas.todo
-                
-                updateTextField()
-                updateAddButtonStatus()
-            }
-            
-            if currentTodos != datas.todos {
-                currentTodos = datas.todos
-                
-                updateTodoLimitLabel()
-                
-                emptyListView.isHidden = !datas.todos.isEmpty
-                todoTableView.isHidden = datas.todos.isEmpty
-                todoTableView.reloadData()
-                
-                // FIXME: 추후 수정
-                var viewDatas = saveButton.currentViewDatas ?? DogetherButtonViewDatas(status: .disabled)
-                viewDatas.status = datas.todos.filter { $0.enabled }.isEmpty ? .disabled : .enabled
-                saveButton.updateView(viewDatas)
-            }
-            
-            if currentIsShowKeyboard != datas.isShowKeyboard {
-                currentIsShowKeyboard = datas.isShowKeyboard
-                
-                todoTextField.layer.borderWidth = datas.isShowKeyboard ? 1.5 : 0
-            }
-            
-            if currentIsFirstResponder != datas.isFirstResponder {
-                currentIsFirstResponder = datas.isFirstResponder
-                
-                if datas.isFirstResponder { todoTextField.becomeFirstResponder() }
-            }
+            updateView(datas)
         }
     }
 }
