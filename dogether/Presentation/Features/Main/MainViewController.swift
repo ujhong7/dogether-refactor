@@ -41,10 +41,10 @@ final class MainViewController: BaseViewController {
     
     override func setViewDatas() {
         let output = viewModel.output
-        bind(output.bottomSheetViewDatas, update: mainPage.updateView)
-        bind(output.groupViewDatas, update: mainPage.updateView)
-        bind(output.sheetViewDatas, update: mainPage.updateView)
-        bind(output.timerViewDatas, update: mainPage.updateView)
+        bind(output.bottomSheetViewDatas, update: mainPage.updateBottomSheet)
+        bind(output.groupViewDatas, update: mainPage.updateGroup)
+        bind(output.sheetViewDatas, update: mainPage.updateSheet)
+        bind(output.timerViewDatas, update: mainPage.updateTimer)
     }
 }
 

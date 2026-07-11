@@ -115,7 +115,7 @@ final class ExaminatePage: BasePage {
     }
     
     // MARK: - updateView
-    func updateView(_ datas: ExaminateViewDatas) {
+    func updateExaminate(_ datas: ExaminateViewDatas) {
         if currentReview != datas.reviews[datas.index] {
             currentReview = datas.reviews[datas.index]
 
@@ -159,18 +159,18 @@ final class ExaminatePage: BasePage {
         }
     }
 
-    func updateView(_ datas: DogetherButtonViewDatas) {
+    func updateSendButton(_ datas: DogetherButtonViewDatas) {
         sendButton.updateView(datas)
     }
 
     override func updateView(_ data: (any BaseEntity)?) {
         if let datas = data as? ExaminateViewDatas {
-            updateView(datas)
+            updateExaminate(datas)
         }
             
             
         if let datas = data as? DogetherButtonViewDatas {
-            updateView(datas)
+            updateSendButton(datas)
         }
     }
 }

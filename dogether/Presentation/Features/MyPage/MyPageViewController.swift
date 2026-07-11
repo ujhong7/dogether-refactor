@@ -32,8 +32,8 @@ final class MyPageViewController: BaseViewController {
     
     override func setViewDatas() {
         let output = viewModel.output
-        bind(output.profileViewDatas, update: myPage.updateView)
-        bind(output.statsButtonViewDatas, update: myPage.updateView)
+        bind(output.profileViewDatas, update: myPage.updateProfile)
+        bind(output.statsButtonViewDatas, update: myPage.updateStatsButton)
 
         myPage.statsTapped
             .asSignal()

@@ -61,7 +61,7 @@ final class GroupManagementPage: BasePage {
         }
     }
 
-    func updateView(_ datas: GroupManagementViewDatas) {
+    func updateGroupManagement(_ datas: GroupManagementViewDatas) {
         if currentGroups != datas.groups {
             currentGroups = datas.groups
 
@@ -79,7 +79,7 @@ final class GroupManagementPage: BasePage {
 
     override func updateView(_ data: any BaseEntity) {
         guard let datas = data as? GroupManagementViewDatas else { return }
-        updateView(datas)
+        updateGroupManagement(datas)
     }
 }
 

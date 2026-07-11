@@ -67,7 +67,7 @@ final class PopupPage: BasePage {
     }
     
     // MARK: - updateView
-    func updateView(_ datas: AlertPopupViewDatas) {
+    func updateAlertPopup(_ datas: AlertPopupViewDatas) {
         if subviews.contains(examinateStackView) {
             examinateStackView.removeFromSuperview()
         }
@@ -75,7 +75,7 @@ final class PopupPage: BasePage {
         alertStackView.updateView(datas)
     }
 
-    func updateView(_ datas: ExaminatePopupViewDatas) {
+    func updateExaminatePopup(_ datas: ExaminatePopupViewDatas) {
         if subviews.contains(alertStackView) {
             alertStackView.removeFromSuperview()
         }
@@ -83,7 +83,7 @@ final class PopupPage: BasePage {
         examinateStackView.updateView(datas)
     }
 
-    func updateView(_ datas: DogetherTextViewDatas) {
+    func updateExaminateText(_ datas: DogetherTextViewDatas) {
         examinateStackView.updateView(datas)
 
         if datas.isShowKeyboard {
@@ -94,25 +94,25 @@ final class PopupPage: BasePage {
         } else { addTapAction { _ in return } }
     }
 
-    func updateView(_ datas: DogetherButtonViewDatas) {
+    func updateRegisterButton(_ datas: DogetherButtonViewDatas) {
         examinateStackView.updateView(datas)
     }
 
     override func updateView(_ data: (any BaseEntity)?) {
         if let datas = data as? AlertPopupViewDatas {
-            updateView(datas)
+            updateAlertPopup(datas)
         }
         
         if let datas = data as? ExaminatePopupViewDatas {
-            updateView(datas)
+            updateExaminatePopup(datas)
         }
         
         if let datas = data as? DogetherTextViewDatas {
-            updateView(datas)
+            updateExaminateText(datas)
         }
         
         if let datas = data as? DogetherButtonViewDatas {
-            updateView(datas)
+            updateRegisterButton(datas)
         }
     }
 }

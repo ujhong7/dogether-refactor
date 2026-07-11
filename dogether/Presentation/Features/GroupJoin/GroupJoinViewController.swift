@@ -46,8 +46,8 @@ final class GroupJoinViewController: BaseViewController {
             keyboardHeightChanged: groupJoinPage.keyboardHeightChanged.asSignal()
         )
         let output = viewModel.transform(input: input)
-        bind(output.groupJoinViewDatas, update: groupJoinPage.updateView)
-        bind(output.joinButtonViewDatas, update: groupJoinPage.updateView)
+        bind(output.groupJoinViewDatas, update: groupJoinPage.updateGroupJoin)
+        bind(output.joinButtonViewDatas, update: groupJoinPage.updateJoinButton)
 
         groupJoinPage.joinTapped
             .asSignal()

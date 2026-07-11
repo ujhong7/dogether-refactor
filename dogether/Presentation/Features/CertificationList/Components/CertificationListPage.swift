@@ -80,20 +80,20 @@ final class CertificationListPage: BasePage {
     }
     
     // MARK: - updateView
-    func updateView(_ datas: BottomSheetViewDatas) {
+    func updateBottomSheet(_ datas: BottomSheetViewDatas) {
         bottomSheetView.updateView(datas)
     }
 
-    func updateView(_ datas: SortViewDatas) {
+    func updateSort(_ datas: SortViewDatas) {
         contentView.updateView(datas)
         bottomSheetView.updateView(datas)
     }
 
-    func updateView(_ datas: StatsViewDatas) {
+    func updateStats(_ datas: StatsViewDatas) {
         contentView.updateView(datas)
     }
 
-    func updateView(_ datas: CertificationListViewDatas) {
+    func updateCertificationList(_ datas: CertificationListViewDatas) {
         emptyView.isHidden = !datas.sections.isEmpty
         contentView.isHidden = datas.sections.isEmpty
 
@@ -102,19 +102,19 @@ final class CertificationListPage: BasePage {
 
     override func updateView(_ data: any BaseEntity) {
         if let datas = data as? BottomSheetViewDatas {
-            updateView(datas)
+            updateBottomSheet(datas)
         }
         
         if let datas = data as? SortViewDatas {
-            updateView(datas)
+            updateSort(datas)
         }
         
         if let datas = data as? StatsViewDatas {
-            updateView(datas)
+            updateStats(datas)
         }
 
         if let datas = data as? CertificationListViewDatas {
-            updateView(datas)
+            updateCertificationList(datas)
         }
     }
 }

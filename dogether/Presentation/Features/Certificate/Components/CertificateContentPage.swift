@@ -115,7 +115,7 @@ final class CertificateContentPage: BasePage {
     }
     
     // MARK: - updateView
-    func updateView(_ datas: CertificateViewDatas) {
+    func updateCertificate(_ datas: CertificateViewDatas) {
         if currentIsFirstResponder != datas.isFirstResponder {
             currentIsFirstResponder = datas.isFirstResponder
 
@@ -142,25 +142,25 @@ final class CertificateContentPage: BasePage {
         }
     }
 
-    func updateView(_ datas: DogetherTextViewDatas) {
+    func updateTextView(_ datas: DogetherTextViewDatas) {
         certificationTextView.updateView(datas)
     }
 
-    func updateView(_ datas: DogetherButtonViewDatas) {
+    func updateCertifyButton(_ datas: DogetherButtonViewDatas) {
         certificateButton.updateView(datas)
     }
 
     override func updateView(_ data: (any BaseEntity)?) {
         if let datas = data as? CertificateViewDatas {
-            updateView(datas)
+            updateCertificate(datas)
         }
         
         if let datas = data as? DogetherTextViewDatas {
-            updateView(datas)
+            updateTextView(datas)
         }
         
         if let datas = data as? DogetherButtonViewDatas {
-            updateView(datas)
+            updateCertifyButton(datas)
         }
     }
 }

@@ -46,7 +46,7 @@ final class LoadingPage: BasePage {
     }
     
     // MARK: - updateView
-    func updateView(_ datas: LoadingViewDatas) {
+    func updateLoading(_ datas: LoadingViewDatas) {
         if currentIsShowLoading != datas.isShowLoading {
             currentIsShowLoading = datas.isShowLoading
 
@@ -59,6 +59,6 @@ final class LoadingPage: BasePage {
 
     override func updateView(_ data: (any BaseEntity)?) {
         guard let datas = data as? LoadingViewDatas else { return }
-        updateView(datas)
+        updateLoading(datas)
     }
 }

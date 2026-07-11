@@ -141,11 +141,11 @@ final class StatsPage: BasePage {
     }
     
     // MARK: - updateView
-    func updateView(_ datas: BottomSheetViewDatas) {
+    func updateBottomSheet(_ datas: BottomSheetViewDatas) {
         bottomSheetView.updateView(datas)
     }
 
-    func updateView(_ datas: GroupViewDatas) {
+    func updateGroup(_ datas: GroupViewDatas) {
         if datas.groups.isEmpty {
             emptyView.isHidden = false
             scrollView.isHidden = true
@@ -158,37 +158,37 @@ final class StatsPage: BasePage {
         }
     }
 
-    func updateView(_ datas: AchievementViewDatas) {
+    func updateAchievement(_ datas: AchievementViewDatas) {
         achievementView.updateView(datas)
     }
 
-    func updateView(_ datas: StatsRankViewDatas) {
+    func updateRank(_ datas: StatsRankViewDatas) {
         statsRankView.updateView(datas)
     }
 
-    func updateView(_ datas: StatsSummaryViewDatas) {
+    func updateSummary(_ datas: StatsSummaryViewDatas) {
         statsSummaryView.updateView(datas)
     }
 
     override func updateView(_ data: (any BaseEntity)?) {
         if let datas = data as? BottomSheetViewDatas {
-            updateView(datas)
+            updateBottomSheet(datas)
         }
         
         if let datas = data as? GroupViewDatas {
-            updateView(datas)
+            updateGroup(datas)
         }
         
         if let datas = data as? AchievementViewDatas {
-            updateView(datas)
+            updateAchievement(datas)
         }
         
         if let datas = data as? StatsRankViewDatas {
-            updateView(datas)
+            updateRank(datas)
         }
         
         if let datas = data as? StatsSummaryViewDatas {
-            updateView(datas)
+            updateSummary(datas)
         }
     }
 }

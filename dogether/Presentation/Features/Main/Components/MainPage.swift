@@ -184,11 +184,11 @@ final class MainPage: BasePage {
     }
     
     // MARK: - updateView
-    func updateView(_ datas: BottomSheetViewDatas) {
+    func updateBottomSheet(_ datas: BottomSheetViewDatas) {
         bottomSheetView.updateView(datas)
     }
 
-    func updateView(_ datas: GroupViewDatas) {
+    func updateGroup(_ datas: GroupViewDatas) {
         guard datas.groups.count > 0 else { return }
         bottomSheetView.updateView(datas)
         groupInfoView.updateView(datas.groups[datas.index])
@@ -196,7 +196,7 @@ final class MainPage: BasePage {
         sheetHeaderView.updateView(datas)
     }
 
-    func updateView(_ datas: SheetViewDatas) {
+    func updateSheet(_ datas: SheetViewDatas) {
         if currentIsScrollOnTop != datas.isScrollOnTop {
             currentIsScrollOnTop = datas.isScrollOnTop
         }
@@ -234,25 +234,25 @@ final class MainPage: BasePage {
         }
     }
 
-    func updateView(_ datas: TimerViewDatas) {
+    func updateTimer(_ datas: TimerViewDatas) {
         timerView.updateView(datas)
     }
 
     override func updateView(_ data: (any BaseEntity)?) {
         if let datas = data as? BottomSheetViewDatas {
-            updateView(datas)
+            updateBottomSheet(datas)
         }
         
         if let datas = data as? GroupViewDatas, datas.groups.count > 0 {
-            updateView(datas)
+            updateGroup(datas)
         }
         
         if let datas = data as? SheetViewDatas {
-            updateView(datas)
+            updateSheet(datas)
         }
         
         if let datas = data as? TimerViewDatas {
-            updateView(datas)
+            updateTimer(datas)
         }
     }
 }

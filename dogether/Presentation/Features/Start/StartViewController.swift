@@ -27,7 +27,7 @@ final class StartViewController: BaseViewController {
         }
 
         let output = viewModel.output
-        bind(output.startViewDatas, update: startPage.updateView)
+        bind(output.startViewDatas, update: startPage.updateStart)
 
         startPage.groupTypeSelected
             .asSignal()

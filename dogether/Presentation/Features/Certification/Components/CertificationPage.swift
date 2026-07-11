@@ -105,7 +105,7 @@ final class CertificationPage: BasePage {
     }
     
     // MARK: - updateView
-    func updateView(_ datas: CertificationViewDatas) {
+    func updateCertification(_ datas: CertificationViewDatas) {
         navigationHeader.updateView(datas)
         thumbnailListView.updateView(datas)
         certificationListView.updateView(datas)
@@ -131,6 +131,6 @@ final class CertificationPage: BasePage {
 
     override func updateView(_ data: (any BaseEntity)?) {
         guard let datas = data as? CertificationViewDatas else { return }
-        updateView(datas)
+        updateCertification(datas)
     }
 }

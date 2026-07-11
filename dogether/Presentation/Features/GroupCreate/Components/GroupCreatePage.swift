@@ -105,7 +105,7 @@ final class GroupCreatePage: BasePage {
     }
     
     // MARK: - updateView
-    func updateView(_ datas: GroupCreateViewDatas) {
+    func updateGroupCreate(_ datas: GroupCreateViewDatas) {
         stepInfoStackView.updateView(datas)
 
         stepButtonStackView.updateView(datas)
@@ -127,7 +127,7 @@ final class GroupCreatePage: BasePage {
 
     override func updateView(_ data: (any BaseEntity)?) {
         if let datas = data as? GroupCreateViewDatas {
-            updateView(datas)
+            updateGroupCreate(datas)
         }
     }
 }

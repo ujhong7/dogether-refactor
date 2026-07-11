@@ -77,7 +77,7 @@ final class StartPage: BasePage {
     }
     
     // MARK: - updateView
-    func updateView(_ datas: StartViewDatas) {
+    func updateStart(_ datas: StartViewDatas) {
         dogetherHeader.isHidden = !datas.isFirstGroup
 
         navigationHeader.isHidden = datas.isFirstGroup
@@ -94,7 +94,7 @@ final class StartPage: BasePage {
 
     override func updateView(_ data: (any BaseEntity)?) {
         guard let datas = data as? StartViewDatas else { return }
-        updateView(datas)
+        updateStart(datas)
     }
 }
 

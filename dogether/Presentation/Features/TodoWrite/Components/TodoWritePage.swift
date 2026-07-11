@@ -220,7 +220,7 @@ final class TodoWritePage: BasePage {
     }
     
     // MARK: - updateView
-    func updateView(_ datas: TodoWriteViewDatas) {
+    func updateTodoWrite(_ datas: TodoWriteViewDatas) {
         if currentTodo != datas.todo {
             currentTodo = datas.todo
 
@@ -258,7 +258,7 @@ final class TodoWritePage: BasePage {
 
     override func updateView(_ data: (any BaseEntity)?) {
         if let datas = data as? TodoWriteViewDatas {
-            updateView(datas)
+            updateTodoWrite(datas)
         }
     }
 }

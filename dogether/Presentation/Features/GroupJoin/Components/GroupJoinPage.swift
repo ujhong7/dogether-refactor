@@ -118,7 +118,7 @@ final class GroupJoinPage: BasePage {
     }
     
     // MARK: - updateView
-    func updateView(_ datas: GroupJoinViewDatas) {
+    func updateGroupJoin(_ datas: GroupJoinViewDatas) {
         if codeTextField.text != datas.code {
             codeTextField.text = datas.code
         }
@@ -149,17 +149,17 @@ final class GroupJoinPage: BasePage {
         }
     }
 
-    func updateView(_ datas: DogetherButtonViewDatas) {
+    func updateJoinButton(_ datas: DogetherButtonViewDatas) {
         joinButton.updateView(datas)
     }
 
     override func updateView(_ data: (any BaseEntity)?) {
         if let datas = data as? GroupJoinViewDatas {
-            updateView(datas)
+            updateGroupJoin(datas)
         }
         
         if let datas = data as? DogetherButtonViewDatas {
-            updateView(datas)
+            updateJoinButton(datas)
         }
     }
 }

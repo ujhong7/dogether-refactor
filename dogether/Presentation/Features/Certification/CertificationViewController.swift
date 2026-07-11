@@ -37,7 +37,7 @@ final class CertificationViewController: BaseViewController {
         }
         
         let output = viewModel.output
-        bind(output.certificationViewDatas, update: certificationPage.updateView)
+        bind(output.certificationViewDatas, update: certificationPage.updateCertification)
     }
 }
 

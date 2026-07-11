@@ -38,14 +38,14 @@ final class PopupViewController: BaseViewController {
 
         if let datas = datas as? AlertPopupViewDatas {
             viewModel.setDatas(datas)
-            bind(output.alertPopupViewDatas, update: popupPage.updateView)
+            bind(output.alertPopupViewDatas, update: popupPage.updateAlertPopup)
         }
         
         if let datas = datas as? ExaminatePopupViewDatas {
             viewModel.setDatas(datas)
-            bind(output.examinatePopupViewDatas, update: popupPage.updateView)
-            bind(output.examinateTextViewDatas, update: popupPage.updateView)
-            bind(output.registerButtonViewDatas, update: popupPage.updateView)
+            bind(output.examinatePopupViewDatas, update: popupPage.updateExaminatePopup)
+            bind(output.examinateTextViewDatas, update: popupPage.updateExaminateText)
+            bind(output.registerButtonViewDatas, update: popupPage.updateRegisterButton)
         }
     }
 }

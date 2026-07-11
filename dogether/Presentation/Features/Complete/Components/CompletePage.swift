@@ -101,7 +101,7 @@ final class CompletePage: BasePage {
         }
     }
     
-    func updateView(_ datas: CompleteViewDatas) {
+    func updateComplete(_ datas: CompleteViewDatas) {
         // FIXME: 추후 수정
         let dogetherButtonViewDatas = completeButton.currentViewDatas ?? DogetherButtonViewDatas()
         completeButton.updateView(dogetherButtonViewDatas)
@@ -140,6 +140,6 @@ final class CompletePage: BasePage {
 
     override func updateView(_ data: (any BaseEntity)?) {
         guard let datas = data as? CompleteViewDatas else { return }
-        updateView(datas)
+        updateComplete(datas)
     }
 }

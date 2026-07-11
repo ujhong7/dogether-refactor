@@ -25,7 +25,7 @@ final class LoadingViewController: BaseViewController {
         }
 
         let output = viewModel.output
-        bind(output.loadingViewDatas, update: loadingPage.updateView)
+        bind(output.loadingViewDatas, update: loadingPage.updateLoading)
     }
 }
 

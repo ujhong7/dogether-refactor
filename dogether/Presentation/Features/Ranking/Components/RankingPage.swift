@@ -96,7 +96,7 @@ final class RankingPage: BasePage {
     }
     
     // MARK: - updateView
-    func updateView(_ datas: RankingViewDatas) {
+    func updateRanking(_ datas: RankingViewDatas) {
         if currentRankings != datas.rankings {
             currentRankings = datas.rankings
 
@@ -115,7 +115,7 @@ final class RankingPage: BasePage {
 
     override func updateView(_ data: (any BaseEntity)?) {
         guard let datas = data as? RankingViewDatas else { return }
-        updateView(datas)
+        updateRanking(datas)
     }
 }
 
