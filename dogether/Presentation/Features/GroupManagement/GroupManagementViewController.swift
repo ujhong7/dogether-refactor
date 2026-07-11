@@ -38,7 +38,7 @@ final class GroupManagementViewController: BaseViewController {
 
     override func setViewDatas() {
         let output = viewModel.output
-        bind(output.groupManagementViewDatas)
+        bind(output.groupManagementViewDatas, update: groupManagementPage.updateView)
 
         groupManagementPage.addGroupTapped
             .asSignal()

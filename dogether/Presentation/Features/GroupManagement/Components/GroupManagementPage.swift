@@ -61,12 +61,10 @@ final class GroupManagementPage: BasePage {
         }
     }
 
-    override func updateView(_ data: any BaseEntity) {
-        guard let datas = data as? GroupManagementViewDatas else { return }
-
+    func updateView(_ datas: GroupManagementViewDatas) {
         if currentGroups != datas.groups {
             currentGroups = datas.groups
-            
+
             if datas.groups.isEmpty {
                 emptyView.isHidden = false
                 tableView.isHidden = true
@@ -77,6 +75,11 @@ final class GroupManagementPage: BasePage {
                 tableView.reloadData()
             }
         }
+    }
+
+    override func updateView(_ data: any BaseEntity) {
+        guard let datas = data as? GroupManagementViewDatas else { return }
+        updateView(datas)
     }
 }
 

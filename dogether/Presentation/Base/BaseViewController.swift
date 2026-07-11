@@ -45,26 +45,24 @@ class BaseViewController: UIViewController, CoordinatorDelegate {
     /// View를 구성하는 필수 데이터를 세팅하고 바인딩하는 역할을 합니다
     func setViewDatas() { }
     
-    /// Output의 변화에 Page가 update 되도록 바인딩하는 역할을 합니다
-    func bind<Entity: BaseEntity>(_ output: Driver<Entity>) {
+    /// Output의 변화에 지정한 update 로직이 실행되도록 바인딩하는 역할을 합니다
+    func bind<Entity: BaseEntity>(_ output: Driver<Entity>, update: @escaping (Entity) -> Void) {
         output
             .distinctUntilChanged()
-            .drive(onNext: { [weak self] datas in
-                guard let self, let pages else { return }
-                pages.forEach { $0.updateView(datas) }
+            .drive(onNext: update)
+            .disposed(by: disposeBag)
+    }
+
+    func bind<Entity: BaseEntity>(_ output: Driver<Entity?>, update: @escaping (Entity) -> Void) {
+        output
+            .distinctUntilChanged()
+            .drive(onNext: { datas in
+                guard let datas else { return }
+                update(datas)
             })
             .disposed(by: disposeBag)
     }
 
-    func bind<Entity: BaseEntity>(_ output: Driver<Entity?>) {
-        output
-            .distinctUntilChanged()
-            .drive(onNext: { [weak self] datas in
-                guard let self, let pages, let datas else { return }
-                pages.forEach { $0.updateView(datas) }
-            })
-            .disposed(by: disposeBag)
-    }
 }
 
 // MARK: - async task

@@ -41,7 +41,7 @@ final class RankingViewController: BaseViewController {
         viewModel.setDatas(datas)
 
         let output = viewModel.output
-        bind(output.rankingViewDatas)
+        bind(output.rankingViewDatas, update: rankingPage.updateView)
 
         rankingPage.rankingSelected
             .asSignal()

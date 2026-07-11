@@ -101,18 +101,16 @@ final class CompletePage: BasePage {
         }
     }
     
-    override func updateView(_ data: (any BaseEntity)?) {
-        guard let datas = data as? CompleteViewDatas else { return }
-        
+    func updateView(_ datas: CompleteViewDatas) {
         // FIXME: 추후 수정
         let dogetherButtonViewDatas = completeButton.currentViewDatas ?? DogetherButtonViewDatas()
         completeButton.updateView(dogetherButtonViewDatas)
-        
+
         titleLabel.attributedText = NSAttributedString(
             string: datas.groupType.completeTitleText,
             attributes: Fonts.getAttributes(for: Fonts.head1B, textAlignment: .center)
         )
-        
+
         switch datas.groupType {
         case .join:
             let viewData = DogetherGroupInfoViewData(
@@ -138,5 +136,10 @@ final class CompletePage: BasePage {
             joinCodeShareButton.isHidden = false
             noticeView.isHidden = false
         }
+    }
+
+    override func updateView(_ data: (any BaseEntity)?) {
+        guard let datas = data as? CompleteViewDatas else { return }
+        updateView(datas)
     }
 }

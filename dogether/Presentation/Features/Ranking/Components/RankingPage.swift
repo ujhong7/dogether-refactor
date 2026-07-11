@@ -96,23 +96,26 @@ final class RankingPage: BasePage {
     }
     
     // MARK: - updateView
-    override func updateView(_ data: (any BaseEntity)?) {
-        if let datas = data as? RankingViewDatas {
-            if currentRankings != datas.rankings {
-                currentRankings = datas.rankings
-                
-                rankingTopStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+    func updateView(_ datas: RankingViewDatas) {
+        if currentRankings != datas.rankings {
+            currentRankings = datas.rankings
 
-                [1, 0, 2].forEach { index in
-                    let ranking = datas.rankings[safe: index]
-                    let topView = RankingTopView(ranking: ranking, index: index)
-                    topView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tappedTopView(_:))))
-                    rankingTopStackView.addArrangedSubview(topView)
-                }
+            rankingTopStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
-                rankingTableView.reloadData()
+            [1, 0, 2].forEach { index in
+                let ranking = datas.rankings[safe: index]
+                let topView = RankingTopView(ranking: ranking, index: index)
+                topView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tappedTopView(_:))))
+                rankingTopStackView.addArrangedSubview(topView)
             }
+
+            rankingTableView.reloadData()
         }
+    }
+
+    override func updateView(_ data: (any BaseEntity)?) {
+        guard let datas = data as? RankingViewDatas else { return }
+        updateView(datas)
     }
 }
 
